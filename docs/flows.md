@@ -21,13 +21,13 @@ Caso Legend a 4.000 COP por USD. Las tallas 38 y 39 reciben 3 y 5 pares a 80.000
 1. Un cliente identificado confirma productos, precio USD y vencimiento opcional. La reserva reduce disponible y conserva existencia física.
 2. Cada abono registra un anticipo con tasa propia. El saldo es total acordado menos abonos válidos en USD histórico.
 3. El saldo cero habilita la entrega. Al entregar se consume físico, se libera reserva, se asigna FIFO y se reconoce una venta que aplica los anticipos existentes una sola vez.
-4. Cancelar o vencer libera la reserva. La devolución o retención de anticipos depende de la política configurada y deja un movimiento explícito.
+4. Un vencimiento pendiente aparece en el listado y bloquea nuevos abonos y entregas. Un supervisor cierra el vencimiento o cancela el apartado con motivo. En ambos casos se libera la reserva y se aplica la política fijada al crear el apartado.
 
 ## Cambio o devolución
 
 1. El operador abre la venta original y selecciona líneas, unidades, motivo, estado del par y autorización. El sistema resta devoluciones previas al calcular el máximo devoluble.
 2. Si el par vuelve al inventario, el lote de reposición conserva el costo de su asignación original. Un par defectuoso queda fuera de existencias vendibles y su efecto sobre el costo queda identificado.
-3. En un cambio se registra también el nuevo par, su asignación FIFO y el cobro, reembolso o saldo a favor por la diferencia según política. La devolución registra el importe real y la tasa del reembolso en la cuenta pagadora.
+3. En un cambio se emite el comprobante del nuevo par, se asigna FIFO y se cobra o devuelve la diferencia. En una devolución se registra el reembolso real con su propia cuenta y tasa.
 4. La rectificación de ventas netas, costo, stock y dinero queda ligada al origen. La operación es atómica e idempotente.
 
 ## Conciliación y exportación

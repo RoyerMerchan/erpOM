@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shopInput } from '@max-sport/shared';
+import { layawayRefundLabels, shopInput } from '@max-sport/shared';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
 import { useToast } from 'primevue/usetoast';
@@ -25,6 +25,14 @@ const fields: Field[] = [
     help: 'Ejemplo America/Caracas',
   },
   { key: 'logoUrl', label: 'URL del logotipo', nullable: true, max: 2048 },
+  {
+    key: 'layawayRefundPolicy',
+    label: 'Al cancelar o cerrar un apartado',
+    kind: 'select',
+    options: Object.entries(layawayRefundLabels).map(([value, label]) => ({ value, label })),
+    required: true,
+    help: 'La política se aplica a los apartados que se creen después de guardarla.',
+  },
   {
     key: 'lowStockThreshold',
     label: 'Umbral general de stock bajo',

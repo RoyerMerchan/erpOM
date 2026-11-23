@@ -150,13 +150,28 @@ export const saleSummarySchema = totals.extend({
   sellerName: z.string(),
   confirmedAt: date,
   pairCount: z.number().int(),
+  adjustedTotalUsd: z.string().optional(),
+  adjustedCogsUsd: z.string().optional(),
+  adjustedProfitUsd: z.string().optional(),
+});
+export const saleCorrectionBrief = z.object({
+  id: z.uuid(),
+  number: z.string(),
+  kind: z.enum(['RETURN', 'EXCHANGE']),
+  createdAt: date,
+  returnedUsd: z.string(),
+  replacementSaleId: z.uuid().nullable(),
 });
 export const saleDetailSchema = saleSummarySchema.extend({
   shopName: z.string(),
   notes: z.string().nullable(),
-  items: z.array(item.extend({ id: z.uuid() })),
-  tenders: z.array(tender),
+  items: z.array(item.extend({ id: z.uuid(), returnableQuantity: z.number().int().optional() })),
+  tenders: z.array(tender.extend({ kind: z.enum(['PAYMENT', 'CHANGE', 'ADVANCE']) })),
   discounts: z.array(discount),
+  corrections: z.array(saleCorrectionBrief).default([]),
+  layawayId: z.uuid().nullable().default(null),
+  exchangeId: z.uuid().nullable().default(null),
+  exchangeCreditUsd: z.string().nullable().default(null),
 });
 export const saleOperatorSchema = z.object({ id: z.uuid(), displayName: z.string() });
 export type SaleInput = z.output<typeof saleInput>;

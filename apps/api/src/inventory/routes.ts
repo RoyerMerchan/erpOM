@@ -49,6 +49,7 @@ export function createInventoryRouter(database: Database, security: SessionSecur
         id: item.id,
         kind: item.kind,
         quantityDelta: item.quantityDelta,
+        reservedDelta: item.reservedDelta,
         reason: item.reason,
         occurredAt: item.occurredAt,
         actorName: item.actor.displayName,

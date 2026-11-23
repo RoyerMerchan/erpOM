@@ -5,6 +5,8 @@ export * from './identity.js';
 export * from './master-data.js';
 export * from './purchasing.js';
 export * from './sales.js';
+export * from './layaways.js';
+export * from './returns.js';
 
 z.config(z.locales.es());
 

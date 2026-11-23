@@ -48,6 +48,9 @@ const movementsLabel = {
   ADJUST_IN: 'Ajuste de entrada',
   ADJUST_OUT: 'Ajuste de salida',
   SALE_OUT: 'Venta',
+  RESERVE: 'Reserva de apartado',
+  RELEASE_RESERVATION: 'Liberación de apartado',
+  SALE_RETURN_IN: 'Reingreso por devolución',
 };
 
 const list = usePagedList(getInventory);
@@ -302,10 +305,16 @@ onMounted(() => void load());
       <p v-else-if="!entries.length" class="records-empty">Aún no hay movimientos.</p>
       <ul v-else class="stock-history">
         <li v-for="entry in entries" :key="entry.id">
-          <strong
-            >{{ movementsLabel[entry.kind] }} · {{ entry.quantityDelta > 0 ? '+' : ''
-            }}{{ entry.quantityDelta }}</strong
-          >
+          <strong>
+            {{ movementsLabel[entry.kind] }} ·
+            <template v-if="entry.reservedDelta"
+              >{{ entry.reservedDelta > 0 ? '+' : '' }}{{ entry.reservedDelta }} en
+              reserva</template
+            >
+            <template v-else
+              >{{ entry.quantityDelta > 0 ? '+' : '' }}{{ entry.quantityDelta }}</template
+            >
+          </strong>
           <small>{{ timeLabel(entry.occurredAt) }} · {{ entry.actorName }}</small>
           <p v-if="entry.reason">{{ entry.reason }}</p>
           <RouterLink

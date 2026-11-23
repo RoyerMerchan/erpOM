@@ -29,7 +29,7 @@ export function filterActive(status: ListQuery['status']) {
   return status === 'all' ? {} : { active: status === 'active' };
 }
 
-export function pageArgs(query: ListQuery) {
+export function pageArgs(query: Pick<ListQuery, 'page' | 'limit'>) {
   return { skip: (query.page - 1) * query.limit, take: query.limit };
 }
 

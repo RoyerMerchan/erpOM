@@ -74,6 +74,23 @@ Envía la misma venta junto con el `quoteDigest` de su vista previa. Una variaci
 
 El permiso `sales.read` habilita las ventas propias. `sales.read.all` amplía la consulta. `sales.assign` permite escoger a otro vendedor. El costo requiere `costs.read` y la utilidad bruta requiere además `profits.read`.
 
+## Fase 4
+
+| Método y ruta                                             | Resultado                                                                                                                                                                                               |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /layaways` y `GET /layaways/:id`                     | Lista paginada con `q`, `status`, `customerId` y alerta `overdue=true`. El detalle devuelve tallas, saldos, política e historial.                                                                       |
+| `POST /layaways`                                          | Recibe `{operationId, customerId, items, payments?, expiresAt?, notes?}` y reserva las tallas. Cada línea acepta `{variantId, quantity, expectedPriceUsd?}`.                                            |
+| `POST /layaways/:id/payments`                             | Recibe `{operationId, payments}` y guarda abonos con tasa propia. Al liquidar el saldo el estado cambia a `PAID`.                                                                                       |
+| `POST /layaways/:id/deliver`                              | Recibe `{operationId}`. Requiere saldo cero y plazo vigente. Consume el físico, libera la reserva y reconoce una sola venta.                                                                            |
+| `POST /layaways/:id/cancel` y `POST /layaways/:id/expire` | Reciben `{operationId, reason}`. Liberan la reserva y aplican la política congelada. `expire` exige que el plazo haya vencido.                                                                          |
+| `GET /returns` y `GET /returns/:id`                       | Historial por número, cliente, venta original y tipo de movimiento. El detalle enlaza la venta original y el reemplazo.                                                                                 |
+| `POST /returns/preview`                                   | Recibe `{saleId, items, reason, notes?, replacement?, payments?, refunds?}`. Cada línea devuelta usa `{saleItemId, quantity, condition}`. Devuelve importes históricos, diferencia USD y `quoteDigest`. |
+| `POST /returns`                                           | Recibe `{operationId, quoteDigest, correction}` y registra la devolución o el cambio tras validar la liquidación exacta.                                                                                |
+
+El contrato de cuenta, importe y tasa coincide con el de cobros del POS. `PUT /shop` admite `layawayRefundPolicy` con `FULL_REFUND` o `RETAIN`. Si se omite, se conserva la política actual. Las mutaciones son idempotentes por actor, operación y cuerpo. El historial de inventario distingue `quantityDelta` físico de `reservedDelta`.
+
+El detalle de venta muestra los anticipos aplicados como `ADVANCE` y los cambios relacionados como rectificaciones con sus propios comprobantes. Cuando existen rectificaciones el historial incluye `adjustedTotalUsd` y, según permisos, `adjustedCogsUsd` y `adjustedProfitUsd`. El comprobante original conserva sus importes históricos.
+
 ## Evolución
 
-Apartados y devoluciones usarán idempotencia. El catálogo PDF tendrá permisos de exportación y un contrato limitado a datos públicos.
+La siguiente fase expone saldos y conciliación a partir de los movimientos ya registrados. El catálogo PDF tendrá permisos de exportación y un contrato limitado a datos públicos.

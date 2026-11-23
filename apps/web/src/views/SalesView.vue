@@ -152,19 +152,25 @@ onMounted(() => void load(filters.value));
         <Column field="customerName" header="Cliente" />
         <Column field="sellerName" header="Vendedor" />
         <Column field="pairCount" header="Pares" />
-        <Column header="Total">
+        <Column header="Venta neta">
           <template #body="{ data }"
-            ><strong>{{ formatMoney(data.totalUsd, 'USD') }}</strong></template
+            ><strong>{{
+              formatMoney(data.adjustedTotalUsd ?? data.totalUsd, 'USD')
+            }}</strong></template
           >
         </Column>
         <Column v-if="session.can('costs.read')" header="Costo FIFO">
-          <template #body="{ data }">{{ formatMoney(data.cogsUsd, 'USD') }}</template>
+          <template #body="{ data }">{{
+            formatMoney(data.adjustedCogsUsd ?? data.cogsUsd, 'USD')
+          }}</template>
         </Column>
         <Column
           v-if="session.can('costs.read') && session.can('profits.read')"
           header="Utilidad bruta"
         >
-          <template #body="{ data }">{{ formatMoney(data.grossProfitUsd, 'USD') }}</template>
+          <template #body="{ data }">{{
+            formatMoney(data.adjustedProfitUsd ?? data.grossProfitUsd, 'USD')
+          }}</template>
         </Column>
       </DataTable>
     </section>

@@ -20,6 +20,7 @@ const shopSelect = {
   timezone: true,
   logoUrl: true,
   lowStockThreshold: true,
+  layawayRefundPolicy: true,
 } satisfies Prisma.ShopSettingsSelect;
 const currencySelect = {
   code: true,

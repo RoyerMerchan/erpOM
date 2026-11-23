@@ -1,13 +1,14 @@
 import type { ConfirmSaleInput, SessionUser } from '@max-sport/shared';
-import { writeAudit } from '../audit/write.js';
 import type { Database } from '../database.js';
 import { HttpError } from '../http/errors.js';
-import { applyFifo, changePhysical, lockVariants } from '../inventory/stock.js';
+import { lockVariants } from '../inventory/stock.js';
+import { postTenderMovement } from '../money/tender.js';
 import { captureRate } from '../purchasing/rates.js';
 import { digest, operation } from '../purchasing/transaction.js';
 import type { Transaction } from '../purchasing/transaction.js';
 import type { DiscountTerms } from './pricing.js';
-import { prepareQuote, quoteCosts } from './quotes.js';
+import { postSale } from './post.js';
+import { prepareQuote } from './quotes.js';
 
 export const salesOperatorFilter = {
   active: true,
@@ -23,19 +24,17 @@ async function participants(tx: Transaction, input: ConfirmSaleInput['sale'], ac
   if (input.customerId && !actor.permissions.includes('customers.read')) {
     throw new HttpError(403, 'PERMISSION_DENIED', 'Tu rol no permite seleccionar un cliente.');
   }
-  const [seller, customer, shop] = await Promise.all([
-    tx.user.findFirst({
-      where: { id: sellerId, ...salesOperatorFilter },
-      select: { displayName: true },
-    }),
-    input.customerId
-      ? tx.customer.findFirst({
-          where: { id: input.customerId, active: true },
-          select: { name: true },
-        })
-      : null,
-    tx.shopSettings.findUnique({ where: { id: 1 }, select: { name: true } }),
-  ]);
+  const seller = await tx.user.findFirst({
+    where: { id: sellerId, ...salesOperatorFilter },
+    select: { displayName: true },
+  });
+  const customer = input.customerId
+    ? await tx.customer.findFirst({
+        where: { id: input.customerId, active: true },
+        select: { name: true },
+      })
+    : null;
+  const shop = await tx.shopSettings.findUnique({ where: { id: 1 }, select: { name: true } });
   if (!seller) throw new HttpError(409, 'SELLER_INACTIVE', 'Selecciona un vendedor habilitado.');
   if (input.customerId && !customer)
     throw new HttpError(409, 'CUSTOMER_INACTIVE', 'El cliente seleccionado está archivado.');
@@ -108,51 +107,30 @@ export function confirmSale(database: Database, request: ConfirmSaleInput, actor
         'La venta requiere un cobro neto exacto. Revisa los pagos y el vuelto.',
       );
     }
-    const { plans, cogsUsd, grossProfitUsd } = await quoteCosts(tx, quote);
     const confirmedAt = new Date();
-    const sale = await tx.sale.create({
-      data: {
+    const sale = await postSale(
+      tx,
+      {
         ...people,
         actorId: actor.id,
         notes: input.notes,
         confirmedAt,
-        cogsUsd,
-        grossProfitUsd,
         subtotalUsd: quote.subtotalUsd,
         discountUsd: quote.discountUsd,
         totalUsd: quote.totalUsd,
         operationKey: operationId,
         operationDigest: hash,
       },
-      select: { id: true, receiptNumber: true },
-    });
-
-    for (const [position, line] of items.entries()) {
-      const plan = plans[position];
-      if (!plan) throw new Error('Falta una asignación FIFO.');
-      const saved = await tx.saleItem.create({
-        data: { ...line, saleId: sale.id, position, cogsUsd: plan.totalUsd },
-        select: { id: true },
-      });
-      await changePhysical(tx, line.variantId, -line.quantity);
-      const movement = await tx.stockMovement.create({
-        data: {
-          variantId: line.variantId,
-          saleItemId: saved.id,
-          kind: 'SALE_OUT',
-          quantityDelta: -line.quantity,
-          actorId: actor.id,
-          occurredAt: confirmedAt,
-        },
-        select: { id: true },
-      });
-      await applyFifo(tx, plan, movement.id);
-      const discount = discounts[position];
-      if (discount)
+      items,
+    );
+    for (const [position, discount] of discounts.entries()) {
+      const itemId = sale.itemIds[position];
+      const line = items[position];
+      if (discount && itemId && line)
         await persistDiscount(
           tx,
           sale.id,
-          saved.id,
+          itemId,
           discount,
           line.lineDiscountUsd,
           confirmedAt,
@@ -182,30 +160,17 @@ export function confirmSale(database: Database, request: ConfirmSaleInput, actor
         data: { ...tender, saleId: sale.id, position, exchangeRateId },
         select: { id: true },
       });
-      await tx.moneyMovement.create({
-        data: {
+      await postTenderMovement(
+        tx,
+        tender,
+        {
           kind: tender.kind === 'PAYMENT' ? 'SALE_PAYMENT' : 'SALE_CHANGE',
           saleTenderId: saved.id,
-          accountId: tender.accountId,
-          currencyCode: tender.currencyCode,
-          unitsPerUsd: tender.unitsPerUsd,
-          amountOriginal: tender.amountOriginal,
-          amountUsd: tender.amountUsd,
-          actorId: actor.id,
-          occurredAt: confirmedAt,
         },
-      });
+        actor.id,
+        confirmedAt,
+      );
     }
-    await writeAudit(tx, actor.id, {
-      action: 'sales.confirm',
-      entity: 'Sale',
-      entityId: sale.id,
-      after: {
-        receiptNumber: sale.receiptNumber.toString(),
-        sellerId: people.sellerId,
-        pairs: quote.items.reduce((count, item) => count + item.quantity, 0),
-      },
-    });
     return sale.id;
   });
 }

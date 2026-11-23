@@ -118,6 +118,7 @@ export const timezoneSchema = requiredText(80).refine((value) => {
     return false;
   }
 }, 'Elige una zona horaria IANA válida, por ejemplo America/Caracas.');
+export const layawayRefundPolicySchema = z.enum(['FULL_REFUND', 'RETAIN']);
 export const shopInput = z.object({
   name: requiredText(160),
   timezone: timezoneSchema,
@@ -128,6 +129,7 @@ export const shopInput = z.object({
     .pipe(z.url({ protocol: /^https?$/ }))
     .nullable(),
   lowStockThreshold: threshold,
+  layawayRefundPolicy: layawayRefundPolicySchema.optional(),
 });
 export const currencyInput = z.object({
   name: requiredText(80),
@@ -185,7 +187,7 @@ export const userRecord = row.extend({
 });
 export const currencyRecord = currencyInput.extend({ code: z.string() });
 export const roleRecord = financialPermissionsInput.extend({ code: z.string(), label: z.string() });
-export const shopRecord = shopInput;
+export const shopRecord = shopInput.extend({ layawayRefundPolicy: layawayRefundPolicySchema });
 export const auditRecord = z.object({
   id: z.uuid(),
   action: z.string(),

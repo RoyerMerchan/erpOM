@@ -58,3 +58,10 @@ Cada mutación auditada registra el actor y el cambio en la misma transacción. 
 - Administrador y Gerente pueden vender, elegir al vendedor y consultar el historial completo. Vendedor puede registrar y consultar sus propias operaciones. Finanzas consulta el historial completo. El acceso a utilidad exige permiso para ver costos y utilidad.
 - La confirmación bloquea las variantes en orden de UUID, vuelve a validar la vista previa y registra el comprobante, las salidas FIFO, los cobros, el vuelto y la auditoría en una transacción. Las cifras de costo del POS son estimaciones hasta la confirmación que consume los lotes.
 - El historial usa la zona del dispositivo para mostrar fechas y construir el rango solicitado. El día final visible se incluye convirtiendo la medianoche del día siguiente en el límite superior exclusivo.
+
+## Apartados, cambios y devoluciones
+
+- La política inicial de cancelación reembolsa cada abono en su cuenta, moneda, importe y tasa históricos. La tienda puede elegir retención para los apartados posteriores. El sistema distingue los reembolsos de la retención de anticipos en el detalle y conserva el historial de movimientos.
+- Administrador y Gerente cierran apartados y autorizan cambios y devoluciones. Vendedor puede crear, abonar y entregar sus apartados, y consultar cambios relacionados con sus ventas. Finanzas puede consultar el historial completo. El costo restaurado requiere permiso de costos.
+- El importe de cada devolución se obtiene de la diferencia entre los acumulados redondeados antes y después de devolver la cantidad. Se aplica el mismo criterio dentro de cada asignación FIFO para el costo de reingreso. Los importes de devoluciones sucesivas suman el neto original cuando se devuelve toda la línea.
+- La entrega reconoce la venta con el precio del apartado y presenta los anticipos existentes en el comprobante. El flujo de caja reconoce el anticipo en la fecha del cobro. Un cambio con saldo usa una cuenta y tasa explícitas para la diferencia.

@@ -43,3 +43,10 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - Una venta de dos pares cobró 80.000 COP y 2.728 VES por USD 88,20 después de descuentos. El costo FIFO fue de USD 42 y la utilidad bruta de USD 46,20. Las peticiones repetidas devolvieron el mismo comprobante y dos compras concurrentes por la última unidad disponible dejaron intacta la unidad reservada.
 - La migración se aplicó en PostgreSQL 17.12 tanto en una base nueva como en una copia de la Fase 2. Pasaron 20 pruebas unitarias y de humo y 17 de integración.
 - Se verificaron cinco rutas web y una venta completa con reintento, historial y salida de stock a través del proxy de Vite en la base actualizada. La revisión visual quedó pendiente por indisponibilidad del navegador integrado.
+
+## Resultado de la Fase 4
+
+- Apartados reserva tallas, conserva el precio, acepta abonos multimoneda y registra una sola venta al entregar. En el caso USDT y COP se aplicaron USD 10 y USD 40 al comprobante y se registraron dos entradas de caja en total. La cancelación y el cierre por vencimiento liberaron las tallas con las políticas de reembolso y retención verificadas.
+- La devolución parcial recuperó el costo del lote original cuando el par volvió al inventario. La devolución del par defectuoso conservó su costo y el reembolso concurrente solo se registró una vez. Los cambios de talla cobraron o devolvieron la diferencia según el precio del reemplazo.
+- La migración se aplicó a una base PostgreSQL 17.12 nueva y a una copia de la Fase 3. Por HTTP se verificaron nueve rutas web y el ciclo de reserva, entrega, devolución y reingreso mediante el proxy de Vite.
+- Pasaron 22 pruebas unitarias y de humo y 22 de integración. Pasaron lint, formato, verificación de tipos, compilación y validación de Prisma. La revisión visual quedó pendiente por indisponibilidad del navegador integrado.

@@ -49,7 +49,7 @@ export function createPurchaseRouter(database: Database, security: SessionSecuri
       const page = await buildPage(
         database.purchase.findMany({
           where,
-          ...pageArgs({ ...query, status: 'all' }),
+          ...pageArgs(query),
           orderBy: [{ documentAt: 'desc' }, { id: 'desc' }],
           select: purchaseSummarySelect,
         }),

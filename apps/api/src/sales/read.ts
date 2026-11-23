@@ -4,6 +4,7 @@ import type { Database } from '../database.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { HttpError } from '../http/errors.js';
 import { buildPage, insensitive } from '../master-data/catalog.js';
+import { decimal } from '../purchasing/money.js';
 import { canViewProfit } from './quotes.js';
 
 const summarySelect = {
@@ -18,26 +19,81 @@ const summarySelect = {
   cogsUsd: true,
   grossProfitUsd: true,
   items: { select: { quantity: true } },
+  corrections: { select: { returnedUsd: true, restoredCogsUsd: true } },
 } satisfies Prisma.SaleSelect;
 type RecordSummary = Prisma.SaleGetPayload<{ select: typeof summarySelect }>;
+
+export const correctionBriefSelect = {
+  id: true,
+  number: true,
+  kind: true,
+  createdAt: true,
+  returnedUsd: true,
+  restoredCogsUsd: true,
+  replacement: { select: { id: true } },
+} satisfies Prisma.SaleCorrectionSelect;
+
+export function correctionBrief(
+  row: Prisma.SaleCorrectionGetPayload<{ select: typeof correctionBriefSelect }>,
+) {
+  return {
+    id: row.id,
+    kind: row.kind,
+    number: 'R-' + row.number.toString().padStart(6, '0'),
+    createdAt: row.createdAt.toISOString(),
+    returnedUsd: row.returnedUsd.toFixed(2),
+    replacementSaleId: row.replacement?.id ?? null,
+  };
+}
 
 const detailsSelect = {
   ...summarySelect,
   shopName: true,
   notes: true,
-  items: { orderBy: { position: 'asc' } },
+  items: { orderBy: { position: 'asc' }, include: { corrections: { select: { quantity: true } } } },
   tenders: { orderBy: { position: 'asc' } },
   discounts: { orderBy: { id: 'asc' } },
+  layawayId: true,
+  layaway: {
+    select: {
+      actions: {
+        orderBy: [{ occurredAt: 'asc' }, { id: 'asc' }],
+        select: { payments: { where: { kind: 'DEPOSIT' }, orderBy: { position: 'asc' } } },
+      },
+    },
+  },
+  exchangeId: true,
+  exchange: {
+    select: {
+      returnedUsd: true,
+      replacementTotalUsd: true,
+      tenders: { where: { kind: 'PAYMENT' }, orderBy: { position: 'asc' } },
+    },
+  },
+  corrections: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }], select: correctionBriefSelect },
 } satisfies Prisma.SaleSelect;
 
-function saleScope(actor: SessionUser) {
+export function saleScope(actor: SessionUser) {
   return actor.permissions.includes('sales.read.all') ? {} : { sellerId: actor.id };
 }
 
+export const formatSaleReceipt = (number: bigint) => 'V-' + number.toString().padStart(6, '0');
+
 function saleSummary(record: RecordSummary, actor: SessionUser): SaleSummary {
+  const adjustedTotal = record.corrections.reduce(
+    (sum, entry) => sum.sub(entry.returnedUsd),
+    decimal(record.totalUsd),
+  );
+  const adjustedCogs = record.corrections.reduce(
+    (sum, entry) => sum.sub(entry.restoredCogsUsd),
+    decimal(record.cogsUsd),
+  );
+  const adjusted = record.corrections.length > 0;
+  const costs = actor.permissions.includes('costs.read');
+  const profit = canViewProfit(actor);
   return {
     id: record.id,
-    receiptNumber: 'V-' + record.receiptNumber.toString().padStart(6, '0'),
+    receiptNumber: formatSaleReceipt(record.receiptNumber),
     customerName: record.customerName,
     sellerName: record.sellerName,
     confirmedAt: record.confirmedAt.toISOString(),
@@ -45,8 +101,13 @@ function saleSummary(record: RecordSummary, actor: SessionUser): SaleSummary {
     subtotalUsd: record.subtotalUsd.toFixed(2),
     discountUsd: record.discountUsd.toFixed(2),
     totalUsd: record.totalUsd.toFixed(2),
-    ...(actor.permissions.includes('costs.read') ? { cogsUsd: record.cogsUsd.toFixed(2) } : {}),
-    ...(canViewProfit(actor) ? { grossProfitUsd: record.grossProfitUsd.toFixed(2) } : {}),
+    ...(costs ? { cogsUsd: record.cogsUsd.toFixed(2) } : {}),
+    ...(profit ? { grossProfitUsd: record.grossProfitUsd.toFixed(2) } : {}),
+    ...(adjusted ? { adjustedTotalUsd: adjustedTotal.toFixed(2) } : {}),
+    ...(adjusted && costs ? { adjustedCogsUsd: adjustedCogs.toFixed(2) } : {}),
+    ...(adjusted && profit
+      ? { adjustedProfitUsd: adjustedTotal.sub(adjustedCogs).toFixed(2) }
+      : {}),
   };
 }
 
@@ -62,12 +123,30 @@ export async function salesPage(
   actor: SessionUser,
 ) {
   const receiptNumber = referenceNumber(query.q);
+  const currencyCode = query.currencyCode;
   const where: Prisma.SaleWhereInput = {
-    AND: [saleScope(actor), query.sellerId ? { sellerId: query.sellerId } : {}],
+    AND: [
+      saleScope(actor),
+      query.sellerId ? { sellerId: query.sellerId } : {},
+      ...(currencyCode
+        ? [
+            {
+              OR: [
+                { tenders: { some: { currencyCode, kind: 'PAYMENT' as const } } },
+                {
+                  layaway: {
+                    actions: {
+                      some: { payments: { some: { currencyCode, kind: 'DEPOSIT' as const } } },
+                    },
+                  },
+                },
+                { exchange: { tenders: { some: { currencyCode, kind: 'PAYMENT' as const } } } },
+              ],
+            },
+          ]
+        : []),
+    ],
     ...(query.customerId ? { customerId: query.customerId } : {}),
-    ...(query.currencyCode
-      ? { tenders: { some: { currencyCode: query.currencyCode, kind: 'PAYMENT' } } }
-      : {}),
     ...(query.from || query.to
       ? {
           confirmedAt: {
@@ -104,6 +183,31 @@ export async function salesPage(
   return { items: page.items.map((record) => saleSummary(record, actor)), total: page.total };
 }
 
+type Tender = SaleDetail['tenders'][number];
+function tenderEntry(
+  entry: {
+    accountName: string;
+    accountId: string;
+    currencyCode: string;
+    amountOriginal: Prisma.Decimal;
+    amountUsd: Prisma.Decimal;
+    unitsPerUsd: Prisma.Decimal;
+    reference: string | null;
+  },
+  kind: Tender['kind'],
+): Tender {
+  return {
+    kind,
+    accountName: entry.accountName,
+    accountId: entry.accountId,
+    currencyCode: entry.currencyCode,
+    amountOriginal: entry.amountOriginal.toFixed(),
+    amountUsd: entry.amountUsd.toFixed(2),
+    unitsPerUsd: entry.unitsPerUsd.toFixed(),
+    reference: entry.reference,
+  };
+}
+
 export async function saleDetail(
   db: Database,
   id: string,
@@ -119,6 +223,15 @@ export async function saleDetail(
     ...saleSummary(record, actor),
     notes: record.notes,
     shopName: record.shopName,
+    layawayId: record.layawayId,
+    exchangeId: record.exchangeId,
+    exchangeCreditUsd: record.exchange
+      ? (record.exchange.returnedUsd.lt(record.exchange.replacementTotalUsd)
+          ? record.exchange.returnedUsd
+          : record.exchange.replacementTotalUsd
+        ).toFixed(2)
+      : null,
+    corrections: record.corrections.map(correctionBrief),
     items: record.items.map((line) => ({
       id: line.id,
       variantId: line.variantId,
@@ -128,6 +241,8 @@ export async function saleDetail(
       size: line.size,
       color: line.color,
       quantity: line.quantity,
+      returnableQuantity:
+        line.quantity - line.corrections.reduce((sum, entry) => sum + entry.quantity, 0),
       unitPriceUsd: line.unitPriceUsd.toFixed(2),
       grossUsd: line.grossUsd.toFixed(2),
       lineDiscountUsd: line.lineDiscountUsd.toFixed(2),
@@ -135,16 +250,13 @@ export async function saleDetail(
       netUsd: line.netUsd.toFixed(2),
       ...(showCosts ? { cogsUsd: line.cogsUsd.toFixed(2) } : {}),
     })),
-    tenders: record.tenders.map((entry) => ({
-      kind: entry.kind,
-      accountName: entry.accountName,
-      accountId: entry.accountId,
-      currencyCode: entry.currencyCode,
-      amountOriginal: entry.amountOriginal.toFixed(),
-      amountUsd: entry.amountUsd.toFixed(2),
-      unitsPerUsd: entry.unitsPerUsd.toFixed(),
-      reference: entry.reference,
-    })),
+    tenders: [
+      ...record.tenders.map((entry) => tenderEntry(entry, entry.kind)),
+      ...(record.layaway?.actions.flatMap(({ payments }) =>
+        payments.map((entry) => tenderEntry(entry, 'ADVANCE')),
+      ) ?? []),
+      ...(record.exchange?.tenders.map((entry) => tenderEntry(entry, 'PAYMENT')) ?? []),
+    ],
     discounts: record.discounts.map((discount) => ({
       saleItemId: discount.saleItemId,
       kind: discount.kind,

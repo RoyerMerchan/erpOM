@@ -22,6 +22,14 @@ export const sections: {
   { path: '/inventario', label: 'Existencias', area: 'products', permission: 'inventory.read' },
   { path: '/ventas/pos', label: 'Punto de venta', area: 'sales', permission: 'sales.create' },
   { path: '/ventas', label: 'Historial', area: 'sales', permission: 'sales.read' },
+  {
+    path: '/devoluciones',
+    label: 'Cambios y devoluciones',
+    area: 'sales',
+    permission: 'returns.read',
+    requires: 'sales.read',
+  },
+  { path: '/apartados', label: 'Apartados', area: 'layaways', permission: 'layaways.read' },
   { path: '/compras', label: 'Compras', area: 'purchases', permission: 'purchases.read' },
   {
     path: '/compras/por-pagar',
@@ -48,6 +56,7 @@ export const sections: {
 
 export const menuItems = [
   { area: 'sales', label: 'Ventas', icon: 'pi-shopping-cart' },
+  { area: 'layaways', label: 'Apartados', icon: 'pi-bookmark' },
   { area: 'products', label: 'Inventario', icon: 'pi-box' },
   { area: 'purchases', label: 'Compras', icon: 'pi-shopping-bag' },
   { area: 'customers', label: 'Clientes', icon: 'pi-users' },

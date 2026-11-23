@@ -1,6 +1,6 @@
 # MAX Sport Manager
 
-ERP y POS para una tienda de calzado deportivo. Las fases 0 a 3 incluyen acceso, catálogos, compras, cuentas por pagar, inventario FIFO y ventas con cobro multimoneda.
+ERP y POS para una tienda de calzado deportivo. Las fases 0 a 4 incluyen acceso, catálogos, compras, inventario FIFO, ventas multimoneda, apartados, cambios y devoluciones.
 
 ## Desarrollo local
 
@@ -47,6 +47,8 @@ Al actualizar una instalación de la Fase 0, ejecuta `pnpm db:migrate` antes de 
 La migración de la Fase 2 agrega los permisos de compras y existencias. Desde **Compras**, crea un borrador, marca las tallas, calcula la vista previa y confirma la recepción. Los pagos se pueden registrar al recibir o desde el detalle. **Compras → Por pagar** muestra los documentos con saldo e **Inventario → Existencias** muestra el stock por talla.
 
 Después de aplicar la migración de la Fase 3, abre **Ventas → Punto de venta**. Agrega tallas con stock disponible, elige un cliente o vende a consumidor final, registra los cobros y calcula la vista previa. Usa una cuenta habilitada para cada moneda y revisa su tasa antes de confirmar. El comprobante está en **Ventas → Historial**, con opciones de imprimir o descargar.
+
+La Fase 4 agrega el módulo **Apartados** para reservar tallas, recibir abonos y entregar al liquidar el saldo. **Configuración → Tienda** permite elegir la política para nuevos apartados. Para iniciar un cambio o devolución, abre el comprobante original en **Ventas → Historial**. El movimiento registrado aparece en **Ventas → Cambios y devoluciones**.
 
 ## Verificación
 
