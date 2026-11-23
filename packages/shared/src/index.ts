@@ -8,6 +8,8 @@ export * from './sales.js';
 export * from './layaways.js';
 export * from './returns.js';
 export * from './finance.js';
+export * from './analytics.js';
+export * from './catalog.js';
 
 z.config(z.locales.es());
 

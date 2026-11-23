@@ -57,3 +57,10 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - En la prueba de conciliación se reconocieron USD 100 de ventas netas, USD 40 de costo FIFO, USD 12 de gastos y USD 48 de utilidad neta estimada. El flujo operativo fue de USD 71. La transferencia redujo en USD 0,50 el valor histórico de los saldos consolidados.
 - La migración se aplicó a una base PostgreSQL 17.12 nueva y a una copia de la Fase 4. Se verificaron por HTTP quince rutas web, saldos, deudas, reporte diario, transferencia idempotente y reverso.
 - Pasaron 25 pruebas unitarias y de humo y 25 de integración. Pasaron lint, formato, verificación de tipos, compilación y validación de Prisma. El adaptador emitió un aviso de compatibilidad futura con `pg` 9 durante las pruebas. La revisión visual quedó pendiente por indisponibilidad del navegador integrado.
+
+## Resultado de la Fase 6
+
+- **Inicio** y **Reportes** consultan ventas, caja, inventario, compras, apartados y devoluciones en la zona horaria de la tienda. Incluyen comparación con el período anterior, series por día, semana o mes, alertas por talla y modelos agotados. Los reportes se descargan en CSV, XLSX y PDF según los permisos.
+- En el caso de prueba, dos ventas con cobros separados y una devolución produjeron USD 120 de ventas netas, USD 44 de costo FIFO y USD 76 de utilidad bruta. La cuenta COP recibió 200.000 COP, equivalentes a USD 50. Se comprobaron alertas en las tallas 39 y 40, un modelo agotado y una jornada de 23 horas durante el cambio de hora.
+- La migración se aplicó en una base PostgreSQL 17.12 nueva y en una copia de la Fase 5. Se comprobaron por HTTP las tres rutas web, las seis secciones, los tres formatos y una descarga histórica idéntica al catálogo que se guardó. Se revisaron los PDF generados, incluido un catálogo de cuatro páginas sin imágenes.
+- Pasaron 28 pruebas unitarias y de humo y 29 de integración. Pasaron lint, formato, verificación de tipos, compilación y validación de Prisma. La integración mantiene el aviso de compatibilidad futura del adaptador con `pg` 9. La revisión visual de la web queda pendiente por indisponibilidad del navegador integrado.

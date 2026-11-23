@@ -24,7 +24,24 @@ export function createAppRouter(pinia: Pinia) {
         path: '/dashboard',
         name: 'dashboard',
         component: () => import('./views/DashboardView.vue'),
-        meta: { requiresSession: true },
+        meta: { requiresSession: true, permission: 'analytics.read' },
+      },
+      {
+        path: '/reportes',
+        name: 'reports',
+        component: () => import('./analytics/AnalyticsView.vue'),
+        meta: { requiresSession: true, permission: 'analytics.read', area: 'reports' },
+      },
+      {
+        path: '/catalogo',
+        name: 'catalog-pdf',
+        component: () => import('./views/CatalogPdfView.vue'),
+        meta: {
+          requiresSession: true,
+          permission: 'catalog.export',
+          extraPermission: 'inventory.read',
+          area: 'catalog',
+        },
       },
       {
         path: '/cuenta',

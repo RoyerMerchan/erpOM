@@ -58,10 +58,14 @@ export async function financeWindow(
   if (!settings)
     throw new HttpError(409, 'SHOP_REQUIRED', 'Configura la zona horaria de la tienda.');
   const { timezone } = settings;
-  const { startDate, endDate, beforeDate } = calendarDates(
-    input,
-    calendarDate(new Date(), timezone),
-  );
+  return windowForDates(tx, timezone, calendarDates(input, calendarDate(new Date(), timezone)));
+}
+
+export async function windowForDates(
+  tx: Transaction,
+  timezone: string,
+  { startDate, endDate, beforeDate }: ReturnType<typeof calendarDates>,
+): Promise<FinanceWindow> {
   const [bounds] = await tx.$queryRaw<{ from: Date; to: Date }[]>`
     SELECT (${startDate}::date::timestamp AT TIME ZONE ${timezone}) AS "from",
       (${beforeDate}::date::timestamp AT TIME ZONE ${timezone}) AS "to"

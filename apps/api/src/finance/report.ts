@@ -13,7 +13,9 @@ import type { Transaction } from '../purchasing/transaction.js';
 import { canViewProfit } from '../sales/quotes.js';
 import { incomingMovementKinds, ledgerDirection } from './ledger.js';
 
-type Scope = Pick<FinanceReportFilters, 'accountId' | 'currencyCode'>;
+type Scope = Pick<FinanceReportFilters, 'accountId' | 'currencyCode'> & {
+  method?: FinanceAccount['kind'];
+};
 type Rollup = {
   kind: MoneyMovementKind;
   entryKind: FinanceEntryKind | null;
@@ -36,7 +38,11 @@ type AccountTotals = {
 };
 const incomingSql = Prisma.sql`m.kind::text IN (${Prisma.join(incomingMovementKinds)})`;
 
-async function cashTotals(tx: Transaction, window: FinanceWindow, scope: Scope): Promise<Rollup[]> {
+export async function cashTotals(
+  tx: Transaction,
+  window: FinanceWindow,
+  scope: Scope,
+): Promise<Rollup[]> {
   return tx.$queryRaw<Rollup[]>`
     SELECT m.kind::text AS "kind", e.kind::text AS "entryKind",
       c.id AS "categoryId", c.name AS "categoryName", SUM(m.amount_usd) AS "usd"
@@ -47,6 +53,7 @@ async function cashTotals(tx: Transaction, window: FinanceWindow, scope: Scope):
     WHERE m.occurred_at >= ${new Date(window.from)} AND m.occurred_at < ${new Date(window.to)}
       ${scope.accountId ? Prisma.sql`AND m.account_id = ${scope.accountId}::uuid` : Prisma.empty}
       ${scope.currencyCode ? Prisma.sql`AND m.currency_code = ${scope.currencyCode}` : Prisma.empty}
+      ${scope.method ? Prisma.sql`AND EXISTS (SELECT 1 FROM money_accounts a WHERE a.id = m.account_id AND a.kind::text = ${scope.method})` : Prisma.empty}
     GROUP BY m.kind, e.kind, c.id, c.name
   `;
 }
@@ -142,7 +149,7 @@ export function cashBreakdown(rows: Rollup[]): FinanceReport['cash'] {
   };
 }
 
-function expenseCategories(rows: Rollup[]): FinanceReport['expenseCategories'] {
+export function expenseCategories(rows: Rollup[]): FinanceReport['expenseCategories'] {
   const groups = new Map<string, { name: string; rows: Rollup[] }>();
   for (const row of onlyEntry(rows, 'EXPENSE')) {
     if (!row.categoryId || !row.categoryName) continue;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inventoryAdjustment } from '@max-sport/shared';
+import { inventoryAdjustment, inventoryQuerySchema } from '@max-sport/shared';
 import type { InventoryRow } from '@max-sport/shared';
 import Button from 'primevue/button';
 import Column from 'primevue/column';
@@ -12,6 +12,7 @@ import Tag from 'primevue/tag';
 import Textarea from 'primevue/textarea';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import AppShell from '../components/AppShell.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import { timeLabel } from '../master-data/field-types';
@@ -24,13 +25,15 @@ import { useSessionStore } from '../stores/session';
 
 const session = useSessionStore();
 const toast = useToast();
+const params = inventoryQuerySchema.safeParse(useRoute().query);
+const initial = params.success ? params.data : undefined;
 const query = reactive({
-  search: '',
-  applied: '',
-  stock: 'ALL',
-  size: 0,
-  brandId: null as FieldValue,
-  modelId: null as FieldValue,
+  search: initial?.q ?? '',
+  applied: initial?.q ?? '',
+  stock: initial?.stock ?? 'ALL',
+  size: initial?.size ?? 0,
+  brandId: (initial?.brandId ?? null) as FieldValue,
+  modelId: (initial?.modelId ?? null) as FieldValue,
 });
 const stockOptions = [
   { value: 'ALL', label: 'Todas las existencias' },

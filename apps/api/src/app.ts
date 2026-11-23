@@ -3,8 +3,10 @@ import cookieParser from 'cookie-parser';
 import express, { Router } from 'express';
 import helmet from 'helmet';
 import pino from 'pino';
+import { createAnalyticsRouter } from './analytics/routes.js';
 import { createAuthRouter } from './auth/routes.js';
 import { createSessionSecurity } from './auth/session.js';
+import { createCatalogRouter } from './catalog/routes.js';
 import type { RuntimeConfig } from './config.js';
 import type { Database } from './database.js';
 import { createFinanceRouter } from './finance/routes.js';
@@ -75,6 +77,8 @@ export function createApp(
   api.use('/layaways', createLayawayRouter(database, security));
   api.use('/returns', createReturnsRouter(database, security));
   api.use('/finance', createFinanceRouter(database, security));
+  api.use('/analytics', createAnalyticsRouter(database, security));
+  api.use('/catalog', createCatalogRouter(database, security));
   api.use(createMasterDataRouter(database, security));
   app.use('/api/v1', api);
   app.use((_request, _response, next) => {

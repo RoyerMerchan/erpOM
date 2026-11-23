@@ -1,6 +1,6 @@
 import { currencyCodeSchema } from '@max-sport/shared';
 import type { FinanceLedgerQuery, FinanceLedgerRow, FinanceWindow } from '@max-sport/shared';
-import type { MoneyMovementKind, Prisma } from '../generated/prisma/client.js';
+import type { AccountKind, MoneyMovementKind, Prisma } from '../generated/prisma/client.js';
 import { insensitive, pageArgs } from '../master-data/catalog.js';
 import type { Transaction } from '../purchasing/transaction.js';
 
@@ -146,6 +146,7 @@ export async function ledgerPage(
   tx: Transaction,
   query: FinanceLedgerQuery,
   window: FinanceWindow,
+  method?: AccountKind,
 ) {
   const reference = insensitive(query.q);
   const digits = /^F-(\d{1,18})$/i.exec(query.q)?.[1];
@@ -153,6 +154,7 @@ export async function ledgerPage(
     occurredAt: { gte: new Date(window.from), lt: new Date(window.to) },
     accountId: query.accountId,
     currencyCode: query.currencyCode,
+    ...(method ? { account: { kind: method } } : {}),
     AND: [
       kindFilter(query.filter),
       ...(query.categoryId ? [{ financeLine: { entry: { categoryId: query.categoryId } } }] : []),

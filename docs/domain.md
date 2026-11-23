@@ -1,6 +1,6 @@
 # Modelo de dominio
 
-Las migraciones vigentes contienen usuarios, catálogos, compras, ventas, apartados, cambios, devoluciones, registros financieros y movimientos monetarios y de inventario.
+Las migraciones vigentes contienen usuarios, catálogos, compras, ventas, apartados, cambios, devoluciones, registros financieros, movimientos monetarios y de inventario, y versiones de catálogo PDF.
 
 ```mermaid
 erDiagram
@@ -10,6 +10,7 @@ erDiagram
   USER ||--o{ USER_SESSION : inicia
   USER o|--o{ AUDIT_LOG : genera
   USER ||--o{ EXCHANGE_RATE : registra
+  USER ||--o{ CATALOG_EXPORT : guarda
   BRAND ||--o{ PRODUCT_MODEL : agrupa
   PRODUCT_MODEL ||--o{ PRODUCT_VARIANT : ofrece
   PRODUCT_VARIANT ||--o{ STOCK_MOVEMENT : registra
@@ -47,6 +48,7 @@ erDiagram
   SALE_CORRECTION ||--o{ CORRECTION_TENDER : liquida
   CURRENCY ||--o{ EXCHANGE_RATE : cotiza
   CURRENCY ||--o{ MONEY_ACCOUNT : denomina
+  CURRENCY ||--o{ CATALOG_EXPORT : presenta
   MONEY_ACCOUNT ||--o{ MONEY_MOVEMENT : registra
   SALE_TENDER o|--|| MONEY_MOVEMENT : respalda
   SUPPLIER_PAYMENT ||--o{ MONEY_MOVEMENT : respalda
@@ -91,3 +93,4 @@ erDiagram
 - El informe reconoce ventas en la confirmación y rectificaciones en la fecha de devolución o cambio. Para conciliar caja utiliza la fecha de cada cobro, pago o ajuste. La compra recibida mantiene su saldo frente al proveedor y el gasto operativo se reconoce en la fecha registrada del pago manual.
 - Cuentas por pagar y por cobrar se calculan desde el saldo de documentos y sus abonos en USD histórico. Un apartado pendiente se presenta como compromiso o saldo de apartado, separado de las ventas.
 - El valor de inventario suma unidades disponibles y reservadas de los lotes físicos por su costo histórico. Los puntos de corte son intervalos `[inicio, fin)` en la zona horaria de la tienda.
+- Cada `CatalogExport` conserva el PDF generado, autor, fecha, moneda, tasa y selección de producto. La clave de operación identifica el guardado y la base protege el registro contra actualizaciones y eliminaciones.

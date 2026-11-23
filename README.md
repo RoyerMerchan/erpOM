@@ -52,6 +52,8 @@ La Fase 4 agrega el módulo **Apartados** para reservar tallas, recibir abonos y
 
 En la Fase 5, **Finanzas → Resumen** muestra ventas reconocidas, rentabilidad y caja. **Finanzas → Movimientos** enlaza cada registro con su origen. Desde **Ingresos y egresos** se registran gastos, otros ingresos, transferencias y ajustes autorizados. Configura categorías desde **Gastos**. El **Reporte diario** se puede consultar e imprimir por fecha en la zona horaria de la tienda.
 
+La Fase 6 agrega **Inicio** y **Reportes** con comparativas, indicadores de operación y alertas por talla. Aplica `pnpm db:migrate` para activar los permisos y el historial de catálogos. Los roles autorizados descargan reportes en CSV, XLSX o PDF. En **Catálogo PDF**, elige tallas o modelos y descarga los precios públicos. Para convertir a otra moneda, indica cuántas unidades equivalen a 1 USD. Puedes guardar la versión que descargaste.
+
 ## Verificación
 
 ```text
@@ -63,7 +65,7 @@ pnpm test
 pnpm build
 ```
 
-Las pruebas de humo y unitarias comprueban HTTP, sesión y validación de datos. Las de integración verifican roles, catálogos, auditoría, tasas y revocación de sesiones. Para probar con PostgreSQL, crea una base dedicada, migra la base y define `TEST_DATABASE_URL` durante `pnpm test:integration`. Estos comandos usan la configuración local de Compose.
+Las pruebas de humo y unitarias comprueban HTTP, sesión, validación de datos, importes y fechas. Las de integración recorren los flujos operativos y verifican conciliación, control de acceso y descargas. Para probar con PostgreSQL, crea una base dedicada, migra la base y define `TEST_DATABASE_URL` durante `pnpm test:integration`. Estos comandos usan la configuración local de Compose.
 
 ```powershell
 docker compose exec -T db createdb -U max_sport max_sport_test

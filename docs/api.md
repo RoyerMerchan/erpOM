@@ -110,6 +110,19 @@ Los informes y movimientos admiten `period` con `DAY`, `WEEK`, `MONTH` o `RANGE`
 
 Un registro manual incluye `kind`, `occurredAt`, `description` y referencia opcional. `EXPENSE` agrega `categoryId`. `ADJUSTMENT` agrega dirección `IN` u `OUT`. `TRANSFER` recibe `source` y `destination`. Los demás tipos reciben `payment`. Cada importe usa `{accountId, amountOriginal, unitsPerUsd}`. Las mutaciones conservan el historial y registran auditoría. Repetir una confirmación o reverso con el mismo actor, cuerpo y `operationId` devuelve el mismo comprobante.
 
-## Evolución
+## Fase 6
 
-El panel general y los reportes ampliarán los filtros y usarán estos cálculos. El catálogo PDF tendrá permisos de exportación y un contrato limitado a datos públicos.
+| Método y ruta               | Resultado                                                                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /analytics`            | Devuelve la ventana actual y la anterior, el intervalo y las secciones que el usuario puede consultar. Con `section` devuelve una sola sección.                    |
+| `GET /analytics/export`     | Descarga una sección con los mismos filtros y permisos mediante `section` y `format=CSV\|XLSX\|PDF`.                                                               |
+| `GET /catalog/preview`      | Vista paginada de modelos activos con tallas disponibles. Admite `brandId`, `modelId`, `size`, `currencyCode`, `unitsPerUsd`, `includeQuantity`, `page` y `limit`. |
+| `POST /catalog/pdf`         | Devuelve el PDF con esos filtros de producto y moneda. Con `save: true` requiere `operationId` y devuelve el identificador guardado en `X-Catalog-Version`.        |
+| `GET /catalog/versions`     | Lista versiones autorizadas. Admite búsqueda `q` y paginación `page` y `limit`.                                                                                    |
+| `GET /catalog/versions/:id` | Descarga los bytes conservados de la versión autorizada.                                                                                                           |
+
+Los períodos de `/analytics` son `TODAY`, `YESTERDAY`, `LAST_7_DAYS`, `THIS_WEEK`, `LAST_WEEK`, `THIS_MONTH`, `LAST_MONTH` y `RANGE`. El rango recibe `from` y `to` inclusivos. `interval` admite `AUTO`, `DAY`, `WEEK` y `MONTH`. Las secciones son `SALES`, `CASH`, `STOCK`, `PURCHASES`, `LAYAWAYS` y `RETURNS`.
+
+Marca, modelo y talla se aplican a ventas, inventario, compras, apartados y devoluciones. Vendedor y cliente filtran ventas, apartados y devoluciones. Proveedor filtra compras. Cuenta, moneda y método filtran ventas, caja y devoluciones. `layawayState` incluye `OVERDUE` para apartados vencidos que siguen abiertos. Las sumatorias abarcan el conjunto filtrado. Las tablas de actividad reciente y los rankings indican sus límites.
+
+El catálogo usa USD por defecto y exige una tasa positiva para convertir a otra moneda activa. Las tallas tienen disponibilidad mayor que cero. `includeQuantity` requiere `catalog.quantity`. El historial se limita al autor salvo que el rol tenga `catalog.history.all`. Una repetición de guardado con el mismo actor, datos y clave conserva el PDF original.

@@ -23,7 +23,11 @@ export function onSessionExpired(callback: () => void) {
   sessionExpired = callback;
 }
 
-async function request(path: string, options: Pick<RequestInit, 'method' | 'body'> = {}) {
+async function request(
+  path: string,
+  options: Pick<RequestInit, 'method' | 'body'> = {},
+  timeout = 10_000,
+) {
   const headers = new Headers({ Accept: 'application/json' });
   if (options.body) headers.set('Content-Type', 'application/json');
 
@@ -31,7 +35,7 @@ async function request(path: string, options: Pick<RequestInit, 'method' | 'body
     ...options,
     headers,
     credentials: 'same-origin',
-    signal: AbortSignal.timeout(10_000),
+    signal: AbortSignal.timeout(timeout),
   }).catch(() => {
     throw new ApiRequestError('No se pudo conectar con la API. Intenta de nuevo.');
   });
@@ -48,6 +52,28 @@ async function request(path: string, options: Pick<RequestInit, 'method' | 'body
     );
   }
   return response;
+}
+
+export async function downloadFile(path: string, filename: string, body?: unknown) {
+  const response = await request(
+    path,
+    body === undefined
+      ? {}
+      : {
+          method: 'POST',
+          body: JSON.stringify(body),
+        },
+    60_000,
+  );
+  const suggested = /filename="([a-z0-9_.-]+)"/i.exec(
+    response.headers.get('Content-Disposition') ?? '',
+  )?.[1];
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = suggested ?? filename;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
 }
 
 export async function readJson<T>(

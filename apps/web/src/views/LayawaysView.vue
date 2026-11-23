@@ -7,6 +7,7 @@ import DataTable from 'primevue/datatable';
 import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { getLayaways } from '../after-sale/service';
 import AppShell from '../components/AppShell.vue';
 import { timeLabel } from '../master-data/field-types';
@@ -18,7 +19,7 @@ const session = useSessionStore();
 const { items, page, limit, total, loading, error, load } = usePagedList(getLayaways);
 const search = ref('');
 const status = ref('');
-const overdue = ref(false);
+const overdue = ref(useRoute().query.overdue === 'true');
 const filters = ref<Record<string, string>>({});
 const applyFilters = () => {
   filters.value = {
@@ -28,7 +29,7 @@ const applyFilters = () => {
   };
   void load(filters.value, 1);
 };
-onMounted(() => void load(filters.value));
+onMounted(applyFilters);
 </script>
 
 <template>

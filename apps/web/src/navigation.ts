@@ -77,6 +77,14 @@ export const sections: {
     area: 'finance',
     permission: 'finance.read',
   },
+  { path: '/reportes', label: 'Reportes', area: 'reports', permission: 'analytics.read' },
+  {
+    path: '/catalogo',
+    label: 'Catálogo PDF',
+    area: 'catalog',
+    permission: 'catalog.export',
+    requires: 'inventory.read',
+  },
   ...resourcePages.map((item) => ({
     path: item.path,
     label: item.label,
@@ -101,6 +109,8 @@ export const menuItems = [
   { area: 'customers', label: 'Clientes', icon: 'pi-users' },
   { area: 'suppliers', label: 'Proveedores', icon: 'pi-truck' },
   { area: 'finance', label: 'Finanzas', icon: 'pi-wallet' },
+  { area: 'reports', label: 'Reportes', icon: 'pi-chart-bar' },
+  { area: 'catalog', label: 'Catálogo PDF', icon: 'pi-file-pdf' },
   { area: 'staff', label: 'Usuarios y roles', icon: 'pi-id-card' },
   { area: 'settings', label: 'Configuración', icon: 'pi-cog' },
 ];
