@@ -3,6 +3,7 @@ import { z } from 'zod';
 export * from './access.js';
 export * from './identity.js';
 export * from './master-data.js';
+export * from './purchasing.js';
 
 z.config(z.locales.es());
 

@@ -7,7 +7,12 @@ import { useSessionStore } from '../stores/session';
 const route = useRoute();
 const session = useSessionStore();
 const links = computed(() =>
-  sections.filter((section) => section.area === route.meta.area && session.can(section.permission)),
+  sections.filter(
+    (section) =>
+      section.area === route.meta.area &&
+      session.can(section.permission) &&
+      (!section.requires || session.can(section.requires)),
+  ),
 );
 </script>
 

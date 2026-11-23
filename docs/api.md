@@ -38,6 +38,25 @@ Los recursos son `brands`, `models`, `variants`, `customers`, `suppliers`, `acco
 
 `POST /users` exige `displayName`, `email`, `roleCode` y `temporaryPassword`. En `PUT /users/:id`, `temporaryPassword` es opcional. A la siguiente sesión, el usuario debe cambiarla antes de operar. Un cambio de rol, correo, contraseña o archivo revoca las sesiones previas de la cuenta afectada.
 
+## Fase 2
+
+| Método y ruta                                     | Resultado                                                                                                                                      |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /purchases` y `GET /purchases/payables`      | Listas paginadas con búsqueda por proveedor o referencia. Por pagar incluye compras confirmadas con saldo positivo.                            |
+| `GET /purchases/:id`                              | Resumen, renglones recibidos y, con permiso de costos, importes, vista previa del borrador y pagos.                                            |
+| `POST /purchases/preview`                         | Calcula importes por talla, flete distribuido y conversión sin crear documentos.                                                               |
+| `GET /purchases/quote`                            | Recibe `currencyCode` y `at`. Devuelve la última tasa activa hasta ese instante o `null`.                                                      |
+| `POST /purchases` y `PUT /purchases/:id`          | Crea o edita un borrador. La edición recibe `{revision,draft}` y rechaza versiones desactualizadas.                                            |
+| `POST /purchases/:id/receive`                     | Recibe `{operationId,revision,initialPayment?}`. Confirma la recepción, incorpora los lotes y aplica el pago opcional en la misma transacción. |
+| `POST /purchases/:id/payments`                    | Registra un pago con `operationId`, cuenta, fecha, importe original, tasa y referencia opcional. La cuenta determina la moneda.                |
+| `POST /purchases/:id/payments/:paymentId/reverse` | Registra el motivo y un movimiento compensatorio. El pago conserva su contexto original.                                                       |
+| `POST /purchases/:id/void`                        | Recibe un motivo. Las recepciones requieren lotes intactos, existencias suficientes y pagos ya revertidos.                                     |
+| `GET /inventory`                                  | Lista existencias con `q`, `size`, `brandId`, `modelId` y `stock` (`ALL`, `AVAILABLE`, `LOW`, `OUT`).                                          |
+| `GET /inventory/:id/movements`                    | Historial paginado de la variante.                                                                                                             |
+| `POST /inventory/:id/adjustments`                 | Registra ajuste con `operationId`, cantidad firmada, motivo y costo USD para una entrada.                                                      |
+
+Los importes viajan en cadenas decimales. Las recepciones y los pagos conservan el USD histórico. Repetir un `operationId` con los mismos datos devuelve el documento o movimiento existente. Usarlo con datos diferentes devuelve `409`. Los estados, tasas, existencias y pagos se validan dentro de sus transacciones.
+
 ## Evolución
 
-Las confirmaciones de compras, ventas, apartados y devoluciones recibirán una clave de idempotencia. El catálogo PDF tendrá permisos de exportación y un contrato limitado a datos públicos.
+Las confirmaciones de ventas, apartados y devoluciones usarán idempotencia. El catálogo PDF tendrá permisos de exportación y un contrato limitado a datos públicos.

@@ -12,7 +12,8 @@ const session = useSessionStore();
 const links = computed(() =>
   menuItems.flatMap((item) => {
     const section = sections.find(
-      ({ area, permission }) => area === item.area && session.can(permission),
+      ({ area, permission, requires }) =>
+        area === item.area && session.can(permission) && (!requires || session.can(requires)),
     );
     return section ? [{ ...item, path: section.path }] : [];
   }),

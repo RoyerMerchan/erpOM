@@ -2,6 +2,7 @@ import '@fontsource-variable/inter';
 import 'primeicons/primeicons.css';
 import './styles.css';
 import './master-data/styles.css';
+import './purchasing/styles.css';
 import Aura from '@primeuix/themes/aura';
 import { definePreset } from '@primeuix/themes';
 import { createPinia } from 'pinia';

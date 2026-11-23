@@ -96,7 +96,7 @@ export function createSessionSecurity(database: Database, config: RuntimeConfig)
     next();
   };
 
-  function allow(permission: PermissionCode) {
+  function allow(...permissions: PermissionCode[]) {
     const authorize: RequestHandler = (_request, response, next) => {
       const user = sessionActor(response);
       if (user.mustChangePassword) {
@@ -106,7 +106,7 @@ export function createSessionSecurity(database: Database, config: RuntimeConfig)
           'Cambia tu contraseña temporal para continuar.',
         );
       }
-      if (!user.permissions.includes(permission)) {
+      if (!permissions.every((permission) => user.permissions.includes(permission))) {
         throw new HttpError(403, 'PERMISSION_DENIED', 'Tu rol no permite realizar esta acción.');
       }
       next();

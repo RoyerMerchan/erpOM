@@ -1,0 +1,200 @@
+.procurement-stack {
+  display: grid;
+  gap: 1rem;
+}
+.procurement-card {
+  padding: clamp(1rem, 3vw, 1.45rem);
+}
+.procurement-card h2,
+.procurement-table h2 {
+  font-size: 1.12rem;
+  font-weight: 700;
+}
+.procurement-table h2 {
+  margin: 0;
+  padding: 1rem 1.15rem;
+}
+.procurement-title-line,
+.procurement-actions,
+.matrix-bulk-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+.procurement-actions {
+  justify-content: flex-start;
+}
+.procurement-fields {
+  margin-top: 1rem;
+}
+.procurement-inline {
+  justify-self: start;
+  align-self: start;
+}
+.procurement-back {
+  display: inline-block;
+  margin-bottom: 1.1rem;
+  font-size: 0.9rem;
+}
+.procurement-text {
+  margin-block: 0.8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.procurement-feedback {
+  margin-block: 0.85rem;
+}
+.procurement-card > .procurement-actions {
+  margin-top: 1rem;
+}
+.matrix-bulk {
+  margin-block: 1rem 0.5rem;
+  padding: 0.65rem;
+  border-radius: 0.75rem;
+  background: #eef1fa;
+  border: 1px solid #e2e7f6;
+}
+.matrix-bulk-top h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 690;
+}
+.matrix-bulk-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 0.45rem;
+}
+.matrix-bulk-fields > * {
+  min-width: 0;
+}
+.size-matrix {
+  display: grid;
+}
+.size-row {
+  display: grid;
+  grid-template-columns: 4rem 0.65fr 1fr 1fr;
+  gap: 0.6rem;
+  align-items: center;
+  min-height: 2.45rem;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.size-row > * {
+  min-width: 0;
+}
+.size-head {
+  font-size: 0.875rem;
+  font-weight: 660;
+  color: var(--muted);
+  background: #f5f7fb;
+}
+.size-picked {
+  background: #fafaff;
+}
+.size-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 630;
+}
+.matrix-estimate {
+  grid-column: 2 / -1;
+  color: var(--muted);
+  margin: -0.1rem 0 0.15rem;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+.purchase-totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+  gap: 0.7rem;
+  margin: 0.85rem 0 0;
+}
+.purchase-totals > div {
+  min-width: 0;
+  padding: 0.65rem;
+  border-radius: 0.6rem;
+  background: var(--canvas);
+}
+.purchase-totals dt {
+  margin: 0 0 0.2rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.purchase-totals dd {
+  margin: 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.purchase-totals .purchase-balance {
+  background: #eef1ff;
+  color: #3730a3;
+}
+.purchase-totals small {
+  font-size: 0.875rem;
+}
+.inventory-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  padding: 0 1rem 0.9rem;
+}
+.inventory-sku {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.stock-history {
+  list-style: none;
+  margin: 0.7rem 0;
+  padding: 0;
+}
+.stock-history li {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.stock-history small {
+  color: var(--muted);
+}
+.stock-history p {
+  margin: 0;
+}
+@media (max-width: 620px) {
+  .matrix-bulk-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .size-row {
+    grid-template-columns: 3.25rem 0.65fr 1fr 1fr;
+    gap: 0.25rem;
+    padding-inline: 0.25rem;
+  }
+  .size-row .p-inputtext {
+    padding-inline: 0.35rem;
+    min-height: 2.5rem;
+  }
+  .size-picker {
+    gap: 0.25rem;
+  }
+}
+@media (max-width: 430px) {
+  .inventory-filters {
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: 0.8rem;
+  }
+  .procurement-actions {
+    gap: 0.4rem;
+  }
+  .matrix-bulk-fields input {
+    font-size: 0.9rem;
+    padding-inline: 0.4rem;
+  }
+  .size-matrix .size-head {
+    font-size: 0.78rem;
+  }
+}

@@ -49,6 +49,14 @@ const extraPermissions = {
   'costs.read': 'Consultar costos',
   'profits.read': 'Consultar utilidad',
   'audit.read': 'Consultar auditoría',
+  'purchases.read': 'Consultar compras',
+  'purchases.create': 'Crear compras',
+  'purchases.update': 'Editar borradores de compra',
+  'purchases.confirm': 'Confirmar recepción de mercancía',
+  'purchases.void': 'Anular compras',
+  'purchases.pay': 'Registrar y revertir pagos a proveedores',
+  'inventory.read': 'Consultar existencias',
+  'inventory.adjust': 'Ajustar existencias',
 } as const;
 
 export type PermissionCode = ResourcePermission | keyof typeof extraPermissions;
@@ -89,10 +97,22 @@ const manage = (...resources: ResourceKey[]) =>
     .map(({ code }) => code)
     .filter((code) => resources.some((resource) => code.startsWith(`${resource}.`)));
 
+const purchaseWork = [
+  'purchases.read',
+  'purchases.create',
+  'purchases.update',
+  'purchases.confirm',
+] as const;
+
 export const defaultRolePermissions: Record<RoleCode, PermissionCode[]> = {
   ADMIN: permissionDefinitions.map(({ code }) => code),
   MANAGER: [
     ...manage('brands', 'models', 'variants', 'customers', 'suppliers', 'accounts', 'rates'),
+    ...purchaseWork,
+    'purchases.void',
+    'purchases.pay',
+    'inventory.read',
+    'inventory.adjust',
     'shop.read',
     'shop.update',
     'currencies.read',
@@ -105,18 +125,25 @@ export const defaultRolePermissions: Record<RoleCode, PermissionCode[]> = {
     ...read('brands', 'models', 'variants', 'accounts', 'rates', 'customers'),
     'customers.create',
     'customers.update',
+    'inventory.read',
     'currencies.read',
     'shop.read',
   ],
   INVENTORY: [
     ...manage('brands', 'models', 'variants', 'suppliers'),
     ...read('rates'),
+    ...purchaseWork,
+    'inventory.read',
+    'inventory.adjust',
     'currencies.read',
     'shop.read',
   ],
   FINANCE: [
     ...manage('accounts', 'rates'),
     ...read('suppliers'),
+    'purchases.read',
+    'purchases.pay',
+    'inventory.read',
     'shop.read',
     'currencies.read',
     'currencies.update',

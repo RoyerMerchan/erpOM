@@ -28,3 +28,11 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - `pnpm db:migrate` funcionó en una base nueva y en una copia de la Fase 0 con PostgreSQL 17.12. El administrador existente conservó sus credenciales y recibió los permisos del rol. Se verificaron por HTTP 13 rutas web y las consultas de datos maestros mediante el proxy de Vite.
 - Pasaron `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm build` y `pnpm db:validate`. Pasaron 13 pruebas unitarias y de humo con `pnpm test` y 10 de integración con `pnpm test:integration`.
 - La revisión visual quedó pendiente porque el navegador integrado no estaba disponible.
+
+## Resultado de la Fase 2
+
+- Compras incluye borrador, matriz de tallas 28–44, vista previa con flete y tasa, recepción, pagos a proveedores, cuentas por pagar y anulación trazable. Inventario muestra físico, reservado y disponible, alertas por talla y ajustes auditados.
+- Legend produjo 15 pares en tres lotes con 1.228.000 COP y USD 307 a 4.000 COP por USD. Los costos unitarios fueron USD 20, USD 20 y USD 21. La confirmación simultánea creó una única recepción. La recompra reutilizó el modelo y sus variantes, y una corrección de tasa conservó los importes previos.
+- La migración se aplicó a una base PostgreSQL 17.12 nueva y a una copia de la Fase 1. Por HTTP se comprobaron cinco rutas de la web y el flujo Legend desde el borrador hasta el pago completo, además de un ajuste de entrada.
+- Pasaron 16 pruebas de humo y unitarias y 13 de integración. También pasaron lint, formato, verificación de tipos, compilación y validación del esquema Prisma.
+- La revisión visual en navegador quedó pendiente porque el acceso al navegador integrado no estaba disponible.

@@ -17,10 +17,11 @@ type Account = Prisma.MoneyAccountGetPayload<{ select: typeof select }>;
 export async function requireActiveCurrency(database: Prisma.TransactionClient, code: string) {
   const currency = await database.currency.findUnique({
     where: { code },
-    select: { active: true },
+    select: { active: true, minorUnits: true },
   });
   if (!currency?.active)
     throw new HttpError(409, 'CURRENCY_INACTIVE', 'Habilita esa moneda antes de usarla.');
+  return currency;
 }
 
 export const accounts: CatalogDefinition<z.output<typeof accountInput>, Account> = {
@@ -52,8 +53,20 @@ export const accounts: CatalogDefinition<z.output<typeof accountInput>, Account>
       where: { id },
       select: { currencyCode: true },
     });
-    if (previous.currencyCode !== input.currencyCode)
+    if (previous.currencyCode !== input.currencyCode) {
+      const posted = await db.moneyMovement.findFirst({
+        where: { accountId: id },
+        select: { id: true },
+      });
+      if (posted) {
+        throw new HttpError(
+          409,
+          'ACCOUNT_CURRENCY_LOCKED',
+          'La cuenta ya tiene movimientos. Crea otra cuenta para la nueva moneda.',
+        );
+      }
       await requireActiveCurrency(db, input.currencyCode);
+    }
     return db.moneyAccount.update({ where: { id }, data: input, select });
   },
   async setActive(db, id, active) {

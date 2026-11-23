@@ -39,8 +39,16 @@ Cada mutación auditada registra el actor y el cambio en la misma transacción. 
 - El POS valida cobertura en centavos USD con los montos de cada pago ya redondeados. El excedente se registra como vuelto explícito en su cuenta o se ajusta el importe aplicado antes de confirmar. La cobertura final debe ser exacta en centavos.
 - Las fechas de eventos se guardan con zona (`timestamptz`). Para reportes, semana de lunes a domingo y zona inicial `America/Caracas`, configurable. Los filtros convierten los límites locales a UTC antes de consultar.
 - La pantalla de tasas captura y muestra horas en la zona del dispositivo y la indica en el formulario. Cada petición registra un instante ISO 8601 con zona. La zona configurada en la tienda regirá los cortes de los reportes.
+- La recepción prorratea el flete en las unidades menores de la moneda y resuelve el residuo por grupo y talla. Cada línea USD redondea a centavos. El costo unitario del lote se deriva de ese total a doce decimales. Al consumir parte de un lote se prorratea contra el costo inicial, con límite en el saldo. La última salida absorbe el residuo.
+- El saldo de compra siempre se mantiene en USD usando los equivalentes históricos de cada pago. El detalle muestra saldo original cuando los abonos activos usan la moneda y la tasa de la compra y ese saldo concilia su estado.
 
 ## Transacciones
 
-- En fases de inventario, bloquear primero variantes en orden estable y después lotes y documentos afectados. Verificar disponibilidad, reservas y unidades retornables dentro de la transacción. Aplicar restricciones SQL a saldos donde corresponda y reintentar conflictos de serialización cuando la operación tenga clave idempotente.
+- Recepción y anulación bloquean la compra primero y las variantes en orden de UUID después. Los ajustes bloquean la variante. Las salidas verifican disponibilidad y reservas antes de consumir lotes. Las restricciones SQL protegen saldos, y las transacciones reintentan conflictos de serialización.
 - La clave idempotente persiste con su resultado y la huella del contenido. La misma clave con contenido diferente produce un conflicto. Las operaciones confirmadas se corrigen mediante documentos compensatorios y auditoría.
+
+## Operación de compras e inventario
+
+- Administrador y Gerente confirman, anulan y registran pagos. Finanzas consulta y paga compras. Inventario puede consultar compras y ajustar salidas. Con acceso a costos, Inventario puede guardar y confirmar borradores y ajustar entradas.
+- El margen estimado por variante compara el precio público con el costo del primer lote disponible. Requiere ambos permisos, `costs.read` y `profits.read`, ya que el margen y el precio juntos revelan el costo.
+- La recepción cambia existencias y lotes. Un pago a proveedor crea una salida de caja. Su reversión registra una entrada compensatoria con el importe y la tasa originales cuando el dinero vuelve a la cuenta o se corrige un registro errado. Los movimientos y renglones publicados se conservan mediante restricciones de base de datos.

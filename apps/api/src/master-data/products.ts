@@ -163,11 +163,33 @@ export const variants: CatalogDefinition<z.output<typeof variantInput>, Variant>
     );
   },
   async update(db, id, input) {
+    const data = variantData(input);
+    const current = await db.productVariant.findUniqueOrThrow({
+      where: { id },
+      select: { modelId: true, size: true, colorKey: true },
+    });
+    if (
+      current.modelId !== data.modelId ||
+      current.size !== data.size ||
+      current.colorKey !== data.colorKey
+    ) {
+      const posted = await db.stockMovement.findFirst({
+        where: { variantId: id },
+        select: { id: true },
+      });
+      if (posted) {
+        throw new HttpError(
+          409,
+          'VARIANT_IDENTITY_LOCKED',
+          'La variante ya tiene movimientos. Crea otra variante para el modelo, talla o color nuevos.',
+        );
+      }
+    }
     await checkSku(db, input.sku, id);
     return variantDto(
       await db.productVariant.update({
         where: { id },
-        data: variantData(input),
+        data,
         select: variantSelect,
       }),
     );

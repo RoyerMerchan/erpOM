@@ -13,6 +13,7 @@ const props = defineProps<{
   disabled?: boolean;
   describedBy?: string;
   invalid?: boolean;
+  clearable?: boolean;
 }>();
 const model = defineModel<FieldValue>();
 const matches = ref<Option[]>([]);
@@ -21,17 +22,24 @@ const loading = ref(false);
 const error = ref('');
 let version = 0;
 
-const searchable = computed(() => props.resource === 'brands' || props.resource === 'models');
+const searchable = computed(() => props.resource !== 'currencies' && props.resource !== 'roles');
 const options = computed(() =>
   selected.value && !matches.value.some(({ value }) => value === selected.value?.value)
     ? [selected.value, ...matches.value]
     : matches.value,
 );
 
-function option(row: ResourceRow, resource: 'brands' | 'models'): Option {
+function option(
+  row: ResourceRow,
+  resource: 'brands' | 'models' | 'suppliers' | 'accounts',
+): Option {
   const name = textField(row, 'name');
   const label =
-    resource === 'models' ? textField(nestedRow(row, 'brand'), 'name') + ' · ' + name : name;
+    resource === 'models'
+      ? textField(nestedRow(row, 'brand'), 'name') + ' · ' + name
+      : resource === 'accounts'
+        ? name + ' · ' + textField(row, 'currencyCode')
+        : name;
   return { value: row.id, label: row.active ? label : label + ' (archivado)' };
 }
 
@@ -75,7 +83,7 @@ async function load(query = '') {
 }
 
 function setValue(value: FieldValue) {
-  selected.value = matches.value.find((option) => option.value === value) ?? selected.value;
+  selected.value = options.value.find((option) => option.value === value);
   model.value = value;
 }
 
@@ -84,6 +92,10 @@ watch(
   () => void load(),
   { immediate: true },
 );
+watch(model, (value) => {
+  if (searchable.value && value && !options.value.some((option) => option.value === value))
+    void load();
+});
 onBeforeUnmount(() => {
   version++;
 });
@@ -100,6 +112,7 @@ onBeforeUnmount(() => {
     :loading="loading"
     :disabled="disabled"
     :invalid="invalid"
+    :show-clear="clearable"
     :aria-describedby="describedBy"
     placeholder="Selecciona una opción"
     empty-message="No hay opciones disponibles."

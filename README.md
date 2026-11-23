@@ -1,6 +1,6 @@
 # MAX Sport Manager
 
-ERP y POS para una tienda de calzado deportivo. Las fases 0 y 1 incluyen infraestructura, acceso, administración de usuarios, productos y contactos, configuración de tienda, cuentas, tasas históricas y auditoría.
+ERP y POS para una tienda de calzado deportivo. Las fases 0 a 2 incluyen acceso, datos maestros, tasas históricas, compras, cuentas por pagar, inventario FIFO y auditoría.
 
 ## Desarrollo local
 
@@ -43,6 +43,8 @@ pnpm dev
 Abre <http://localhost:5173/> e inicia sesión con la cuenta creada. Vite envía `/api` a Express en `127.0.0.1:3000`. La API usa el `APP_ORIGIN` de `.env` al verificar las peticiones de autenticación.
 
 Al actualizar una instalación de la Fase 0, ejecuta `pnpm db:migrate` antes de arrancar. El administrador existente recibe los permisos de su rol durante la migración. Desde **Usuarios y roles** puede asignar uno de los cinco roles y crear cuentas con contraseña temporal.
+
+La migración de la Fase 2 agrega los permisos de compras y existencias. Desde **Compras**, crea un borrador, marca las tallas, calcula la vista previa y confirma la recepción. Los pagos se pueden registrar al recibir o desde el detalle. **Compras → Por pagar** muestra los documentos con saldo e **Inventario → Existencias** muestra el stock por talla.
 
 ## Verificación
 

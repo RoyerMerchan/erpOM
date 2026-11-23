@@ -9,6 +9,7 @@ declare module 'vue-router' {
   interface RouteMeta {
     requiresSession?: boolean;
     permission?: PermissionCode;
+    extraPermission?: PermissionCode;
     area?: string;
   }
 }
@@ -44,6 +45,60 @@ export function createAppRouter(pinia: Pinia) {
         meta: { requiresSession: true, permission: resourcePermission(resource, 'read'), area },
       })),
       {
+        path: '/inventario',
+        name: 'inventory',
+        component: () => import('./views/InventoryView.vue'),
+        meta: { requiresSession: true, permission: 'inventory.read', area: 'products' },
+      },
+      {
+        path: '/compras',
+        name: 'purchases',
+        component: () => import('./views/PurchasesView.vue'),
+        meta: { requiresSession: true, permission: 'purchases.read', area: 'purchases' },
+      },
+      {
+        path: '/compras/por-pagar',
+        name: 'payables',
+        component: () => import('./views/PurchasesView.vue'),
+        props: { payables: true },
+        meta: {
+          requiresSession: true,
+          permission: 'purchases.read',
+          extraPermission: 'costs.read',
+          area: 'purchases',
+        },
+      },
+      {
+        path: '/compras/nueva',
+        name: 'purchase-new',
+        component: () => import('./views/PurchaseEditorView.vue'),
+        meta: {
+          requiresSession: true,
+          permission: 'purchases.create',
+          extraPermission: 'costs.read',
+          area: 'purchases',
+        },
+      },
+      {
+        path: '/compras/:id/editar',
+        name: 'purchase-edit',
+        component: () => import('./views/PurchaseEditorView.vue'),
+        props: true,
+        meta: {
+          requiresSession: true,
+          permission: 'purchases.update',
+          extraPermission: 'costs.read',
+          area: 'purchases',
+        },
+      },
+      {
+        path: '/compras/:id',
+        name: 'purchase-detail',
+        component: () => import('./views/PurchaseDetailView.vue'),
+        props: true,
+        meta: { requiresSession: true, permission: 'purchases.read', area: 'purchases' },
+      },
+      {
         path: '/configuracion',
         component: () => import('./views/ShopView.vue'),
         meta: { requiresSession: true, permission: 'shop.read', area: 'settings' },
@@ -75,6 +130,8 @@ export function createAppRouter(pinia: Pinia) {
     if (session.user?.mustChangePassword && route.name !== 'account') return { name: 'account' };
     if (route.name === 'login' && session.user) return { name: 'dashboard' };
     if (route.meta.permission && !session.can(route.meta.permission))
+      return { name: 'access-denied' };
+    if (route.meta.extraPermission && !session.can(route.meta.extraPermission))
       return { name: 'access-denied' };
   });
   return router;

@@ -1,6 +1,6 @@
 # Modelo de dominio
 
-La migración inicial contiene usuarios, roles, permisos, sesiones, auditoría, marcas, modelos, variantes, clientes, proveedores, moneda, tasas, cuentas y configuración. El diagrama incluye las relaciones previstas para los documentos de fases posteriores.
+Las migraciones vigentes contienen usuarios, catálogos, compras, pagos de proveedor, movimientos monetarios, lotes, balances y ajustes de inventario. El diagrama incluye relaciones previstas para fases posteriores.
 
 ```mermaid
 erDiagram
@@ -14,6 +14,9 @@ erDiagram
   PRODUCT_MODEL ||--o{ PRODUCT_VARIANT : ofrece
   PRODUCT_VARIANT ||--o{ STOCK_MOVEMENT : registra
   PRODUCT_VARIANT ||--o{ INVENTORY_LOT : abastece
+  PRODUCT_VARIANT ||--o| INVENTORY_BALANCE : consolida
+  STOCK_MOVEMENT ||--o{ STOCK_LOT_ALLOCATION : explica
+  INVENTORY_LOT ||--o{ STOCK_LOT_ALLOCATION : asigna
   SUPPLIER ||--o{ PURCHASE : factura
   PURCHASE ||--|{ PURCHASE_ITEM : incluye
   PRODUCT_VARIANT ||--o{ PURCHASE_ITEM : identifica
@@ -38,7 +41,7 @@ erDiagram
   MONEY_ACCOUNT ||--o{ MONEY_MOVEMENT : registra
   EXCHANGE_RATE o|--o{ MONEY_MOVEMENT : respalda
   SALE_PAYMENT o|--o| MONEY_MOVEMENT : respalda
-  SUPPLIER_PAYMENT o|--o| MONEY_MOVEMENT : respalda
+  SUPPLIER_PAYMENT ||--o{ MONEY_MOVEMENT : respalda
   LAYAWAY_PAYMENT o|--o| MONEY_MOVEMENT : respalda
   EXPENSE o|--o| MONEY_MOVEMENT : respalda
   OTHER_INCOME o|--o| MONEY_MOVEMENT : respalda
@@ -54,6 +57,8 @@ erDiagram
 ## Inventario y documentos
 
 - Cada variante cumple `0 ≤ reservado ≤ físico` y `disponible = físico − reservado`. Las reservas se respaldan con líneas de apartado y el físico con movimientos trazables. Los lotes conservan cantidad inicial, saldo y costo histórico.
+- El borrador guarda la selección de modelos y tallas. Al recibir se materializan los renglones inmutables con marca, modelo, talla, SKU, cantidad, precio y costos. Se reutilizan marca y modelo por sus claves normalizadas, y las variantes por modelo, talla y clave de color.
+- Las compras guardan la revisión del borrador y la clave de confirmación. Cada pago guarda su moneda, importe, cotización, cuenta y USD histórico. Los movimientos existentes fijan la moneda de una cuenta y la identidad de talla, modelo y color de una variante.
 - FIFO ordena por recepción y luego por identificador para desempatar. El costo de cada salida queda aplicado a los lotes correspondientes, incluso con partidas a tasas distintas.
 - Compras y apartados tienen estados explícitos. Los confirmados son inmutables en sus datos económicos. Cada transición crítica registra auditoría y una clave de idempotencia con unicidad por acción y origen. El saldo de una deuda se deriva de documentos y aplicaciones válidas.
 - Para cambios y devoluciones, la suma de unidades devueltas queda limitada a lo vendido por línea, también si llegan peticiones concurrentes. Solo las unidades reingresables crean nuevo físico vendible.

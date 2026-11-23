@@ -8,7 +8,9 @@ import { createSessionSecurity } from './auth/session.js';
 import type { RuntimeConfig } from './config.js';
 import type { Database } from './database.js';
 import { createErrorHandler, HttpError } from './http/errors.js';
+import { createInventoryRouter } from './inventory/routes.js';
 import { createMasterDataRouter } from './master-data/routes.js';
+import { createPurchaseRouter } from './purchasing/routes.js';
 
 export function createApp(
   database: Database,
@@ -63,6 +65,8 @@ export function createApp(
   const security = createSessionSecurity(database, config);
   api.use(cookieParser());
   api.use('/auth', createAuthRouter(database, security));
+  api.use('/inventory', createInventoryRouter(database, security));
+  api.use('/purchases', createPurchaseRouter(database, security));
   api.use(createMasterDataRouter(database, security));
   app.use('/api/v1', api);
   app.use((_request, _response, next) => {

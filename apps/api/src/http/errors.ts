@@ -12,8 +12,25 @@ export class HttpError extends Error {
   }
 }
 
+export function isTransactionConflict(error: unknown) {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
+  if (error.code === 'P2034') return true;
+  if (error.code !== 'P2010') return false;
+  const adapter = error.meta?.driverAdapterError as
+    { cause?: { originalCode?: unknown } } | undefined;
+  const sqlState = adapter?.cause?.originalCode ?? error.meta?.code;
+  return sqlState === '40001' || sqlState === '40P01';
+}
+
 function publicError(error: unknown): HttpError {
   if (error instanceof HttpError) return error;
+  if (isTransactionConflict(error)) {
+    return new HttpError(
+      409,
+      'CONCURRENT_CHANGE',
+      'Hubo un cambio al mismo tiempo. Actualiza e inténtalo otra vez.',
+    );
+  }
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case 'P2002':
@@ -24,12 +41,6 @@ function publicError(error: unknown): HttpError {
           409,
           'RELATED_RECORD',
           'Revisa los registros relacionados antes de guardar.',
-        );
-      case 'P2034':
-        return new HttpError(
-          409,
-          'CONCURRENT_CHANGE',
-          'Hubo un cambio al mismo tiempo. Actualiza e inténtalo otra vez.',
         );
     }
   }

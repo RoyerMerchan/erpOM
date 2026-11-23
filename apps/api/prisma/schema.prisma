@@ -48,19 +48,26 @@ model RolePermission {
 }
 
 model User {
-  id                 String         @id @default(uuid()) @db.Uuid
-  email              String         @unique @db.VarChar(254)
-  displayName        String         @map("display_name") @db.VarChar(120)
-  passwordHash       String         @map("password_hash") @db.VarChar(255)
-  mustChangePassword Boolean        @default(false) @map("must_change_password")
-  active             Boolean        @default(true)
-  roleId             String         @map("role_id") @db.Uuid
-  role               Role           @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  id                 String            @id @default(uuid()) @db.Uuid
+  email              String            @unique @db.VarChar(254)
+  displayName        String            @map("display_name") @db.VarChar(120)
+  passwordHash       String            @map("password_hash") @db.VarChar(255)
+  mustChangePassword Boolean           @default(false) @map("must_change_password")
+  active             Boolean           @default(true)
+  roleId             String            @map("role_id") @db.Uuid
+  role               Role              @relation(fields: [roleId], references: [id], onDelete: Restrict)
   sessions           UserSession[]
   auditLogs          AuditLog[]
   exchangeRates      ExchangeRate[]
-  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt          DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  purchasesCreated   Purchase[]        @relation("PurchaseCreator")
+  purchasesReceived  Purchase[]        @relation("PurchaseReceiver")
+  purchasesVoided    Purchase[]        @relation("PurchaseVoider")
+  supplierPayments   SupplierPayment[] @relation("SupplierPaymentCreator")
+  supplierReversals  SupplierPayment[] @relation("SupplierPaymentReverser")
+  stockMovements     StockMovement[]
+  moneyMovements     MoneyMovement[]
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@index([roleId])
   @@map("users")
@@ -123,18 +130,22 @@ model ProductModel {
 }
 
 model ProductVariant {
-  id                String       @id @default(uuid()) @db.Uuid
-  modelId           String       @map("model_id") @db.Uuid
-  model             ProductModel @relation(fields: [modelId], references: [id], onDelete: Restrict)
-  size              Int          @db.SmallInt
-  color             String?      @db.VarChar(80)
-  colorKey          String       @default("") @map("color_key") @db.VarChar(80)
-  sku               String       @unique @db.VarChar(60)
-  salePriceUsd      Decimal      @map("sale_price_usd") @db.Decimal(18, 2)
-  lowStockThreshold Int?         @map("low_stock_threshold")
-  active            Boolean      @default(true)
-  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                String            @id @default(uuid()) @db.Uuid
+  modelId           String            @map("model_id") @db.Uuid
+  model             ProductModel      @relation(fields: [modelId], references: [id], onDelete: Restrict)
+  size              Int               @db.SmallInt
+  color             String?           @db.VarChar(80)
+  colorKey          String            @default("") @map("color_key") @db.VarChar(80)
+  sku               String            @unique @db.VarChar(60)
+  salePriceUsd      Decimal           @map("sale_price_usd") @db.Decimal(18, 2)
+  lowStockThreshold Int?              @map("low_stock_threshold")
+  active            Boolean           @default(true)
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  inventory         InventoryBalance?
+  purchaseItems     PurchaseItem[]
+  inventoryLots     InventoryLot[]
+  stockMovements    StockMovement[]
 
   @@unique([modelId, size, colorKey])
   @@index([size])
@@ -159,16 +170,17 @@ model Customer {
 }
 
 model Supplier {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @db.VarChar(160)
-  document  String?  @db.VarChar(60)
-  phone     String?  @db.VarChar(60)
-  email     String?  @db.VarChar(254)
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String     @db.VarChar(160)
+  document  String?    @db.VarChar(60)
+  phone     String?    @db.VarChar(60)
+  email     String?    @db.VarChar(254)
   address   String?
   notes     String?
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  purchases Purchase[]
 
   @@index([name])
   @@index([document])
@@ -176,29 +188,33 @@ model Supplier {
 }
 
 model Currency {
-  code       String         @id @db.VarChar(5)
-  name       String         @db.VarChar(80)
-  minorUnits Int            @map("minor_units") @db.SmallInt
-  active     Boolean        @default(true)
+  code       String            @id @db.VarChar(5)
+  name       String            @db.VarChar(80)
+  minorUnits Int               @map("minor_units") @db.SmallInt
+  active     Boolean           @default(true)
   rates      ExchangeRate[]
   accounts   MoneyAccount[]
+  purchases  Purchase[]
+  payments   SupplierPayment[]
 
   @@map("currencies")
 }
 
 model ExchangeRate {
-  id           String        @id @default(uuid()) @db.Uuid
-  currencyCode String        @map("currency_code") @db.VarChar(5)
-  currency     Currency      @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
-  unitsPerUsd  Decimal       @map("units_per_usd") @db.Decimal(30, 12)
-  effectiveAt  DateTime      @map("effective_at") @db.Timestamptz(3)
-  createdById  String        @map("created_by_id") @db.Uuid
-  createdBy    User          @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
-  archivedAt   DateTime?     @map("archived_at") @db.Timestamptz(3)
-  replacesId   String?       @unique @map("replaces_id") @db.Uuid
-  replaces     ExchangeRate? @relation("RateRevisions", fields: [replacesId], references: [id], onDelete: Restrict)
-  replacement  ExchangeRate? @relation("RateRevisions")
+  id           String            @id @default(uuid()) @db.Uuid
+  currencyCode String            @map("currency_code") @db.VarChar(5)
+  currency     Currency          @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  unitsPerUsd  Decimal           @map("units_per_usd") @db.Decimal(30, 12)
+  effectiveAt  DateTime          @map("effective_at") @db.Timestamptz(3)
+  createdById  String            @map("created_by_id") @db.Uuid
+  createdBy    User              @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  archivedAt   DateTime?         @map("archived_at") @db.Timestamptz(3)
+  replacesId   String?           @unique @map("replaces_id") @db.Uuid
+  replaces     ExchangeRate?     @relation("RateRevisions", fields: [replacesId], references: [id], onDelete: Restrict)
+  replacement  ExchangeRate?     @relation("RateRevisions")
+  purchases    Purchase[]
+  payments     SupplierPayment[]
 
   @@index([currencyCode, effectiveAt(sort: Desc), createdAt(sort: Desc)])
   @@index([createdById])
@@ -206,14 +222,16 @@ model ExchangeRate {
 }
 
 model MoneyAccount {
-  id           String      @id @default(uuid()) @db.Uuid
-  name         String      @db.VarChar(120)
-  currencyCode String      @map("currency_code") @db.VarChar(5)
-  currency     Currency    @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  id           String            @id @default(uuid()) @db.Uuid
+  name         String            @db.VarChar(120)
+  currencyCode String            @map("currency_code") @db.VarChar(5)
+  currency     Currency          @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
   kind         AccountKind
-  active       Boolean     @default(true)
-  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  active       Boolean           @default(true)
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  payments     SupplierPayment[]
+  movements    MoneyMovement[]
 
   @@unique([currencyCode, name])
   @@map("money_accounts")
@@ -228,4 +246,205 @@ model ShopSettings {
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@map("shop_settings")
+}
+
+enum PurchaseStatus {
+  DRAFT
+  CONFIRMED
+  VOIDED
+}
+
+enum StockMovementKind {
+  RECEIPT
+  RECEIPT_REVERSAL
+  ADJUST_IN
+  ADJUST_OUT
+}
+
+enum SupplierMoneyKind {
+  SUPPLIER_PAYMENT
+  SUPPLIER_PAYMENT_REVERSAL
+}
+
+model Purchase {
+  id                 String            @id @default(uuid()) @db.Uuid
+  status             PurchaseStatus    @default(DRAFT)
+  supplierId         String            @map("supplier_id") @db.Uuid
+  supplier           Supplier          @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  documentAt         DateTime          @map("document_at") @db.Timestamptz(3)
+  reference          String?           @db.VarChar(120)
+  notes              String?
+  currencyCode       String            @map("currency_code") @db.VarChar(5)
+  currency           Currency          @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  minorUnits         Int               @map("minor_units") @db.SmallInt
+  exchangeRateId     String?           @map("exchange_rate_id") @db.Uuid
+  exchangeRate       ExchangeRate?     @relation(fields: [exchangeRateId], references: [id], onDelete: Restrict)
+  unitsPerUsd        Decimal?          @map("units_per_usd") @db.Decimal(30, 12)
+  draftData          Json              @map("draft_data")
+  revision           Int               @default(1)
+  subtotalOriginal   Decimal           @map("subtotal_original") @db.Decimal(38, 8)
+  freightOriginal    Decimal           @map("freight_original") @db.Decimal(38, 8)
+  totalOriginal      Decimal           @map("total_original") @db.Decimal(38, 8)
+  totalUsd           Decimal?          @map("total_usd") @db.Decimal(48, 2)
+  paidUsd            Decimal           @default(0) @map("paid_usd") @db.Decimal(48, 2)
+  pairCount          Int               @map("pair_count")
+  createdById        String            @map("created_by_id") @db.Uuid
+  createdBy          User              @relation("PurchaseCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  receivedById       String?           @map("received_by_id") @db.Uuid
+  receivedBy         User?             @relation("PurchaseReceiver", fields: [receivedById], references: [id], onDelete: Restrict)
+  voidedById         String?           @map("voided_by_id") @db.Uuid
+  voidedBy           User?             @relation("PurchaseVoider", fields: [voidedById], references: [id], onDelete: Restrict)
+  receivedAt         DateTime?         @map("received_at") @db.Timestamptz(3)
+  voidedAt           DateTime?         @map("voided_at") @db.Timestamptz(3)
+  voidReason         String?           @map("void_reason")
+  confirmationKey    String?           @map("confirmation_key") @db.Uuid
+  confirmationDigest String?           @map("confirmation_digest") @db.Char(64)
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  items              PurchaseItem[]
+  payments           SupplierPayment[]
+
+  @@index([status, documentAt])
+  @@index([supplierId, documentAt])
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id               String          @id @default(uuid()) @db.Uuid
+  purchaseId       String          @map("purchase_id") @db.Uuid
+  purchase         Purchase        @relation(fields: [purchaseId], references: [id], onDelete: Restrict)
+  variantId        String          @map("variant_id") @db.Uuid
+  variant          ProductVariant  @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  position         Int
+  brandName        String          @map("brand_name") @db.VarChar(120)
+  modelName        String          @map("model_name") @db.VarChar(140)
+  size             Int             @db.SmallInt
+  sku              String          @db.VarChar(60)
+  color            String?         @db.VarChar(80)
+  quantity         Int
+  salePriceUsd     Decimal         @map("sale_price_usd") @db.Decimal(18, 2)
+  unitCostOriginal Decimal         @map("unit_cost_original") @db.Decimal(38, 8)
+  freightOriginal  Decimal         @map("freight_original") @db.Decimal(38, 8)
+  totalOriginal    Decimal         @map("total_original") @db.Decimal(38, 8)
+  totalUsd         Decimal         @map("total_usd") @db.Decimal(48, 2)
+  unitCostUsd      Decimal         @map("unit_cost_usd") @db.Decimal(56, 12)
+  lot              InventoryLot?
+  movements        StockMovement[]
+
+  @@unique([purchaseId, variantId])
+  @@unique([purchaseId, position])
+  @@index([variantId])
+  @@map("purchase_items")
+}
+
+model InventoryBalance {
+  variantId String         @id @map("variant_id") @db.Uuid
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  physical  Int            @default(0)
+  reserved  Int            @default(0)
+  updatedAt DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("inventory_balances")
+}
+
+model InventoryLot {
+  id                String               @id @default(uuid()) @db.Uuid
+  variantId         String               @map("variant_id") @db.Uuid
+  variant           ProductVariant       @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  purchaseItemId    String?              @unique @map("purchase_item_id") @db.Uuid
+  purchaseItem      PurchaseItem?        @relation(fields: [purchaseItemId], references: [id], onDelete: Restrict)
+  receivedAt        DateTime             @map("received_at") @db.Timestamptz(3)
+  initialQuantity   Int                  @map("initial_quantity")
+  remainingQuantity Int                  @map("remaining_quantity")
+  unitCostUsd       Decimal              @map("unit_cost_usd") @db.Decimal(56, 12)
+  totalCostUsd      Decimal              @map("total_cost_usd") @db.Decimal(48, 2)
+  remainingCostUsd  Decimal              @map("remaining_cost_usd") @db.Decimal(48, 2)
+  allocations       StockLotAllocation[]
+
+  @@index([variantId, receivedAt, id])
+  @@map("inventory_lots")
+}
+
+model StockMovement {
+  id              String               @id @default(uuid()) @db.Uuid
+  variantId       String               @map("variant_id") @db.Uuid
+  variant         ProductVariant       @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  purchaseItemId  String?              @map("purchase_item_id") @db.Uuid
+  purchaseItem    PurchaseItem?        @relation(fields: [purchaseItemId], references: [id], onDelete: Restrict)
+  kind            StockMovementKind
+  quantityDelta   Int                  @map("quantity_delta")
+  reason          String?
+  operationKey    String?              @unique @map("operation_key") @db.Uuid
+  operationDigest String?              @map("operation_digest") @db.Char(64)
+  actorId         String               @map("actor_id") @db.Uuid
+  actor           User                 @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  occurredAt      DateTime             @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  allocations     StockLotAllocation[]
+
+  @@unique([purchaseItemId, kind])
+  @@index([variantId, occurredAt])
+  @@map("stock_movements")
+}
+
+model StockLotAllocation {
+  movementId String        @map("movement_id") @db.Uuid
+  movement   StockMovement @relation(fields: [movementId], references: [id], onDelete: Restrict)
+  lotId      String        @map("lot_id") @db.Uuid
+  lot        InventoryLot  @relation(fields: [lotId], references: [id], onDelete: Restrict)
+  quantity   Int
+  costUsd    Decimal       @map("cost_usd") @db.Decimal(48, 2)
+
+  @@id([movementId, lotId])
+  @@index([lotId])
+  @@map("stock_lot_allocations")
+}
+
+model SupplierPayment {
+  id              String          @id @default(uuid()) @db.Uuid
+  purchaseId      String          @map("purchase_id") @db.Uuid
+  purchase        Purchase        @relation(fields: [purchaseId], references: [id], onDelete: Restrict)
+  accountId       String          @map("account_id") @db.Uuid
+  account         MoneyAccount    @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  currencyCode    String          @map("currency_code") @db.VarChar(5)
+  currency        Currency        @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  exchangeRateId  String?         @map("exchange_rate_id") @db.Uuid
+  exchangeRate    ExchangeRate?   @relation(fields: [exchangeRateId], references: [id], onDelete: Restrict)
+  unitsPerUsd     Decimal         @map("units_per_usd") @db.Decimal(30, 12)
+  amountOriginal  Decimal         @map("amount_original") @db.Decimal(38, 8)
+  amountUsd       Decimal         @map("amount_usd") @db.Decimal(48, 2)
+  paidAt          DateTime        @map("paid_at") @db.Timestamptz(3)
+  reference       String?         @db.VarChar(120)
+  operationKey    String          @map("operation_key") @db.Uuid
+  operationDigest String          @map("operation_digest") @db.Char(64)
+  createdById     String          @map("created_by_id") @db.Uuid
+  createdBy       User            @relation("SupplierPaymentCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  reversedAt      DateTime?       @map("reversed_at") @db.Timestamptz(3)
+  reversedById    String?         @map("reversed_by_id") @db.Uuid
+  reversedBy      User?           @relation("SupplierPaymentReverser", fields: [reversedById], references: [id], onDelete: Restrict)
+  reversalReason  String?         @map("reversal_reason")
+  movements       MoneyMovement[]
+
+  @@unique([purchaseId, operationKey])
+  @@index([accountId, paidAt])
+  @@map("supplier_payments")
+}
+
+model MoneyMovement {
+  id             String            @id @default(uuid()) @db.Uuid
+  kind           SupplierMoneyKind
+  paymentId      String            @map("payment_id") @db.Uuid
+  payment        SupplierPayment   @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  accountId      String            @map("account_id") @db.Uuid
+  account        MoneyAccount      @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  currencyCode   String            @map("currency_code") @db.VarChar(5)
+  unitsPerUsd    Decimal           @map("units_per_usd") @db.Decimal(30, 12)
+  amountOriginal Decimal           @map("amount_original") @db.Decimal(38, 8)
+  amountUsd      Decimal           @map("amount_usd") @db.Decimal(48, 2)
+  actorId        String            @map("actor_id") @db.Uuid
+  actor          User              @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  occurredAt     DateTime          @map("occurred_at") @db.Timestamptz(3)
+
+  @@unique([paymentId, kind])
+  @@index([accountId, occurredAt])
+  @@map("money_movements")
 }
