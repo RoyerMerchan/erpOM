@@ -1,0 +1,9 @@
+{
+  "name": "@max-sport/config",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./tsconfig/node.json": "./tsconfig/node.json",
+    "./tsconfig/web.json": "./tsconfig/web.json"
+  }
+}

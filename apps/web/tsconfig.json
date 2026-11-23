@@ -1,0 +1,4 @@
+{
+  "extends": "@max-sport/config/tsconfig/web.json",
+  "include": ["src", "vite.config.ts"]
+}

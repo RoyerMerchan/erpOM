@@ -1,0 +1,10 @@
+packages:
+  - apps/*
+  - packages/*
+
+storeDir: .local/pnpm-store
+
+allowBuilds:
+  '@prisma/engines': true
+  esbuild: true
+  prisma: true

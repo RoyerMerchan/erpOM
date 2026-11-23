@@ -1,0 +1,38 @@
+{
+  "name": "max-sport-manager",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.23.0",
+  "engines": {
+    "node": "^24.11.0"
+  },
+  "scripts": {
+    "code:prepare": "pnpm --filter @max-sport/shared build && pnpm db:generate",
+    "dev": "pnpm code:prepare && pnpm --parallel --filter @max-sport/api --filter @max-sport/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm code:prepare && pnpm --filter @max-sport/api typecheck && pnpm --filter @max-sport/web typecheck",
+    "test": "pnpm code:prepare && pnpm --filter @max-sport/api test",
+    "test:integration": "pnpm code:prepare && pnpm --filter @max-sport/api test:integration",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter @max-sport/api db:generate",
+    "db:validate": "pnpm --filter @max-sport/api db:validate",
+    "db:migrate": "pnpm --filter @max-sport/api db:migrate",
+    "db:migrate:dev": "pnpm --filter @max-sport/api db:migrate:dev",
+    "db:bootstrap": "pnpm code:prepare && pnpm --filter @max-sport/api db:bootstrap",
+    "db:seed:demo": "pnpm code:prepare && pnpm --filter @max-sport/api db:seed:demo"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.12.1",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "typescript-eslint": "^8.73.0",
+    "typescript": "~6.0.0",
+    "vue-eslint-parser": "^10.3.0"
+  }
+}

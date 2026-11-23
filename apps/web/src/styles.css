@@ -1,0 +1,490 @@
+@layer theme, base, primevue, components, utilities;
+@import 'tailwindcss';
+
+:root {
+  font-family: 'Inter Variable', Inter, system-ui, sans-serif;
+  color: #17233a;
+  background: #f3f6fa;
+  font-synthesis: none;
+  --ink: #17233a;
+  --muted: #516179;
+  --navy: #132238;
+  --surface: #fff;
+  --canvas: #f3f6fa;
+  --line: #dde4ee;
+  --lime: #d5f47c;
+  --indigo: #4338ca;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #6974f0;
+  outline-offset: 4px;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 0.7rem;
+  background: var(--lime);
+  color: var(--navy);
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: -0.12em;
+  padding-right: 0.14em;
+}
+
+.brand-wordmark {
+  display: grid;
+  gap: 0.1rem;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.brand-wordmark strong {
+  font-size: 1.08rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.brand-wordmark span {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: inherit;
+  opacity: 0.82;
+}
+
+.login-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+  min-height: 100svh;
+  background: var(--surface);
+}
+
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 4rem;
+  padding: clamp(2rem, 6vw, 6rem);
+  color: var(--surface);
+  background-color: var(--navy);
+  background-image:
+    radial-gradient(ellipse at 10% 100%, #2b436b 0, transparent 68%),
+    repeating-linear-gradient(135deg, #ffffff10 0 1px, transparent 1px 42px);
+}
+
+.login-statement {
+  max-width: 12ch;
+  margin: 0 0 0.4rem;
+  color: var(--lime);
+  font-size: clamp(2.15rem, 4.8vw, 5rem);
+  line-height: 1.02;
+  font-weight: 760;
+  letter-spacing: -0.065em;
+  text-wrap: balance;
+}
+
+.login-main {
+  display: grid;
+  place-items: center;
+  padding: clamp(1.5rem, 5vw, 4rem);
+}
+
+.login-form-wrap {
+  width: min(100%, 25rem);
+}
+
+.login-form-wrap h1,
+.workspace-title {
+  margin: 0 0 2rem;
+  font-size: clamp(2rem, 4vw, 2.65rem);
+  line-height: 1.07;
+  font-weight: 740;
+  letter-spacing: -0.055em;
+}
+
+.login-message {
+  margin-bottom: 1.25rem;
+}
+
+.login-form {
+  display: grid;
+  gap: 1.3rem;
+}
+
+.access-field {
+  display: grid;
+  min-width: 0;
+  gap: 0.55rem;
+}
+
+.access-field label {
+  font-size: 0.94rem;
+  font-weight: 650;
+}
+
+.login-form .p-inputtext,
+.login-form .p-password {
+  width: 100%;
+  min-height: 3rem;
+  font-size: 1rem;
+}
+
+.field-error {
+  margin: 0;
+  color: #a22337;
+  font-size: 0.875rem;
+}
+
+.access-submit.p-button {
+  min-height: 3rem;
+  margin-top: 0.3rem;
+  border-radius: 0.55rem;
+}
+
+.workspace-shell {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  min-height: 100svh;
+  background: var(--canvas);
+}
+
+.workspace-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  height: 100svh;
+  overflow-y: auto;
+  padding: 1.65rem 1.1rem 1.15rem;
+  background: var(--navy);
+  color: var(--surface);
+}
+
+.workspace-sidebar .brand-lockup {
+  padding-inline: 0.45rem;
+}
+
+.navigation-stack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 100%;
+}
+
+.workspace-sidebar .navigation-stack {
+  min-height: 0;
+}
+
+.navigation-link {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  gap: 0.8rem;
+  padding-inline: 0.9rem;
+  border-radius: 0.6rem;
+  color: var(--surface);
+  font-size: 0.94rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.navigation-link:hover,
+.navigation-link.router-link-exact-active {
+  background: #2b405e;
+}
+
+.navigation-link.router-link-exact-active .pi {
+  color: var(--lime);
+}
+
+.navigation-sign-out.p-button {
+  justify-content: start;
+  min-height: 2.75rem;
+  color: #e3eaf5;
+  padding-inline: 0.9rem;
+  text-align: left;
+}
+
+.navigation-sign-out.p-button:hover {
+  background: #2b405e;
+  color: var(--surface);
+}
+
+.workspace-topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 4.65rem;
+  padding: 0.75rem clamp(1rem, 4vw, 3rem);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.mobile-header {
+  display: none;
+}
+
+.workspace-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.profile-avatar.p-avatar {
+  flex: none;
+  background: #e6e9ff;
+  color: #3730a3;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.profile-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.08rem;
+  font-size: 0.875rem;
+}
+
+.profile-copy strong,
+.profile-copy span {
+  overflow-wrap: anywhere;
+}
+
+.profile-copy span {
+  color: var(--muted);
+}
+
+.workspace-content {
+  width: min(100%, 70rem);
+  margin-inline: auto;
+  padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.status-card {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: 0 6px 18px #19284509;
+}
+
+.status-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.4rem clamp(1rem, 3vw, 1.8rem);
+}
+
+.status-card-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.status-check-time {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.status-card-header .p-button {
+  min-height: 2.75rem;
+}
+
+.status-list {
+  margin: 0;
+}
+
+.service-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 4.25rem;
+  padding: 0.85rem clamp(1rem, 3vw, 1.8rem);
+  border-top: 1px solid var(--line);
+}
+
+.service-row dt {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-weight: 620;
+}
+
+.service-icon {
+  display: grid;
+  place-items: center;
+  width: 2.05rem;
+  height: 2.05rem;
+  border-radius: 0.5rem;
+  background: #eef1ff;
+  color: #3730a3;
+}
+
+.service-row dd {
+  margin: 0;
+}
+
+.service-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.62rem;
+  border-radius: 999px;
+  background: #edf0f5;
+  color: #46536a;
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+.service-status::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+
+.service-status.is-ready {
+  background: #dcf8ea;
+  color: #146043;
+}
+
+.service-status.is-offline {
+  background: #ffedf0;
+  color: #a42038;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 10;
+  inset: 0.5rem auto auto 0.5rem;
+  transform: translateY(-150%);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--surface);
+  color: var(--indigo);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.mobile-nav-drawer.p-drawer {
+  width: min(19rem, 88vw);
+  background: var(--navy);
+  color: var(--surface);
+}
+
+.mobile-nav-drawer .p-drawer-close-button {
+  color: var(--surface);
+}
+
+.mobile-nav-drawer .p-drawer-close-button:hover {
+  background: #2b405e;
+  color: var(--surface);
+}
+
+@media (max-width: 760px) {
+  .login-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .login-brand {
+    gap: 1.35rem;
+    padding: 1.5rem;
+  }
+
+  .login-statement {
+    max-width: none;
+    margin-bottom: 0;
+    font-size: clamp(1.6rem, 5vw, 2.35rem);
+    letter-spacing: -0.045em;
+  }
+
+  .login-main {
+    align-items: start;
+    padding-block: clamp(2rem, 7vw, 3.25rem);
+  }
+
+  .workspace-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workspace-sidebar {
+    display: none;
+  }
+
+  .workspace-topbar {
+    justify-content: space-between;
+    min-height: 4rem;
+  }
+
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .mobile-header .brand-mark {
+    width: 2.2rem;
+    height: 2.2rem;
+    font-size: 1.2rem;
+  }
+
+  .menu-toggle.p-button {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: none;
+  }
+
+  .profile-copy {
+    text-align: right;
+  }
+
+  .workspace-content {
+    padding-inline: 1rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .workspace-topbar .profile-avatar {
+    display: none;
+  }
+
+  .mobile-header .brand-lockup {
+    gap: 0.45rem;
+  }
+}

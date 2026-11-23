@@ -1,0 +1,12 @@
+.local/
+dist/
+coverage/
+node_modules/
+apps/api/src/generated/
+pnpm-lock.yaml
+01_PROMPT_MAESTRO.md
+02_PROMPTS_POR_FASES.md
+LEEME.md
+MASTER_PROMPT.md
+docs/MASTER_PROMPT.md
+docs/02_PROMPTS_POR_FASES.md
