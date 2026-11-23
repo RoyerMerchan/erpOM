@@ -35,17 +35,19 @@ export async function changePhysical(tx: Transaction, variantId: string, delta: 
   });
 }
 
-export async function consumeFifo(
-  tx: Transaction,
-  variantId: string,
-  quantity: number,
-  movementId: string,
-) {
+export async function planFifo(tx: Transaction, variantId: string, quantity: number) {
   const lots = await tx.inventoryLot.findMany({
     where: { variantId, remainingQuantity: { gt: 0 } },
     orderBy: [{ receivedAt: 'asc' }, { id: 'asc' }],
   });
   let pending = quantity;
+  let totalUsd = decimal(0);
+  const allocations: {
+    lotId: string;
+    quantity: number;
+    costUsd: string;
+    remainingCostUsd: string;
+  }[] = [];
   for (const lot of lots) {
     if (!pending) break;
     const applied = Math.min(pending, lot.remainingQuantity);
@@ -55,16 +57,13 @@ export async function consumeFifo(
       applied === lot.remainingQuantity || proportionalCost.gt(remainingCost)
         ? remainingCost
         : proportionalCost;
-    await tx.inventoryLot.update({
-      where: { id: lot.id },
-      data: {
-        remainingQuantity: { decrement: applied },
-        remainingCostUsd: remainingCost.sub(cost).toFixed(2),
-      },
+    allocations.push({
+      lotId: lot.id,
+      quantity: applied,
+      costUsd: cost.toFixed(2),
+      remainingCostUsd: remainingCost.sub(cost).toFixed(2),
     });
-    await tx.stockLotAllocation.create({
-      data: { movementId, lotId: lot.id, quantity: applied, costUsd: cost.toFixed(2) },
-    });
+    totalUsd = totalUsd.add(cost);
     pending -= applied;
   }
   if (pending)
@@ -73,4 +72,28 @@ export async function consumeFifo(
       'STOCK_INCONSISTENT',
       'Los lotes no cubren el movimiento de existencias.',
     );
+  return { allocations, totalUsd: totalUsd.toFixed(2) };
+}
+
+export async function applyFifo(
+  tx: Transaction,
+  plan: Awaited<ReturnType<typeof planFifo>>,
+  movementId: string,
+) {
+  for (const { lotId, quantity, costUsd, remainingCostUsd } of plan.allocations) {
+    await tx.inventoryLot.update({
+      where: { id: lotId },
+      data: { remainingQuantity: { decrement: quantity }, remainingCostUsd },
+    });
+    await tx.stockLotAllocation.create({ data: { movementId, lotId, quantity, costUsd } });
+  }
+}
+
+export async function consumeFifo(
+  tx: Transaction,
+  variantId: string,
+  quantity: number,
+  movementId: string,
+) {
+  await applyFifo(tx, await planFifo(tx, variantId, quantity), movementId);
 }

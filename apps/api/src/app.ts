@@ -11,6 +11,7 @@ import { createErrorHandler, HttpError } from './http/errors.js';
 import { createInventoryRouter } from './inventory/routes.js';
 import { createMasterDataRouter } from './master-data/routes.js';
 import { createPurchaseRouter } from './purchasing/routes.js';
+import { createSalesRouter } from './sales/routes.js';
 
 export function createApp(
   database: Database,
@@ -67,6 +68,7 @@ export function createApp(
   api.use('/auth', createAuthRouter(database, security));
   api.use('/inventory', createInventoryRouter(database, security));
   api.use('/purchases', createPurchaseRouter(database, security));
+  api.use('/sales', createSalesRouter(database, security));
   api.use(createMasterDataRouter(database, security));
   app.use('/api/v1', api);
   app.use((_request, _response, next) => {

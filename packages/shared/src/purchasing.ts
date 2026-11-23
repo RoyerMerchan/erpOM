@@ -216,7 +216,7 @@ export const inventoryRowSchema = z.object({
 });
 export const stockMovementSchema = z.object({
   id: z.uuid(),
-  kind: z.enum(['RECEIPT', 'RECEIPT_REVERSAL', 'ADJUST_IN', 'ADJUST_OUT']),
+  kind: z.enum(['RECEIPT', 'RECEIPT_REVERSAL', 'ADJUST_IN', 'ADJUST_OUT', 'SALE_OUT']),
   quantityDelta: z.number().int(),
   reason: z.string().nullable(),
   occurredAt: date,

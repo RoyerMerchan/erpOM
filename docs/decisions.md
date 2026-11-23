@@ -27,7 +27,7 @@ docs/           Contrato maestro, flujos, dominio y roadmap
 | Inventario    | Gestiona productos y proveedores. Consulta tasas, monedas y tienda.                                                              |
 | Finanzas      | Gestiona cuentas, tasas y monedas. Consulta proveedores, tienda y auditoría.                                                     |
 
-Costos y utilidad son permisos independientes. Se habilitan inicialmente para Administrador, Gerente y Finanzas. Las fases que incorporen costos y rentabilidad aplicarán los permisos al construir las respuestas de la API, además de ocultar controles en el portal.
+Costos y utilidad son permisos independientes. Se habilitan inicialmente para Administrador, Gerente y Finanzas. La API aplica estos permisos antes de devolver campos financieros y el portal los usa para mostrar controles y columnas.
 
 Cada mutación auditada registra el actor y el cambio en la misma transacción. Para cuentas y contactos personales, las instantáneas registran estado, rol o presencia de campos. Las contraseñas, los tokens, el contenido de notas y los datos de contacto quedan fuera de la bitácora.
 
@@ -35,8 +35,8 @@ Cada mutación auditada registra el actor y el cambio en la misma transacción. 
 
 - Los valores originales admiten hasta ocho decimales en PostgreSQL y las tasas hasta doce, con `Decimal` en cálculos. Los contratos de dinero usarán cadenas decimales. Se propone USD con 2 decimales, COP con 0 por defecto, VES con 2 y USDT con 6. La moneda configura la escala operativa de su captura.
 - La conversión conserva precisión hasta el redondeo monetario. Los importes de línea contabilizados en USD redondean a centavos con `ROUND_HALF_UP`. Los totales suman los importes persistidos. Costos unitarios FIFO retienen mayor precisión. Cada lote conserva su costo total y la última asignación absorbe el residuo de centavos.
-- Fletes se prorratean por cantidad de pares. Descuentos globales se prorratean por valor. Se distribuyen centavos restantes por mayor resto y se usa un identificador estable para desempatar. El criterio de flete queda guardado en el documento.
-- El POS valida cobertura en centavos USD con los montos de cada pago ya redondeados. El excedente se registra como vuelto explícito en su cuenta o se ajusta el importe aplicado antes de confirmar. La cobertura final debe ser exacta en centavos.
+- Fletes se prorratean por cantidad de pares. El descuento global se prorratea según el importe de cada línea después de su descuento propio. Los centavos sobrantes se distribuyen por mayor resto. El orden de grupo y talla desempata el flete y el orden de la venta desempata los descuentos.
+- El POS valida cobertura exacta en centavos USD con los importes de cada pago ya redondeados. El exceso puede registrarse como vuelto de efectivo con cuenta y tasa propias. Un total de cero puede confirmarse sin cobros.
 - Las fechas de eventos se guardan con zona (`timestamptz`). Para reportes, semana de lunes a domingo y zona inicial `America/Caracas`, configurable. Los filtros convierten los límites locales a UTC antes de consultar.
 - La pantalla de tasas captura y muestra horas en la zona del dispositivo y la indica en el formulario. Cada petición registra un instante ISO 8601 con zona. La zona configurada en la tienda regirá los cortes de los reportes.
 - La recepción prorratea el flete en las unidades menores de la moneda y resuelve el residuo por grupo y talla. Cada línea USD redondea a centavos. El costo unitario del lote se deriva de ese total a doce decimales. Al consumir parte de un lote se prorratea contra el costo inicial, con límite en el saldo. La última salida absorbe el residuo.
@@ -52,3 +52,9 @@ Cada mutación auditada registra el actor y el cambio en la misma transacción. 
 - Administrador y Gerente confirman, anulan y registran pagos. Finanzas consulta y paga compras. Inventario puede consultar compras y ajustar salidas. Con acceso a costos, Inventario puede guardar y confirmar borradores y ajustar entradas.
 - El margen estimado por variante compara el precio público con el costo del primer lote disponible. Requiere ambos permisos, `costs.read` y `profits.read`, ya que el margen y el precio juntos revelan el costo.
 - La recepción cambia existencias y lotes. Un pago a proveedor crea una salida de caja. Su reversión registra una entrada compensatoria con el importe y la tasa originales cuando el dinero vuelve a la cuenta o se corrige un registro errado. Los movimientos y renglones publicados se conservan mediante restricciones de base de datos.
+
+## Operación de ventas
+
+- Administrador y Gerente pueden vender, elegir al vendedor y consultar el historial completo. Vendedor puede registrar y consultar sus propias operaciones. Finanzas consulta el historial completo. El acceso a utilidad exige permiso para ver costos y utilidad.
+- La confirmación bloquea las variantes en orden de UUID, vuelve a validar la vista previa y registra el comprobante, las salidas FIFO, los cobros, el vuelto y la auditoría en una transacción. Las cifras de costo del POS son estimaciones hasta la confirmación que consume los lotes.
+- El historial usa la zona del dispositivo para mostrar fechas y construir el rango solicitado. El día final visible se incluye convirtiendo la medianoche del día siguiente en el límite superior exclusivo.

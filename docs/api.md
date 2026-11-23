@@ -57,6 +57,23 @@ Los recursos son `brands`, `models`, `variants`, `customers`, `suppliers`, `acco
 
 Los importes viajan en cadenas decimales. Las recepciones y los pagos conservan el USD histórico. Repetir un `operationId` con los mismos datos devuelve el documento o movimiento existente. Usarlo con datos diferentes devuelve `409`. Los estados, tasas, existencias y pagos se validan dentro de sus transacciones.
 
+## Fase 3
+
+| Método y ruta                    | Resultado                                                                                                                                                            |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /sales/preview`            | Verifica disponibilidad y calcula líneas, descuentos, equivalencias locales, cobros, saldo y vuelto. Devuelve `quoteDigest` y `ready`.                               |
+| `POST /sales`                    | Recibe `{operationId, quoteDigest, sale}`. Responde `201` con el comprobante confirmado. La repetición con el mismo actor y contenido devuelve el mismo comprobante. |
+| `GET /sales`                     | Lista ventas paginadas con `q`, `sellerId`, `customerId`, `currencyCode`, `from` inclusivo y `to` exclusivo. Las fechas son instantes ISO 8601 con zona.             |
+| `GET /sales/:id`                 | Devuelve comprobante, líneas, descuentos, cobros y vuelto. Los importes de costo y utilidad requieren los permisos correspondientes.                                 |
+| `GET /sales/operators`           | Lista personal habilitado para vender. Admite búsqueda `q` y requiere permiso de consulta global.                                                                    |
+| `GET /sales/rates/:currencyCode` | Consulta la última tasa activa hasta el momento de la petición para precargarla antes de calcular.                                                                   |
+
+El cuerpo de venta incluye `items: [{variantId, quantity, discount?}]`, `customerId`, `sellerId`, `notes`, `globalDiscount`, `payments`, `change` y `displayQuote`. Un descuento porcentual recibe `{kind: "PERCENT", percentage}`. Uno fijo recibe `{kind: "FIXED", currencyCode, amountOriginal, unitsPerUsd}`. Cada cobro o vuelto recibe `{accountId, amountOriginal, unitsPerUsd, reference?}`. El vuelto exige cuenta de efectivo. Los importes y tasas viajan en cadenas decimales.
+
+Envía la misma venta junto con el `quoteDigest` de su vista previa. Una variación de precios produce `409 QUOTE_CHANGED`. El stock se valida al calcular y al confirmar. Si falta tasa explícita de una moneda distinta de USD se devuelve `409 RATE_REQUIRED`. Si el cobro neto difiere del total se devuelve `409 PAYMENT_MISMATCH`. Ante una respuesta de red incierta, reenvía el mismo cuerpo y `operationId`. Reutilizar la clave con otro actor o contenido produce `409 IDEMPOTENCY_CONFLICT`.
+
+El permiso `sales.read` habilita las ventas propias. `sales.read.all` amplía la consulta. `sales.assign` permite escoger a otro vendedor. El costo requiere `costs.read` y la utilidad bruta requiere además `profits.read`.
+
 ## Evolución
 
-Las confirmaciones de ventas, apartados y devoluciones usarán idempotencia. El catálogo PDF tendrá permisos de exportación y un contrato limitado a datos públicos.
+Apartados y devoluciones usarán idempotencia. El catálogo PDF tendrá permisos de exportación y un contrato limitado a datos públicos.

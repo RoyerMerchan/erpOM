@@ -4,6 +4,7 @@ export * from './access.js';
 export * from './identity.js';
 export * from './master-data.js';
 export * from './purchasing.js';
+export * from './sales.js';
 
 z.config(z.locales.es());
 

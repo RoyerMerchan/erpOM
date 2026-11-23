@@ -47,6 +47,7 @@ const movementsLabel = {
   RECEIPT_REVERSAL: 'Anulación de recepción',
   ADJUST_IN: 'Ajuste de entrada',
   ADJUST_OUT: 'Ajuste de salida',
+  SALE_OUT: 'Venta',
 };
 
 const list = usePagedList(getInventory);

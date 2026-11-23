@@ -1,6 +1,7 @@
 import type { PurchaseInput, PurchasePreview } from '@max-sport/shared';
 import { Prisma } from '../generated/prisma/client.js';
 import { HttpError } from '../http/errors.js';
+import { apportionUnits } from '../money/allocation.js';
 
 const Decimal = Prisma.Decimal.clone({ precision: 72, rounding: Prisma.Decimal.ROUND_HALF_UP });
 export const decimal = (value: string | number | Prisma.Decimal) => new Decimal(value.toString());
@@ -40,25 +41,12 @@ export function requiredRate(code: string, requested: string | null) {
 }
 
 function distributeFreight(freight: Prisma.Decimal, quantities: number[], minorUnits: number) {
-  const pairs = BigInt(quantities.reduce((sum, quantity) => sum + quantity, 0));
   const minorFreight = BigInt(freight.toFixed(minorUnits).replace('.', ''));
-  if (!minorFreight) return quantities.map(() => decimal(0));
-
-  const weights = quantities.map((quantity, index) => {
-    const product = minorFreight * BigInt(quantity);
-    return { index, whole: product / pairs, residual: product % pairs };
-  });
-  let rest = minorFreight - weights.reduce((sum, weight) => sum + weight.whole, 0n);
-  const byRemainder = [...weights].sort((a, b) =>
-    a.residual === b.residual ? a.index - b.index : a.residual > b.residual ? -1 : 1,
-  );
-  for (const weight of byRemainder) {
-    if (rest === 0n) break;
-    weight.whole += 1n;
-    rest -= 1n;
-  }
   const divider = decimal(10).pow(minorUnits);
-  return weights.map((weight) => decimal(weight.whole.toString()).div(divider));
+  return apportionUnits(
+    minorFreight,
+    quantities.map((quantity) => BigInt(quantity)),
+  ).map((share) => decimal(share.toString()).div(divider));
 }
 
 export function previewPurchase(input: PurchaseInput, minorUnits: number): PurchasePreview {

@@ -36,3 +36,10 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - La migración se aplicó a una base PostgreSQL 17.12 nueva y a una copia de la Fase 1. Por HTTP se comprobaron cinco rutas de la web y el flujo Legend desde el borrador hasta el pago completo, además de un ajuste de entrada.
 - Pasaron 16 pruebas de humo y unitarias y 13 de integración. También pasaron lint, formato, verificación de tipos, compilación y validación del esquema Prisma.
 - La revisión visual en navegador quedó pendiente porque el acceso al navegador integrado no estaba disponible.
+
+## Resultado de la Fase 3
+
+- El POS permite vender tallas con stock disponible, crear un cliente desde el carrito y guardar descuentos y cobros en USD, COP, VES y USDT. El historial ofrece filtros, detalle y un comprobante imprimible o descargable.
+- Una venta de dos pares cobró 80.000 COP y 2.728 VES por USD 88,20 después de descuentos. El costo FIFO fue de USD 42 y la utilidad bruta de USD 46,20. Las peticiones repetidas devolvieron el mismo comprobante y dos compras concurrentes por la última unidad disponible dejaron intacta la unidad reservada.
+- La migración se aplicó en PostgreSQL 17.12 tanto en una base nueva como en una copia de la Fase 2. Pasaron 20 pruebas unitarias y de humo y 17 de integración.
+- Se verificaron cinco rutas web y una venta completa con reintento, historial y salida de stock a través del proxy de Vite en la base actualizada. La revisión visual quedó pendiente por indisponibilidad del navegador integrado.

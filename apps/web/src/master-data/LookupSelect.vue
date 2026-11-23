@@ -10,6 +10,7 @@ import type { ResourceRow } from './service';
 const props = defineProps<{
   id: string;
   resource: Lookup;
+  placeholder?: string;
   disabled?: boolean;
   describedBy?: string;
   invalid?: boolean;
@@ -31,7 +32,7 @@ const options = computed(() =>
 
 function option(
   row: ResourceRow,
-  resource: 'brands' | 'models' | 'suppliers' | 'accounts',
+  resource: 'brands' | 'models' | 'suppliers' | 'accounts' | 'customers',
 ): Option {
   const name = textField(row, 'name');
   const label =
@@ -114,7 +115,7 @@ onBeforeUnmount(() => {
     :invalid="invalid"
     :show-clear="clearable"
     :aria-describedby="describedBy"
-    placeholder="Selecciona una opción"
+    :placeholder="placeholder ?? 'Selecciona una opción'"
     empty-message="No hay opciones disponibles."
     empty-filter-message="No se encontraron coincidencias."
     fluid

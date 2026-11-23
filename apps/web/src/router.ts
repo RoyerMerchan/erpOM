@@ -99,6 +99,25 @@ export function createAppRouter(pinia: Pinia) {
         meta: { requiresSession: true, permission: 'purchases.read', area: 'purchases' },
       },
       {
+        path: '/ventas/pos',
+        name: 'pos',
+        component: () => import('./views/PosView.vue'),
+        meta: { requiresSession: true, permission: 'sales.create', area: 'sales' },
+      },
+      {
+        path: '/ventas',
+        name: 'sales',
+        component: () => import('./views/SalesView.vue'),
+        meta: { requiresSession: true, permission: 'sales.read', area: 'sales' },
+      },
+      {
+        path: '/ventas/:id',
+        name: 'sale-detail',
+        component: () => import('./views/SaleDetailView.vue'),
+        props: true,
+        meta: { requiresSession: true, permission: 'sales.read', area: 'sales' },
+      },
+      {
         path: '/configuracion',
         component: () => import('./views/ShopView.vue'),
         meta: { requiresSession: true, permission: 'shop.read', area: 'settings' },

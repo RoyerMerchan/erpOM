@@ -1,7 +1,8 @@
 export type FieldValue = string | number | boolean | null;
 export type FormValues = Record<string, FieldValue>;
 export type Option = { value: string | number; label: string };
-export type Lookup = 'brands' | 'models' | 'suppliers' | 'accounts' | 'currencies' | 'roles';
+export type Lookup =
+  'brands' | 'models' | 'suppliers' | 'accounts' | 'customers' | 'currencies' | 'roles';
 export type Field = {
   key: string;
   label: string;
