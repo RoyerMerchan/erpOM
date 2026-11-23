@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from 'express';
 import type { Logger } from 'pino';
+import { Prisma } from '../generated/prisma/client.js';
 
 export class HttpError extends Error {
   constructor(
@@ -13,6 +14,25 @@ export class HttpError extends Error {
 
 function publicError(error: unknown): HttpError {
   if (error instanceof HttpError) return error;
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    switch (error.code) {
+      case 'P2002':
+        return new HttpError(409, 'DUPLICATE_RECORD', 'Ya existe un registro con esos datos.');
+      case 'P2003':
+      case 'P2025':
+        return new HttpError(
+          409,
+          'RELATED_RECORD',
+          'Revisa los registros relacionados antes de guardar.',
+        );
+      case 'P2034':
+        return new HttpError(
+          409,
+          'CONCURRENT_CHANGE',
+          'Hubo un cambio al mismo tiempo. Actualiza e inténtalo otra vez.',
+        );
+    }
+  }
   if (error instanceof Error && 'type' in error) {
     if (error.type === 'entity.parse.failed') {
       return new HttpError(400, 'INVALID_JSON', 'El cuerpo de la solicitud debe ser JSON válido.');

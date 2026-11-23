@@ -1,13 +1,18 @@
 import '@fontsource-variable/inter';
 import 'primeicons/primeicons.css';
 import './styles.css';
+import './master-data/styles.css';
 import Aura from '@primeuix/themes/aura';
 import { definePreset } from '@primeuix/themes';
 import { createPinia } from 'pinia';
 import PrimeVue from 'primevue/config';
+import ConfirmationService from 'primevue/confirmationservice';
+import ToastService from 'primevue/toastservice';
 import { createApp } from 'vue';
+import { onSessionExpired } from './api';
 import App from './App.vue';
 import { createAppRouter } from './router';
+import { useSessionStore } from './stores/session';
 
 const preset = definePreset(Aura, {
   semantic: {
@@ -37,9 +42,16 @@ const preset = definePreset(Aura, {
 });
 
 const pinia = createPinia();
+const router = createAppRouter(pinia);
+onSessionExpired(() => {
+  useSessionStore(pinia).clearSession();
+  void router.replace({ name: 'login' });
+});
 createApp(App)
   .use(pinia)
-  .use(createAppRouter(pinia))
+  .use(router)
+  .use(ToastService)
+  .use(ConfirmationService)
   .use(PrimeVue, {
     theme: {
       preset,

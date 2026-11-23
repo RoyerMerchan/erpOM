@@ -17,6 +17,12 @@ export class ApiRequestError extends Error {
   }
 }
 
+let sessionExpired: (() => void) | undefined;
+
+export function onSessionExpired(callback: () => void) {
+  sessionExpired = callback;
+}
+
 async function request(path: string, options: Pick<RequestInit, 'method' | 'body'> = {}) {
   const headers = new Headers({ Accept: 'application/json' });
   if (options.body) headers.set('Content-Type', 'application/json');
@@ -32,6 +38,9 @@ async function request(path: string, options: Pick<RequestInit, 'method' | 'body
 
   if (!response.ok) {
     const payload = apiErrorSchema.safeParse(await response.json().catch(() => null));
+    if (path !== '/auth/me' && payload.success && payload.data.error.code === 'SESSION_REQUIRED') {
+      sessionExpired?.();
+    }
     throw new ApiRequestError(
       payload.success ? payload.data.error.message : 'La API no pudo completar la solicitud.',
       response.status,
@@ -41,7 +50,7 @@ async function request(path: string, options: Pick<RequestInit, 'method' | 'body
   return response;
 }
 
-async function readJson<T>(
+export async function readJson<T>(
   path: string,
   schema: ZodType<T>,
   options?: Pick<RequestInit, 'method' | 'body'>,
@@ -52,6 +61,19 @@ async function readJson<T>(
     throw new ApiRequestError('La API devolvió una respuesta inesperada.', response.status);
   }
   return result.data;
+}
+
+export function sendJson<T>(
+  path: string,
+  schema: ZodType<T>,
+  input: unknown,
+  method: 'POST' | 'PUT',
+) {
+  return readJson(path, schema, { method, body: JSON.stringify(input) });
+}
+
+export async function noContent(path: string, method: 'POST' | 'DELETE', input?: unknown) {
+  await request(path, { method, body: input === undefined ? undefined : JSON.stringify(input) });
 }
 
 export function login(input: LoginInput) {

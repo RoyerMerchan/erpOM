@@ -47,7 +47,7 @@ erDiagram
 
 ## Identidad y catálogos
 
-- Identificadores UUID para entidades y códigos explícitos para monedas, roles y permisos. El correo se guarda normalizado. Los roles y permisos se aplicarán a acciones en la Fase 1.
+- Identificadores UUID para entidades y códigos explícitos para monedas, roles y permisos. El correo se guarda normalizado. La API consulta los permisos de la sesión por acción, y el portal utiliza los mismos códigos para mostrar rutas y controles.
 - Marca y modelo tienen claves normalizadas para búsqueda y unicidad. El SKU es único. La combinación modelo, talla y clave de color es única, incluso cuando el color está vacío. El formulario inicial ofrece tallas enteras 28–44.
 - La configuración almacena zona horaria y umbral general. La variante puede personalizar el umbral. Los catálogos con historial se desactivan conservando sus identificadores. El POS puede representar a consumidor final mediante una venta sin cliente identificado. Un apartado requiere cliente.
 
@@ -60,7 +60,7 @@ erDiagram
 
 ## Dinero e indicadores
 
-- Cada importe contabilizado conserva moneda, importe original, tasa y convención, USD histórico, momento, cuenta cuando mueve caja, autor y origen. Las tasas registradas admiten nuevas versiones para correcciones. Los documentos confirmados conservan su instantánea.
+- Cada importe contabilizado conserva moneda, importe original, tasa y convención, USD histórico, momento, cuenta cuando mueve caja, autor y origen. Corregir una tasa archiva el original y agrega una versión que lo referencia mediante `replacesId`. Archivar conserva los datos y su autor. Los documentos confirmados conservan su instantánea.
 - La moneda contable es USD. `USD = importe original / unidades por USD`. USD usa tasa 1. COP, VES y USDT necesitan una tasa positiva confirmada. Para conocer la precisión y redondeo, consulta [las decisiones de arquitectura](decisions.md).
 - `ventas netas = ventas confirmadas − descuentos − rectificaciones por devoluciones`. La fecha de la venta es la confirmación o entrega. El ticket promedio divide ventas netas entre el número de ventas del conjunto filtrado cuando el divisor es positivo.
 - `COGS = costo FIFO de unidades vendidas − ajustes de costo reconocidos en devoluciones`. Un par defectuoso sin recuperación no restaura el costo de inventario y se identifica en el ajuste. `utilidad bruta = ventas netas − COGS`. `margen bruto = utilidad bruta / ventas netas` cuando las ventas netas son positivas.

@@ -48,18 +48,19 @@ model RolePermission {
 }
 
 model User {
-  id            String         @id @default(uuid()) @db.Uuid
-  email         String         @unique @db.VarChar(254)
-  displayName   String         @map("display_name") @db.VarChar(120)
-  passwordHash  String         @map("password_hash") @db.VarChar(255)
-  active        Boolean        @default(true)
-  roleId        String         @map("role_id") @db.Uuid
-  role          Role           @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  sessions      UserSession[]
-  auditLogs     AuditLog[]
-  exchangeRates ExchangeRate[]
-  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                 String         @id @default(uuid()) @db.Uuid
+  email              String         @unique @db.VarChar(254)
+  displayName        String         @map("display_name") @db.VarChar(120)
+  passwordHash       String         @map("password_hash") @db.VarChar(255)
+  mustChangePassword Boolean        @default(false) @map("must_change_password")
+  active             Boolean        @default(true)
+  roleId             String         @map("role_id") @db.Uuid
+  role               Role           @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  sessions           UserSession[]
+  auditLogs          AuditLog[]
+  exchangeRates      ExchangeRate[]
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@index([roleId])
   @@map("users")
@@ -186,14 +187,18 @@ model Currency {
 }
 
 model ExchangeRate {
-  id           String   @id @default(uuid()) @db.Uuid
-  currencyCode String   @map("currency_code") @db.VarChar(5)
-  currency     Currency @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
-  unitsPerUsd  Decimal  @map("units_per_usd") @db.Decimal(30, 12)
-  effectiveAt  DateTime @map("effective_at") @db.Timestamptz(3)
-  createdById  String   @map("created_by_id") @db.Uuid
-  createdBy    User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  id           String        @id @default(uuid()) @db.Uuid
+  currencyCode String        @map("currency_code") @db.VarChar(5)
+  currency     Currency      @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  unitsPerUsd  Decimal       @map("units_per_usd") @db.Decimal(30, 12)
+  effectiveAt  DateTime      @map("effective_at") @db.Timestamptz(3)
+  createdById  String        @map("created_by_id") @db.Uuid
+  createdBy    User          @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  archivedAt   DateTime?     @map("archived_at") @db.Timestamptz(3)
+  replacesId   String?       @unique @map("replaces_id") @db.Uuid
+  replaces     ExchangeRate? @relation("RateRevisions", fields: [replacesId], references: [id], onDelete: Restrict)
+  replacement  ExchangeRate? @relation("RateRevisions")
 
   @@index([currencyCode, effectiveAt(sort: Desc), createdAt(sort: Desc)])
   @@index([createdById])

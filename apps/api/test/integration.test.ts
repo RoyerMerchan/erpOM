@@ -82,6 +82,8 @@ it('crea una sesión persistida, audita el acceso y revoca la cookie al salir', 
     email,
     displayName: 'Usuario de pruebas',
     role: { code: `SMOKE_${key}`, label: 'Pruebas' },
+    permissions: [],
+    mustChangePassword: false,
   });
 
   const sessions = await database.userSession.findMany({ where: { user: { email } } });

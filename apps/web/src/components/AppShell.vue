@@ -47,7 +47,7 @@ async function signOut() {
     <a class="skip-link" href="#workspace-content">Ir al contenido</a>
 
     <aside class="workspace-sidebar">
-      <BrandLockup />
+      <BrandLockup :name="session.shop?.name" :logo-url="session.shop?.logoUrl" />
       <AppNavigation :signing-out="signingOut" @sign-out="signOut" />
     </aside>
 
@@ -64,7 +64,7 @@ async function signOut() {
             class="menu-toggle"
             @click="drawerOpen = true"
           />
-          <BrandLockup />
+          <BrandLockup :name="session.shop?.name" :logo-url="session.shop?.logoUrl" />
         </div>
         <div v-if="session.user" class="workspace-profile">
           <Avatar :label="initials" shape="circle" class="profile-avatar" aria-hidden="true" />

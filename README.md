@@ -1,6 +1,6 @@
 # MAX Sport Manager
 
-ERP y POS para una tienda de calzado deportivo. El proyecto arranca con la Fase 0, que incluye la infraestructura, la primera migración, el acceso con cuenta persistida y el panel de estado de API y PostgreSQL.
+ERP y POS para una tienda de calzado deportivo. Las fases 0 y 1 incluyen infraestructura, acceso, administración de usuarios, productos y contactos, configuración de tienda, cuentas, tasas históricas y auditoría.
 
 ## Desarrollo local
 
@@ -42,6 +42,8 @@ pnpm dev
 
 Abre <http://localhost:5173/> e inicia sesión con la cuenta creada. Vite envía `/api` a Express en `127.0.0.1:3000`. La API usa el `APP_ORIGIN` de `.env` al verificar las peticiones de autenticación.
 
+Al actualizar una instalación de la Fase 0, ejecuta `pnpm db:migrate` antes de arrancar. El administrador existente recibe los permisos de su rol durante la migración. Desde **Usuarios y roles** puede asignar uno de los cinco roles y crear cuentas con contraseña temporal.
+
 ## Verificación
 
 ```text
@@ -53,7 +55,7 @@ pnpm test
 pnpm build
 ```
 
-Las pruebas de humo comprueban arranque HTTP, respuestas de error y protección de sesión. Para probar con PostgreSQL, crea una base dedicada, aplica las migraciones a esa base y define `TEST_DATABASE_URL` durante `pnpm test:integration`. Estos comandos usan la configuración local de Compose.
+Las pruebas de humo y unitarias comprueban HTTP, sesión y validación de datos. Las de integración verifican roles, catálogos, auditoría, tasas y revocación de sesiones. Para probar con PostgreSQL, crea una base dedicada, migra la base y define `TEST_DATABASE_URL` durante `pnpm test:integration`. Estos comandos usan la configuración local de Compose.
 
 ```powershell
 docker compose exec -T db createdb -U max_sport max_sport_test

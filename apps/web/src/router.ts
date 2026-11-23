@@ -1,6 +1,17 @@
+import { resourcePermission } from '@max-sport/shared';
+import type { PermissionCode } from '@max-sport/shared';
 import type { Pinia } from 'pinia';
 import { createRouter, createWebHistory } from 'vue-router';
+import { resourcePages } from './navigation';
 import { useSessionStore } from './stores/session';
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresSession?: boolean;
+    permission?: PermissionCode;
+    area?: string;
+  }
+}
 
 export function createAppRouter(pinia: Pinia) {
   const router = createRouter({
@@ -14,16 +25,57 @@ export function createAppRouter(pinia: Pinia) {
         component: () => import('./views/DashboardView.vue'),
         meta: { requiresSession: true },
       },
+      {
+        path: '/cuenta',
+        name: 'account',
+        component: () => import('./views/AccountView.vue'),
+        meta: { requiresSession: true },
+      },
+      {
+        path: '/sin-acceso',
+        name: 'access-denied',
+        component: () => import('./views/AccessDeniedView.vue'),
+        meta: { requiresSession: true },
+      },
+      ...resourcePages.map(({ path, resource, area }) => ({
+        path,
+        component: () => import('./views/CatalogView.vue'),
+        props: { resource },
+        meta: { requiresSession: true, permission: resourcePermission(resource, 'read'), area },
+      })),
+      {
+        path: '/configuracion',
+        component: () => import('./views/ShopView.vue'),
+        meta: { requiresSession: true, permission: 'shop.read', area: 'settings' },
+      },
+      {
+        path: '/configuracion/monedas',
+        component: () => import('./views/CurrenciesView.vue'),
+        meta: { requiresSession: true, permission: 'currencies.read', area: 'settings' },
+      },
+      {
+        path: '/usuarios/roles',
+        component: () => import('./views/RolesView.vue'),
+        meta: { requiresSession: true, permission: 'roles.read', area: 'staff' },
+      },
+      {
+        path: '/auditoria',
+        component: () => import('./views/AuditView.vue'),
+        meta: { requiresSession: true, permission: 'audit.read', area: 'audit' },
+      },
       { path: '/:pathMatch(.*)*', redirect: { name: 'dashboard' } },
     ],
   });
 
-  router.beforeEach(async (route) => {
+  router.beforeEach(async (route, from) => {
     const session = useSessionStore(pinia);
     await session.restore();
+    if (route.meta.requiresSession && session.user && from.matched.length) await session.refresh();
     if (route.meta.requiresSession && !session.user) return { name: 'login' };
+    if (session.user?.mustChangePassword && route.name !== 'account') return { name: 'account' };
     if (route.name === 'login' && session.user) return { name: 'dashboard' };
+    if (route.meta.permission && !session.can(route.meta.permission))
+      return { name: 'access-denied' };
   });
-
   return router;
 }

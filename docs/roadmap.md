@@ -20,3 +20,11 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - Pasaron 7 pruebas de humo con `pnpm test` y 3 de integración con el script `test:integration` de la API.
 - `pnpm dev` levantó la web y la API. Por HTTP se verificaron `/login`, `/dashboard`, el estado de PostgreSQL y, a través del proxy de Vite, inicio de sesión, perfil y revocación al salir.
 - `docker compose config --quiet` validó Compose. Docker Desktop no expuso su motor y la ejecución se comprobó con PostgreSQL nativo temporal. La revisión visual queda pendiente porque el acceso al navegador no se pudo completar.
+
+## Resultado de la Fase 1
+
+- Se agregaron cinco roles con permisos por acción, gestión de personal, cambio obligatorio de contraseña temporal y revocación de sesiones. La configuración de acceso a costos y utilidad queda disponible para los módulos que incorporen esos datos.
+- La web ofrece marcas, modelos, variantes de tallas 28–44, clientes, proveedores, ajustes de tienda, monedas, cuentas y tasas. La auditoría registra los cambios junto con quien los realizó. Las correcciones de tasa conservan y enlazan la versión previa.
+- `pnpm db:migrate` funcionó en una base nueva y en una copia de la Fase 0 con PostgreSQL 17.12. El administrador existente conservó sus credenciales y recibió los permisos del rol. Se verificaron por HTTP 13 rutas web y las consultas de datos maestros mediante el proxy de Vite.
+- Pasaron `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm build` y `pnpm db:validate`. Pasaron 13 pruebas unitarias y de humo con `pnpm test` y 10 de integración con `pnpm test:integration`.
+- La revisión visual quedó pendiente porque el navegador integrado no estaba disponible.

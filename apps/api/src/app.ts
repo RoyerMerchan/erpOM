@@ -1,11 +1,14 @@
 import { randomUUID } from 'node:crypto';
+import cookieParser from 'cookie-parser';
 import express, { Router } from 'express';
 import helmet from 'helmet';
 import pino from 'pino';
 import { createAuthRouter } from './auth/routes.js';
+import { createSessionSecurity } from './auth/session.js';
 import type { RuntimeConfig } from './config.js';
 import type { Database } from './database.js';
 import { createErrorHandler, HttpError } from './http/errors.js';
+import { createMasterDataRouter } from './master-data/routes.js';
 
 export function createApp(
   database: Database,
@@ -57,7 +60,10 @@ export function createApp(
     response.json({ status: 'ready' });
   });
 
-  api.use('/auth', createAuthRouter(database, config));
+  const security = createSessionSecurity(database, config);
+  api.use(cookieParser());
+  api.use('/auth', createAuthRouter(database, security));
+  api.use(createMasterDataRouter(database, security));
   app.use('/api/v1', api);
   app.use((_request, _response, next) => {
     next(new HttpError(404, 'NOT_FOUND', 'La ruta solicitada no existe.'));
