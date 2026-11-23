@@ -1,0 +1,171 @@
+.finance-stack {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+}
+
+.finance-filter {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.finance-filter > .p-button {
+  justify-self: start;
+}
+
+.finance-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
+  align-items: start;
+  gap: 0.75rem 1rem;
+}
+
+.finance-fields .field {
+  min-width: 0;
+}
+
+.finance-section-heading h2 {
+  color: var(--ink);
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.finance-section-heading p,
+.finance-table-label span {
+  color: var(--muted);
+  margin: 0.18rem 0 0;
+  font-size: 0.85rem;
+}
+
+.finance-two-up {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1rem;
+}
+
+.finance-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.85rem;
+  margin: 0;
+}
+
+.finance-kpis > div {
+  min-width: 0;
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: var(--surface);
+}
+
+.finance-kpis > div:first-child {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: white;
+}
+
+.finance-kpis dt {
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.finance-kpis dd {
+  font-size: clamp(1.13rem, 2vw, 1.65rem);
+  font-weight: 730;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.finance-metrics {
+  display: grid;
+  margin: 0;
+}
+
+.finance-metrics > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.8rem;
+  padding: 0.48rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.finance-metrics > div:last-child {
+  border-bottom: 0;
+}
+
+.finance-metrics dd {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.finance-metrics .finance-metric-total {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.finance-debt-kpi,
+.finance-account-balances {
+  margin-bottom: 1rem;
+}
+
+.finance-debt-kpi {
+  width: min(100%, 23rem);
+}
+
+.finance-table-label {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  overflow-wrap: anywhere;
+}
+
+.finance-in {
+  color: #155d37;
+}
+
+@media (max-width: 790px) {
+  .finance-two-up {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  body:has(.finance-daily-sheet) .workspace-shell,
+  body:has(.finance-daily-sheet) .workspace-content {
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  body:has(.finance-daily-sheet)
+    :is(.workspace-sidebar, .workspace-topbar, .skip-link, .finance-screen-only) {
+    display: none !important;
+  }
+
+  .finance-daily-sheet .finance-kpis > div,
+  .finance-daily-sheet .sale-panel {
+    background: white;
+    color: black;
+    border-color: #d1d5db;
+  }
+
+  .finance-daily-sheet .finance-two-up {
+    display: block;
+  }
+
+  .finance-daily-sheet table {
+    min-width: 0 !important;
+    font-size: 0.75rem;
+  }
+
+  .finance-daily-sheet .finance-two-up > section {
+    margin-bottom: 0.75rem;
+  }
+}

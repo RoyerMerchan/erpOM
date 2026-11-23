@@ -91,6 +91,25 @@ El contrato de cuenta, importe y tasa coincide con el de cobros del POS. `PUT /s
 
 El detalle de venta muestra los anticipos aplicados como `ADVANCE` y los cambios relacionados como rectificaciones con sus propios comprobantes. Cuando existen rectificaciones el historial incluye `adjustedTotalUsd` y, según permisos, `adjustedCogsUsd` y `adjustedProfitUsd`. El comprobante original conserva sus importes históricos.
 
+## Fase 5
+
+| Método y ruta                                              | Resultado                                                                                                                                    |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /finance/report`                                      | Devuelve período, resultados de la tienda, flujos de caja, saldos por cuenta y gastos por categoría.                                         |
+| `GET /finance/daily`                                       | Devuelve el mismo informe para un día con `date` opcional. Se puede consultar en cualquier momento.                                          |
+| `GET /finance/accounts`                                    | Devuelve saldos de apertura y corte, entradas y salidas en moneda original y USD histórico.                                                  |
+| `GET /finance/movements`                                   | Lista paginada con `q`, `filter`, `categoryId` y filtros de fecha, cuenta y moneda. Cada fila incluye dirección, tasa, responsable y origen. |
+| `GET /finance/receivables` y `GET /finance/payables`       | Listan documentos con saldo actual y total del filtro. Admiten `q`, `page` y `limit`. Por pagar requiere permiso de costos.                  |
+| `GET /finance/categories`                                  | Lista paginada de categorías con `q` y `status`.                                                                                             |
+| `POST /finance/categories` y `PUT /finance/categories/:id` | Crean o actualizan nombre y estado `active` con auditoría. El estado archivado conserva los gastos previos.                                  |
+| `POST /finance/entries/preview`                            | Valida cuentas y tasas y devuelve las líneas y su diferencia de cambio, junto con `quoteDigest`.                                             |
+| `POST /finance/entries` y `GET /finance/entries/:id`       | Confirma con `{operationId, quoteDigest, entry}` y consulta el comprobante financiero y sus movimientos.                                     |
+| `POST /finance/entries/:id/reverse`                        | Recibe `{operationId, reason, occurredAt?}`. Registra el reverso una sola vez con los importes y tasas originales.                           |
+
+Los informes y movimientos admiten `period` con `DAY`, `WEEK`, `MONTH` o `RANGE`, además de `date` como fecha de referencia. El rango personalizado recibe `from` y `to` inclusivos. Las fechas usan `YYYY-MM-DD` y la zona de la tienda. Los cortes UTC que devuelve la API tienen inicio inclusivo y final exclusivo. `accountId` y `currencyCode` delimitan caja y saldos. La rentabilidad reúne todos los documentos de la tienda por período.
+
+Un registro manual incluye `kind`, `occurredAt`, `description` y referencia opcional. `EXPENSE` agrega `categoryId`. `ADJUSTMENT` agrega dirección `IN` u `OUT`. `TRANSFER` recibe `source` y `destination`. Los demás tipos reciben `payment`. Cada importe usa `{accountId, amountOriginal, unitsPerUsd}`. Las mutaciones conservan el historial y registran auditoría. Repetir una confirmación o reverso con el mismo actor, cuerpo y `operationId` devuelve el mismo comprobante.
+
 ## Evolución
 
-La siguiente fase expone saldos y conciliación a partir de los movimientos ya registrados. El catálogo PDF tendrá permisos de exportación y un contrato limitado a datos públicos.
+El panel general y los reportes ampliarán los filtros y usarán estos cálculos. El catálogo PDF tendrá permisos de exportación y un contrato limitado a datos públicos.

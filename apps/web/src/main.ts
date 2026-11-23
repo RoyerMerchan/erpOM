@@ -5,6 +5,7 @@ import './master-data/styles.css';
 import './purchasing/styles.css';
 import './sales/styles.css';
 import './after-sale/styles.css';
+import './finance/styles.css';
 import Aura from '@primeuix/themes/aura';
 import { definePreset } from '@primeuix/themes';
 import { createPinia } from 'pinia';

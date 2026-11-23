@@ -32,4 +32,7 @@ Caso Legend a 4.000 COP por USD. Las tallas 38 y 39 reciben 3 y 5 pares a 80.000
 
 ## Conciliación y exportación
 
-Cada filtro usa las fechas del comercio y la fecha efectiva de la métrica. El resumen diario se puede generar con la caja abierta. El PDF del catálogo toma disponibilidad y precios públicos, y congela la tasa elegida si muestra precios en otra moneda.
+1. El operador elige un período del calendario de la tienda y, para caja, puede elegir cuenta y moneda. Consulta el origen de cada movimiento en su comprobante.
+2. Al registrar un gasto se elige categoría. El operador confirma las cuentas, importes y tasas de la vista previa. Una transferencia crea la salida y la entrada juntas.
+3. Un ajuste o reverso conserva el motivo y el responsable. El reverso se aplica en su propia fecha con la tasa del registro original.
+4. El reporte diario muestra el saldo inicial, los movimientos del día y el saldo resultante. Se puede consultar con la caja abierta. El PDF del catálogo toma disponibilidad y precios públicos, y congela la tasa elegida si muestra precios en otra moneda.

@@ -73,6 +73,7 @@ model User {
   layaways           Layaway[]
   layawayActions     LayawayAction[]
   saleCorrections    SaleCorrection[]
+  financeEntries     FinanceEntry[]
 
   @@index([roleId])
   @@map("users")
@@ -209,6 +210,7 @@ model Currency {
   saleDiscounts     SaleDiscount[]
   layawayPayments   LayawayPayment[]
   correctionTenders CorrectionTender[]
+  financeLines      FinanceLine[]
 
   @@map("currencies")
 }
@@ -232,6 +234,7 @@ model ExchangeRate {
   saleDiscounts     SaleDiscount[]
   layawayPayments   LayawayPayment[]
   correctionTenders CorrectionTender[]
+  financeLines      FinanceLine[]
 
   @@index([currencyCode, effectiveAt(sort: Desc), createdAt(sort: Desc)])
   @@index([createdById])
@@ -252,6 +255,7 @@ model MoneyAccount {
   saleTenders       SaleTender[]
   layawayPayments   LayawayPayment[]
   correctionTenders CorrectionTender[]
+  financeLines      FinanceLine[]
 
   @@unique([currencyCode, name])
   @@map("money_accounts")
@@ -295,6 +299,8 @@ enum MoneyMovementKind {
   LAYAWAY_REFUND
   EXCHANGE_PAYMENT
   SALE_REFUND
+  FINANCE_IN
+  FINANCE_OUT
 
   @@map("SupplierMoneyKind")
 }
@@ -495,9 +501,13 @@ model MoneyMovement {
   layawayPayment     LayawayPayment?   @relation(fields: [layawayPaymentId], references: [id], onDelete: Restrict)
   correctionTenderId String?           @unique @map("correction_tender_id") @db.Uuid
   correctionTender   CorrectionTender? @relation(fields: [correctionTenderId], references: [id], onDelete: Restrict)
+  financeLineId      String?           @unique @map("finance_line_id") @db.Uuid
+  financeLine        FinanceLine?      @relation(fields: [financeLineId], references: [id], onDelete: Restrict)
 
   @@unique([paymentId, kind])
   @@index([accountId, occurredAt])
+  @@index([occurredAt, id])
+  @@index([currencyCode, occurredAt])
   @@map("money_movements")
 }
 
@@ -825,4 +835,78 @@ model CorrectionTender {
   @@unique([correctionId, position])
   @@index([accountId])
   @@map("correction_tenders")
+}
+
+enum FinanceEntryKind {
+  EXPENSE
+  OTHER_INCOME
+  TRANSFER
+  ADJUSTMENT
+}
+
+enum FinanceDirection {
+  IN
+  OUT
+}
+
+model FinanceCategory {
+  id        String         @id @default(uuid()) @db.Uuid
+  name      String         @db.VarChar(100)
+  nameKey   String         @unique @map("name_key") @db.VarChar(160)
+  active    Boolean        @default(true)
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  entries   FinanceEntry[]
+
+  @@map("finance_categories")
+}
+
+model FinanceEntry {
+  id              String           @id @default(uuid()) @db.Uuid
+  number          BigInt           @unique @default(autoincrement())
+  operationKey    String           @unique @map("operation_key") @db.Uuid
+  operationDigest String           @map("operation_digest") @db.Char(64)
+  kind            FinanceEntryKind
+  categoryId      String?          @map("category_id") @db.Uuid
+  category        FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categoryName    String?          @map("category_name") @db.VarChar(100)
+  description     String
+  reference       String?          @db.VarChar(120)
+  differenceUsd   Decimal?         @map("difference_usd") @db.Decimal(48, 2)
+  occurredAt      DateTime         @map("occurred_at") @db.Timestamptz(3)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  actorId         String           @map("actor_id") @db.Uuid
+  actor           User             @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  actorName       String           @map("actor_name") @db.VarChar(120)
+  reversesId      String?          @unique @map("reverses_id") @db.Uuid
+  reverses        FinanceEntry?    @relation("FinanceReversals", fields: [reversesId], references: [id], onDelete: Restrict)
+  reversal        FinanceEntry?    @relation("FinanceReversals")
+  lines           FinanceLine[]
+
+  @@index([kind, occurredAt])
+  @@index([categoryId])
+  @@map("finance_entries")
+}
+
+model FinanceLine {
+  id             String           @id @default(uuid()) @db.Uuid
+  entryId        String           @map("entry_id") @db.Uuid
+  entry          FinanceEntry     @relation(fields: [entryId], references: [id], onDelete: Restrict)
+  position       Int
+  direction      FinanceDirection
+  accountId      String           @map("account_id") @db.Uuid
+  account        MoneyAccount     @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  accountName    String           @map("account_name") @db.VarChar(120)
+  currencyCode   String           @map("currency_code") @db.VarChar(5)
+  currency       Currency         @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  exchangeRateId String?          @map("exchange_rate_id") @db.Uuid
+  exchangeRate   ExchangeRate?    @relation(fields: [exchangeRateId], references: [id], onDelete: Restrict)
+  unitsPerUsd    Decimal          @map("units_per_usd") @db.Decimal(30, 12)
+  amountOriginal Decimal          @map("amount_original") @db.Decimal(38, 8)
+  amountUsd      Decimal          @map("amount_usd") @db.Decimal(48, 2)
+  movement       MoneyMovement?
+
+  @@unique([entryId, position])
+  @@index([accountId])
+  @@map("finance_lines")
 }

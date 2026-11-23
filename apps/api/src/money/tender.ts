@@ -60,7 +60,8 @@ type MoneyFigure = Prisma.Decimal | string;
 type MovementSource =
   | { kind: 'SALE_PAYMENT' | 'SALE_CHANGE'; saleTenderId: string }
   | { kind: 'LAYAWAY_DEPOSIT' | 'LAYAWAY_REFUND'; layawayPaymentId: string }
-  | { kind: 'EXCHANGE_PAYMENT' | 'SALE_REFUND'; correctionTenderId: string };
+  | { kind: 'EXCHANGE_PAYMENT' | 'SALE_REFUND'; correctionTenderId: string }
+  | { kind: 'FINANCE_IN' | 'FINANCE_OUT'; financeLineId: string };
 
 export function postTenderMovement(
   tx: Transaction,

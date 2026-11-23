@@ -7,6 +7,7 @@ export * from './purchasing.js';
 export * from './sales.js';
 export * from './layaways.js';
 export * from './returns.js';
+export * from './finance.js';
 
 z.config(z.locales.es());
 

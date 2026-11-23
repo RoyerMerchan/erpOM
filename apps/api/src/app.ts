@@ -7,6 +7,7 @@ import { createAuthRouter } from './auth/routes.js';
 import { createSessionSecurity } from './auth/session.js';
 import type { RuntimeConfig } from './config.js';
 import type { Database } from './database.js';
+import { createFinanceRouter } from './finance/routes.js';
 import { createErrorHandler, HttpError } from './http/errors.js';
 import { createInventoryRouter } from './inventory/routes.js';
 import { createLayawayRouter } from './layaways/routes.js';
@@ -73,6 +74,7 @@ export function createApp(
   api.use('/sales', createSalesRouter(database, security));
   api.use('/layaways', createLayawayRouter(database, security));
   api.use('/returns', createReturnsRouter(database, security));
+  api.use('/finance', createFinanceRouter(database, security));
   api.use(createMasterDataRouter(database, security));
   app.use('/api/v1', api);
   app.use((_request, _response, next) => {

@@ -15,6 +15,7 @@ const props = defineProps<{
   describedBy?: string;
   invalid?: boolean;
   clearable?: boolean;
+  includeArchived?: boolean;
 }>();
 const model = defineModel<FieldValue>();
 const matches = ref<Option[]>([]);
@@ -57,7 +58,7 @@ async function load(query = '') {
     if (resource === 'currencies') {
       const currencies = await getCurrencies();
       results = currencies
-        .filter((item) => item.active || item.code === existing)
+        .filter((item) => props.includeArchived || item.active || item.code === existing)
         .map((item) => ({
           value: item.code,
           label: item.code + ' · ' + item.name + (item.active ? '' : ' (inactiva)'),
@@ -65,7 +66,11 @@ async function load(query = '') {
     } else if (resource === 'roles') {
       results = (await getRoles()).map(({ code, label }) => ({ value: code, label }));
     } else {
-      const page = await listRecords(resource, { q: query, limit: '30', status: 'active' });
+      const page = await listRecords(resource, {
+        q: query,
+        limit: '30',
+        status: props.includeArchived ? 'all' : 'active',
+      });
       results = page.items.map((row) => option(row, resource));
       if (typeof existing === 'string' && !results.some(({ value }) => value === existing)) {
         if (selected.value?.value === existing) chosen = selected.value;
@@ -89,7 +94,7 @@ function setValue(value: FieldValue) {
 }
 
 watch(
-  () => props.resource,
+  () => [props.resource, props.includeArchived],
   () => void load(),
   { immediate: true },
 );

@@ -1,6 +1,6 @@
 # Modelo de dominio
 
-Las migraciones vigentes contienen usuarios, catálogos, compras, ventas, apartados, cambios, devoluciones, movimientos monetarios y de inventario. El diagrama incluye relaciones previstas para fases posteriores.
+Las migraciones vigentes contienen usuarios, catálogos, compras, ventas, apartados, cambios, devoluciones, registros financieros y movimientos monetarios y de inventario.
 
 ```mermaid
 erDiagram
@@ -48,14 +48,16 @@ erDiagram
   CURRENCY ||--o{ EXCHANGE_RATE : cotiza
   CURRENCY ||--o{ MONEY_ACCOUNT : denomina
   MONEY_ACCOUNT ||--o{ MONEY_MOVEMENT : registra
-  EXCHANGE_RATE o|--o{ MONEY_MOVEMENT : respalda
   SALE_TENDER o|--|| MONEY_MOVEMENT : respalda
   SUPPLIER_PAYMENT ||--o{ MONEY_MOVEMENT : respalda
   LAYAWAY_PAYMENT o|--o| MONEY_MOVEMENT : respalda
   CORRECTION_TENDER o|--|| MONEY_MOVEMENT : respalda
-  EXPENSE o|--o| MONEY_MOVEMENT : respalda
-  OTHER_INCOME o|--o| MONEY_MOVEMENT : respalda
-  ACCOUNT_TRANSFER o|--|{ MONEY_MOVEMENT : concilia
+  FINANCE_CATEGORY o|--o{ FINANCE_ENTRY : clasifica
+  FINANCE_ENTRY ||--|{ FINANCE_LINE : registra
+  FINANCE_ENTRY o|--o| FINANCE_ENTRY : revierte
+  FINANCE_LINE o|--|| MONEY_MOVEMENT : respalda
+  MONEY_ACCOUNT ||--o{ FINANCE_LINE : recibe
+  EXCHANGE_RATE o|--o{ FINANCE_LINE : convierte
 ```
 
 ## Identidad y catálogos
@@ -85,5 +87,7 @@ erDiagram
 - Cada cobro de una venta POS crea una entrada por cuenta y cada vuelto crea una salida de su caja. La suma en USD de entradas menos vuelto coincide con el total de la venta. Los descuentos se aplican primero a la línea y luego al saldo restante de todo el carrito.
 - Una devolución rectifica el precio neto original de las unidades seleccionadas. Un cambio rectifica la venta de origen y registra el nuevo par en un comprobante enlazado. Solo la diferencia produce un cobro o reembolso adicional.
 - `saldo de cuenta = entradas − salidas` en su moneda. El flujo de caja agrupa importes realizados por fecha de movimiento. El flujo operativo excluye transferencias internas. Los saldos consolidados históricos usan los equivalentes USD registrados, junto con el desglose original.
+- Un registro financiero manual crea una línea para gasto, otro ingreso o ajuste. La transferencia crea dos líneas y conserva la diferencia entre sus equivalentes históricos. Cada línea crea un movimiento. Los reversos crean un documento enlazado con las mismas cuentas, importes y tasas en dirección contraria.
+- El informe reconoce ventas en la confirmación y rectificaciones en la fecha de devolución o cambio. Para conciliar caja utiliza la fecha de cada cobro, pago o ajuste. La compra recibida mantiene su saldo frente al proveedor y el gasto operativo se reconoce en la fecha registrada del pago manual.
 - Cuentas por pagar y por cobrar se calculan desde el saldo de documentos y sus abonos en USD histórico. Un apartado pendiente se presenta como compromiso o saldo de apartado, separado de las ventas.
 - El valor de inventario suma unidades disponibles y reservadas de los lotes físicos por su costo histórico. Los puntos de corte son intervalos `[inicio, fin)` en la zona horaria de la tienda.

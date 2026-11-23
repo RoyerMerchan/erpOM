@@ -9,7 +9,12 @@ import { failureMessage } from '../purchasing/form';
 import type { TenderDraft } from './form';
 import UsdRateField from './UsdRateField.vue';
 
-defineProps<{ change?: boolean }>();
+defineProps<{
+  change?: boolean;
+  accountLabel?: string;
+  hideReference?: boolean;
+  quoteAt?: string;
+}>();
 const draft = defineModel<TenderDraft>({ required: true });
 const currency = ref('');
 const kind = ref('');
@@ -42,7 +47,7 @@ watch(
   <div class="sale-fields">
     <div class="field">
       <label :for="draft.key + '-account'">{{
-        change ? 'Cuenta de efectivo' : 'Cuenta de cobro'
+        accountLabel ?? (change ? 'Cuenta de efectivo' : 'Cuenta de cobro')
       }}</label>
       <LookupSelect
         :id="draft.key + '-account'"
@@ -74,9 +79,10 @@ watch(
       v-if="currency && currency !== 'USD'"
       :id="draft.key + '-rate'"
       :currency
+      :quote-at="quoteAt"
       v-model="draft.rate"
     />
-    <div v-if="!change" class="field">
+    <div v-if="!change && !hideReference" class="field">
       <label :for="draft.key + '-reference'">Referencia del cobro</label>
       <InputText :id="draft.key + '-reference'" v-model="draft.reference" maxlength="120" fluid />
     </div>

@@ -50,3 +50,10 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - La devolución parcial recuperó el costo del lote original cuando el par volvió al inventario. La devolución del par defectuoso conservó su costo y el reembolso concurrente solo se registró una vez. Los cambios de talla cobraron o devolvieron la diferencia según el precio del reemplazo.
 - La migración se aplicó a una base PostgreSQL 17.12 nueva y a una copia de la Fase 3. Por HTTP se verificaron nueve rutas web y el ciclo de reserva, entrega, devolución y reingreso mediante el proxy de Vite.
 - Pasaron 22 pruebas unitarias y de humo y 22 de integración. Pasaron lint, formato, verificación de tipos, compilación y validación de Prisma. La revisión visual quedó pendiente por indisponibilidad del navegador integrado.
+
+## Resultado de la Fase 5
+
+- Finanzas reúne movimientos de ventas, apartados, compras y devoluciones. Muestra saldos históricos por cuenta, cuentas por cobrar y pagar, gastos por categoría, rentabilidad y un reporte diario que se puede consultar e imprimir con la caja abierta.
+- En la prueba de conciliación se reconocieron USD 100 de ventas netas, USD 40 de costo FIFO, USD 12 de gastos y USD 48 de utilidad neta estimada. El flujo operativo fue de USD 71. La transferencia redujo en USD 0,50 el valor histórico de los saldos consolidados.
+- La migración se aplicó a una base PostgreSQL 17.12 nueva y a una copia de la Fase 4. Se verificaron por HTTP quince rutas web, saldos, deudas, reporte diario, transferencia idempotente y reverso.
+- Pasaron 25 pruebas unitarias y de humo y 25 de integración. Pasaron lint, formato, verificación de tipos, compilación y validación de Prisma. El adaptador emitió un aviso de compatibilidad futura con `pg` 9 durante las pruebas. La revisión visual quedó pendiente por indisponibilidad del navegador integrado.

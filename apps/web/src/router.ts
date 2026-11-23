@@ -176,6 +176,68 @@ export function createAppRouter(pinia: Pinia) {
           area: 'sales',
         },
       },
+      ...(
+        [
+          { path: '/finanzas', name: 'finance', view: 'summary' },
+          { path: '/finanzas/rentabilidad', name: 'finance-profit', view: 'profit' },
+          { path: '/finanzas/diario', name: 'finance-daily', view: 'daily' },
+        ] as const
+      ).map(({ path, name, view }) => ({
+        path,
+        name,
+        component: () => import('./views/FinanceReportView.vue'),
+        props: { view },
+        meta: { requiresSession: true, permission: 'finance.read' as const, area: 'finance' },
+      })),
+      ...(
+        [
+          { path: '/finanzas/movimientos', name: 'finance-movements', view: 'all' },
+          { path: '/finanzas/ingresos-egresos', name: 'finance-income', view: 'manual' },
+          { path: '/finanzas/gastos', name: 'finance-expenses', view: 'expenses' },
+        ] as const
+      ).map(({ path, name, view }) => ({
+        path,
+        name,
+        component: () => import('./views/FinanceMovementsView.vue'),
+        props: { view },
+        meta: { requiresSession: true, permission: 'finance.read' as const, area: 'finance' },
+      })),
+      {
+        path: '/finanzas/por-cobrar',
+        name: 'finance-receivables',
+        component: () => import('./views/FinanceDebtsView.vue'),
+        meta: { requiresSession: true, permission: 'finance.read', area: 'finance' },
+      },
+      {
+        path: '/finanzas/por-pagar',
+        name: 'finance-payables',
+        component: () => import('./views/FinanceDebtsView.vue'),
+        props: { payables: true },
+        meta: {
+          requiresSession: true,
+          permission: 'finance.read',
+          extraPermission: 'costs.read',
+          area: 'finance',
+        },
+      },
+      {
+        path: '/finanzas/nuevo',
+        name: 'finance-new',
+        component: () => import('./views/FinanceEntryEditorView.vue'),
+        meta: {
+          requiresSession: true,
+          permission: 'finance.post',
+          extraPermission: 'finance.read',
+          area: 'finance',
+        },
+      },
+      {
+        path: '/finanzas/registro/:id',
+        name: 'finance-entry',
+        component: () => import('./views/FinanceEntryView.vue'),
+        props: true,
+        meta: { requiresSession: true, permission: 'finance.read', area: 'finance' },
+      },
       {
         path: '/configuracion',
         component: () => import('./views/ShopView.vue'),

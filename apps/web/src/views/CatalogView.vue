@@ -15,6 +15,7 @@ import { computed, onMounted, ref } from 'vue';
 import { ApiRequestError } from '../api';
 import AppShell from '../components/AppShell.vue';
 import SectionLinks from '../components/SectionLinks.vue';
+import FinanceAccountBalances from '../finance/FinanceAccountBalances.vue';
 import { formPayload, textField, timeLabel } from '../master-data/field-types';
 import type { FormValues } from '../master-data/field-types';
 import RecordFields from '../master-data/RecordFields.vue';
@@ -35,6 +36,7 @@ const search = ref('');
 const searchApplied = ref('');
 const status = ref('all');
 const currency = ref('');
+const balancesRevision = ref(0);
 const currencies = [
   { value: '', label: 'Todas las monedas' },
   ...currencyCodeSchema.options.map((code) => ({ value: code, label: code })),
@@ -127,6 +129,7 @@ async function submit() {
   saving.value = true;
   try {
     await saveRecord(props.resource, editing.value?.id ?? null, parsed.data);
+    if (props.resource === 'accounts') balancesRevision.value++;
     editorVisible.value = false;
     toast.add({ severity: 'success', summary: 'Registro guardado', life: 3500 });
     await load(editing.value ? page.value : 1);
@@ -141,6 +144,7 @@ async function changeStatus(row: ResourceRow) {
   changingStatus.value = row.id;
   try {
     await recordStatus(props.resource, row.id, !row.active);
+    if (props.resource === 'accounts') balancesRevision.value++;
     toast.add({
       severity: 'success',
       summary: row.active ? 'Registro archivado' : 'Registro reactivado',
@@ -191,6 +195,11 @@ onMounted(() => void load());
         @click="openEditor(null)"
       />
     </header>
+
+    <FinanceAccountBalances
+      v-if="resource === 'accounts' && session.can('finance.read')"
+      :key="balancesRevision"
+    />
 
     <section class="records-panel" :aria-label="catalog.title">
       <form class="records-toolbar" @submit.prevent="submitSearch">

@@ -4,16 +4,17 @@ import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import { ref, watch } from 'vue';
 import { failureMessage } from '../purchasing/form';
+import { getQuote } from '../purchasing/service';
 import { getSaleRate } from './service';
 
-const props = defineProps<{ id: string; currency: string }>();
+const props = defineProps<{ id: string; currency: string; quoteAt?: string }>();
 const model = defineModel<string>({ required: true });
 const loading = ref(false);
 const error = ref('');
 let version = 0;
 
 watch(
-  () => props.currency,
+  () => [props.currency, props.quoteAt],
   () => {
     version++;
     loading.value = false;
@@ -22,12 +23,18 @@ watch(
 );
 
 async function applyLatest() {
+  if (props.quoteAt === '') {
+    error.value = 'Selecciona la fecha del movimiento para consultar la tasa.';
+    return;
+  }
   const current = ++version;
   const previous = model.value;
   loading.value = true;
   error.value = '';
   try {
-    const rate = await getSaleRate(props.currency);
+    const rate = props.quoteAt
+      ? await getQuote(props.currency, props.quoteAt)
+      : await getSaleRate(props.currency);
     if (current !== version || model.value !== previous) return;
     if (rate) model.value = rate.unitsPerUsd;
     else error.value = 'Ingresa la tasa aplicada a esta operación.';
@@ -43,7 +50,7 @@ async function applyLatest() {
   <div class="field sale-rate">
     <label :for="id">1 USD equivale a {{ currency }}</label>
     <div class="sale-rate-input">
-      <InputText :id="id" v-model="model" inputmode="decimal" maxlength="25" fluid />
+      <InputText :id="id" v-model="model" inputmode="decimal" maxlength="31" fluid />
       <Button
         type="button"
         icon="pi pi-history"
