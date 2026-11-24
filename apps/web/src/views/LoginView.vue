@@ -6,7 +6,6 @@ import Message from 'primevue/message';
 import { nextTick, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiRequestError } from '../api';
-import loginPhotoUrl from '../assets/login-sneaker.jpg';
 import { useSessionStore } from '../stores/session';
 import './login.css';
 
@@ -58,15 +57,6 @@ async function submit() {
   <main class="login-shell">
     <div class="login-frame">
       <aside class="login-brand">
-        <img
-          :src="loginPhotoUrl"
-          alt=""
-          class="login-photo"
-          width="1122"
-          height="1402"
-          fetchpriority="high"
-          decoding="async"
-        />
         <div class="login-logo">
           <img :src="loginLogoUrl" alt="OM Store" width="640" height="640" />
         </div>

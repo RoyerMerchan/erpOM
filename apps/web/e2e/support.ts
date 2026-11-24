@@ -41,11 +41,7 @@ export async function login(page: Page, user: Awaited<ReturnType<typeof staff>>)
   await expect
     .poll(() => logo.evaluate((img) => (img as HTMLImageElement).naturalWidth))
     .toBeGreaterThan(0);
-  await expect
-    .poll(() =>
-      page.locator('.login-photo').evaluate((img) => (img as HTMLImageElement).naturalWidth),
-    )
-    .toBeGreaterThan(0);
+  await expect(page.locator('.login-brand img')).toHaveCount(1);
   await expect(page.locator('.login-statement')).toHaveCSS('color', 'rgb(255, 255, 255)');
   await page.getByLabel('Usuario', { exact: true }).fill(user.username);
   const password = page.getByLabel('Contraseña', { exact: true });
