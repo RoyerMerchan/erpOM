@@ -234,8 +234,13 @@ onMounted(load);
         <h2 id="purchase-document">Documento de compra</h2>
         <div class="record-fields procurement-fields">
           <div class="record-field">
-            <label for="purchase-supplier">Proveedor</label>
-            <LookupSelect id="purchase-supplier" v-model="draft.supplierId" resource="suppliers" />
+            <label id="purchase-supplier-label" for="purchase-supplier">Proveedor</label>
+            <LookupSelect
+              id="purchase-supplier"
+              v-model="draft.supplierId"
+              labelled-by="purchase-supplier-label"
+              resource="suppliers"
+            />
             <button
               v-if="session.can('suppliers.create')"
               type="button"
@@ -261,10 +266,11 @@ onMounted(load);
             ><InputText id="purchase-reference" v-model="draft.reference" maxlength="120" fluid />
           </div>
           <div class="record-field">
-            <label for="purchase-currency">Moneda de la compra</label>
+            <label id="purchase-currency-label" for="purchase-currency">Moneda de la compra</label>
             <LookupSelect
               id="purchase-currency"
               v-model="draft.currencyCode"
+              labelled-by="purchase-currency-label"
               resource="currencies"
               @update:model-value="draft.rate = ''"
             />

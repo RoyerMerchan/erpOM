@@ -14,6 +14,7 @@
     "typecheck": "pnpm code:prepare && pnpm --filter @max-sport/api typecheck && pnpm --filter @max-sport/web typecheck",
     "test": "pnpm code:prepare && pnpm --filter @max-sport/api test",
     "test:integration": "pnpm code:prepare && pnpm --filter @max-sport/api test:integration",
+    "test:e2e": "pnpm build && pnpm --filter @max-sport/web test:e2e",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

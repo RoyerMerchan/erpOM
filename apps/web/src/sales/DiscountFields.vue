@@ -17,9 +17,10 @@ const options = [
 <template>
   <div class="sale-fields">
     <div class="field">
-      <label :for="id">Tipo de descuento</label>
+      <label :id="id + '-label'" :for="id">Tipo de descuento</label>
       <Select
         :input-id="id"
+        :aria-labelledby="id + '-label'"
         v-model="draft.kind"
         :options="options"
         option-label="label"
@@ -42,9 +43,10 @@ const options = [
     </div>
     <template v-if="draft.kind === 'FIXED'">
       <div class="field">
-        <label :for="id + '-currency'">Moneda</label>
+        <label :id="id + '-currency-label'" :for="id + '-currency'">Moneda</label>
         <LookupSelect
           :id="id + '-currency'"
+          :labelled-by="id + '-currency-label'"
           v-model="draft.currency"
           resource="currencies"
           @update:model-value="draft.rate = ''"

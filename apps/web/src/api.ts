@@ -65,13 +65,13 @@ export async function downloadFile(path: string, filename: string, body?: unknow
         },
     60_000,
   );
-  const suggested = /filename="([a-z0-9_.-]+)"/i.exec(
+  const suggested = /(?:^|;)\s*filename=(?:"([a-z0-9_.-]+)"|([a-z0-9_.-]+))\s*(?:;|$)/i.exec(
     response.headers.get('Content-Disposition') ?? '',
-  )?.[1];
+  );
   const url = URL.createObjectURL(await response.blob());
   const link = document.createElement('a');
   link.href = url;
-  link.download = suggested ?? filename;
+  link.download = suggested?.[1] ?? suggested?.[2] ?? filename;
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
 }

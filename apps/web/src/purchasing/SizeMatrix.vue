@@ -63,10 +63,11 @@ function estimate(size: number) {
     </header>
     <div class="record-fields procurement-fields">
       <div class="record-field">
-        <label :for="fieldId('mode')">Origen del modelo</label>
+        <label :id="fieldId('mode-label')" :for="fieldId('mode')">Origen del modelo</label>
         <Select
           v-model="group.modelMode"
           :input-id="fieldId('mode')"
+          :aria-labelledby="fieldId('mode-label')"
           :options="modeOptions"
           option-label="label"
           option-value="value"
@@ -74,8 +75,13 @@ function estimate(size: number) {
         />
       </div>
       <div v-if="group.modelMode === 'existing'" class="record-field">
-        <label :for="fieldId('model')">Modelo</label>
-        <LookupSelect :id="fieldId('model')" v-model="group.modelId" resource="models" />
+        <label :id="fieldId('model-label')" :for="fieldId('model')">Modelo</label>
+        <LookupSelect
+          :id="fieldId('model')"
+          v-model="group.modelId"
+          :labelled-by="fieldId('model-label')"
+          resource="models"
+        />
       </div>
       <template v-else>
         <div class="record-field">
@@ -83,10 +89,13 @@ function estimate(size: number) {
           <InputText :id="fieldId('name')" v-model="group.modelName" maxlength="140" fluid />
         </div>
         <div class="record-field">
-          <label :for="fieldId('brand-mode')">Origen de la marca</label>
+          <label :id="fieldId('brand-mode-label')" :for="fieldId('brand-mode')"
+            >Origen de la marca</label
+          >
           <Select
             v-model="group.brandMode"
             :input-id="fieldId('brand-mode')"
+            :aria-labelledby="fieldId('brand-mode-label')"
             :options="brandOptions"
             option-label="label"
             option-value="value"
@@ -94,11 +103,12 @@ function estimate(size: number) {
           />
         </div>
         <div class="record-field">
-          <label :for="fieldId('brand')">Marca</label>
+          <label :id="fieldId('brand-label')" :for="fieldId('brand')">Marca</label>
           <LookupSelect
             v-if="group.brandMode === 'existing'"
             :id="fieldId('brand')"
             v-model="group.brandId"
+            :labelled-by="fieldId('brand-label')"
             resource="brands"
           />
           <InputText

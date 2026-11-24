@@ -13,6 +13,7 @@ const props = defineProps<{
   placeholder?: string;
   disabled?: boolean;
   describedBy?: string;
+  labelledBy?: string;
   invalid?: boolean;
   clearable?: boolean;
   includeArchived?: boolean;
@@ -120,6 +121,7 @@ onBeforeUnmount(() => {
     :invalid="invalid"
     :show-clear="clearable"
     :aria-describedby="describedBy"
+    :aria-labelledby="labelledBy"
     :placeholder="placeholder ?? 'Selecciona una opción'"
     empty-message="No hay opciones disponibles."
     empty-filter-message="No se encontraron coincidencias."

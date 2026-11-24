@@ -46,11 +46,12 @@ watch(
 <template>
   <div class="sale-fields">
     <div class="field">
-      <label :for="draft.key + '-account'">{{
+      <label :id="draft.key + '-account-label'" :for="draft.key + '-account'">{{
         accountLabel ?? (change ? 'Cuenta de efectivo' : 'Cuenta de cobro')
       }}</label>
       <LookupSelect
         :id="draft.key + '-account'"
+        :labelled-by="draft.key + '-account-label'"
         v-model="draft.accountId"
         resource="accounts"
         clearable

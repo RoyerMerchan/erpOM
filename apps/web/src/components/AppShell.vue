@@ -81,7 +81,7 @@ async function signOut() {
       </main>
     </div>
 
-    <Drawer v-model:visible="drawerOpen" header="Menú" class="mobile-nav-drawer">
+    <Drawer v-model:visible="drawerOpen" header="Menú" aria-label="Menú" class="mobile-nav-drawer">
       <AppNavigation :signing-out="signingOut" @navigate="drawerOpen = false" @sign-out="signOut" />
     </Drawer>
   </div>

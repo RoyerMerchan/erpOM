@@ -1,6 +1,6 @@
 # MAX Sport Manager
 
-ERP y POS para una tienda de calzado deportivo. Las fases 0 a 5 incluyen acceso, catálogos, compras, inventario FIFO, ventas multimoneda, apartados, cambios, devoluciones y finanzas.
+ERP y POS para una tienda de calzado deportivo. Incluye compras, inventario FIFO, ventas multimoneda, apartados, cambios, devoluciones, finanzas, reportes y catálogo PDF.
 
 ## Desarrollo local
 
@@ -32,7 +32,7 @@ try {
 }
 ```
 
-El comando inicializa la tienda y las cuatro monedas junto con la primera cuenta, sin crear ventas, tasas ni saldos. `pnpm db:seed:demo` acepta las mismas variables para una base de demostración local en modo `development`. Los comandos conservan cuentas existentes.
+El comando inicializa la tienda y las cuatro monedas. Crea las cuentas operativas desde el ERP. `pnpm db:seed:demo` acepta las mismas variables para una base de demostración local en modo `development`. Los comandos conservan cuentas existentes.
 
 ### Arrancar
 
@@ -81,10 +81,25 @@ try {
 
 `pnpm db:migrate` aplica migraciones existentes. Usa `pnpm db:migrate:dev --name nombre_del_cambio` para generar nuevas migraciones durante desarrollo.
 
+### Pruebas de navegador
+
+Instala Chromium para Playwright con `pnpm --filter @max-sport/web exec playwright install chromium`. También puedes usar Microsoft Edge instalado configurando `PLAYWRIGHT_CHANNEL=msedge`.
+
+Crea una base PostgreSQL exclusiva cuyo nombre termine en `_e2e`. Desde la raíz, usa esa misma conexión para migrar e inicializar la base. Ejecuta `pnpm db:bootstrap` solo al preparar una base vacía y usa credenciales ficticias según los pasos de administrador inicial. Las pruebas crean sus propios usuarios y operaciones de QA.
+
+```powershell
+docker compose exec -T db createdb -U max_sport max_sport_e2e
+$env:E2E_DATABASE_URL = 'postgresql://max_sport:max_sport_local@127.0.0.1:5432/max_sport_e2e'
+$env:DATABASE_URL = $env:E2E_DATABASE_URL
+```
+
+Con esas variables, ejecuta `pnpm db:migrate`, inicializa la base si es nueva y ejecuta `pnpm test:e2e`. Playwright ocupa los puertos 4173 y 4317 mientras dura la prueba. Las capturas y trazas quedan en `.local/e2e-results`. Al terminar puedes quitar las variables con `Remove-Item Env:E2E_DATABASE_URL, Env:DATABASE_URL`.
+
 ## Compilación y documentación
 
-`pnpm build` genera `apps/web/dist` y `apps/api/dist`. `pnpm --filter @max-sport/api start` inicia la API compilada. Para servir la web compilada, configura el proxy HTTPS para enviar `/api` a la API y las rutas web a `index.html`. En producción usa `NODE_ENV=production`, un `APP_ORIGIN` HTTPS y credenciales propias de PostgreSQL.
+`pnpm build` genera `apps/web/dist` y `apps/api/dist`. `pnpm --filter @max-sport/api start` inicia la API compilada. Caddy sirve la web compilada y envía `/api` a la API desde el mismo origen HTTPS. En producción usa `NODE_ENV=production`, un `APP_ORIGIN` HTTPS y credenciales propias de PostgreSQL. [Caddyfile](deploy/Caddyfile)
 
 - [Prompt maestro](docs/MASTER_PROMPT.md) y [prompts por fase](docs/02_PROMPTS_POR_FASES.md)
 - [Requisitos](docs/requirements.md), [flujos](docs/flows.md) y [modelo de dominio](docs/domain.md)
 - [Decisiones](docs/decisions.md), [API](docs/api.md) y [roadmap](docs/roadmap.md)
+- [Despliegue, respaldo y restauración](docs/operations.md) y [guía del operador](docs/operator.md)
