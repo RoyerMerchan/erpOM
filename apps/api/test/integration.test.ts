@@ -21,7 +21,8 @@ const config = parseRuntimeConfig({
 const database = createDatabase(config.DATABASE_URL);
 const app = createApp(database, config);
 const key = randomUUID();
-const email = `${key}@example.test`;
+const username = key;
+const email = `correo-${key}@example.test`;
 const password = `pruebas-local-${key}`;
 let roleId: string | undefined;
 let userId: string | undefined;
@@ -31,6 +32,7 @@ beforeAll(async () => {
   roleId = role.id;
   const user = await database.user.create({
     data: {
+      username,
       email,
       displayName: 'Usuario de pruebas',
       roleId,
@@ -60,10 +62,18 @@ it('rechaza una contraseña incorrecta', async () => {
   const response = await request(app)
     .post('/api/v1/auth/login')
     .set('Origin', config.APP_ORIGIN)
-    .send({ email, password: 'incorrecta' })
+    .send({ username, password: 'incorrecta' })
     .expect(401);
   expect(response.body.error.code).toBe('INVALID_CREDENTIALS');
   expect(response.headers['set-cookie']).toBeUndefined();
+});
+
+it('rechaza un correo como credencial de inicio de sesión', async () => {
+  await request(app)
+    .post('/api/v1/auth/login')
+    .set('Origin', config.APP_ORIGIN)
+    .send({ username: email, password })
+    .expect(400);
 });
 
 it('crea una sesión persistida, audita el acceso y revoca la cookie al salir', async () => {
@@ -71,7 +81,7 @@ it('crea una sesión persistida, audita el acceso y revoca la cookie al salir', 
   const response = await agent
     .post('/api/v1/auth/login')
     .set('Origin', config.APP_ORIGIN)
-    .send({ email: ` ${email.toUpperCase()} `, password })
+    .send({ username: ` ${username.toUpperCase()} `, password })
     .expect(200);
   const cookieHeader = String(response.headers['set-cookie']);
   const [cookie = ''] = cookieHeader.split(';', 1);
@@ -79,6 +89,7 @@ it('crea una sesión persistida, audita el acceso y revoca la cookie al salir', 
   expect(cookieHeader).toContain('SameSite=Lax');
   expect(response.body.user).toEqual({
     id: userId,
+    username,
     email,
     displayName: 'Usuario de pruebas',
     role: { code: `SMOKE_${key}`, label: 'Pruebas' },

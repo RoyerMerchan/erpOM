@@ -4,7 +4,7 @@
 
 1. En **Configuración** revisa el nombre, zona horaria, umbral de stock y política de cancelación de apartados.
 2. Registra proveedores, clientes cuando aplique, cuentas por moneda y tasas vigentes. Verifica la convención `1 USD = X unidades`. Revisa la tasa de cada importe distinto de USD en la vista previa antes de confirmar.
-3. Asigna a cada persona su rol en **Usuarios y roles**. Cada operador ingresa con su propia cuenta.
+3. En **Usuarios y roles**, asigna a cada persona un usuario y una contraseña temporal junto con su rol. Cada operador entra con su usuario y contraseña y puede consultar su usuario en **Mi cuenta**.
 
 ## Operación diaria
 

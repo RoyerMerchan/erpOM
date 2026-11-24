@@ -46,6 +46,8 @@ Reemplaza el origen de ejemplo por el dominio de la instalación y usa el mismo 
 3. En una instalación nueva, ejecuta `pnpm db:bootstrap` siguiendo las instrucciones del README y retira `ADMIN_PASSWORD` del entorno al terminar. Configura las cuentas operativas desde el ERP.
 4. Arranca la API, publica la web compilada y comprueba `GET /api/v1/health/live` y `GET /api/v1/health/ready` a través del proxy. Espera `200` en ambos. Verifica inicio y cierre de sesión, acceso a **Inicio** y una consulta de **Reportes** con el rol correspondiente. Registra la versión desplegada y el resultado de estas comprobaciones.
 
+Al aplicar la migración de usuarios, las cuentas existentes conservan sus contraseñas. El nombre de usuario toma el prefijo válido del correo en minúsculas, como `admin` para `admin@example.test`. Si varias cuentas comparten un prefijo, la más antigua lo conserva. Las demás cuentas y las que tienen prefijos inválidos o reservados reciben un usuario único con prefijo `u-`. Consulta o edita el usuario en **Usuarios y roles**.
+
 Si falla una actualización, conserva los logs y determina si la versión anterior es compatible con el esquema ya migrado antes de volver a desplegarla. Si la recuperación precisa restaurar el esquema y los datos, sigue el procedimiento de restauración. Un respaldo recupera el estado de su punto de corte. Registra las operaciones posteriores a ese corte para conciliarlas antes de reabrir el servicio.
 
 ## Respaldar y restaurar PostgreSQL

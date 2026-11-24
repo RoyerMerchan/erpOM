@@ -106,11 +106,12 @@ beforeAll(async () => {
   const password = 'pruebas-reportes-' + randomUUID();
   const passwordHash = await hashPassword(password);
   for (const user of Object.keys(roles) as Actor[]) {
-    const email = key + '-' + user + '@example.test';
+    const username = key + '-' + user;
     const saved = await db.user.create({
       data: {
         displayName: key + '-' + user,
-        email,
+        username,
+        email: username + '@example.test',
         passwordHash,
         role: { connect: { code: roles[user] } },
       },
@@ -119,7 +120,7 @@ beforeAll(async () => {
     await agent
       .post(root + '/auth/login')
       .set('Origin', config.APP_ORIGIN)
-      .send({ email, password })
+      .send({ username, password })
       .expect(200);
     agents.set(user, { agent, id: saved.id });
   }

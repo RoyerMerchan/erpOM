@@ -77,3 +77,9 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - Se validó la configuración con Caddy 2.11.9 y se sirvió la aplicación compilada desde un único origen HTTPS de QA. Se comprobaron la redirección 308, la carga directa de Reportes, los recursos JS y CSS, la caché y el reenvío a la API. En Edge pasaron el inicio y cierre de sesión con cookie segura y la descarga de un CSV. El certificado de QA se verificó con la CA local. Queda ejecutar la comprobación con el dominio y el servidor de despliegue. [Caddyfile](../deploy/Caddyfile)
 - Después de la migración de PrimeVue se repitieron las 28 pruebas unitarias y de humo, las 29 de integración en PostgreSQL y las 2 de Playwright en Edge, todas aprobadas. Pasaron `pnpm lint` y `pnpm build`. Vite avisó que el archivo JavaScript inicial tiene 549 kB minificados y 143 kB comprimidos con gzip.
 - El Chromium empaquetado por Playwright no estaba instalado en el entorno de QA. Se usó `PLAYWRIGHT_CHANNEL=msedge` y se detuvieron los dos servidores locales de prueba manualmente porque el cierre de Playwright quedó esperando en Windows.
+
+## Acceso con usuario y contraseña
+
+- El formulario de entrada usa el nombre de usuario y la contraseña. La marca y el texto del panel de entrada usan blanco. **Usuarios y roles** permite buscar, crear y editar por nombre de usuario. Los cambios de usuario revocan las sesiones de la cuenta.
+- La octava migración se aplicó a dos bases vacías y a una copia de QA con 21 cuentas. Se verificaron los prefijos repetidos e inválidos, la unicidad y la conservación de los datos previos de usuarios y sesiones y del conteo de ventas. Prisma no detectó diferencias de esquema.
+- Pasaron `pnpm lint`, `pnpm build`, `pnpm db:validate`, 28 pruebas unitarias y de humo, 30 de integración y las dos pruebas en Edge. El navegador comprobó el acceso por usuario y los dos acentos blancos en escritorio y a 360 px.

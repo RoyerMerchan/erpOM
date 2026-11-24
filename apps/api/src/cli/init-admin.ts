@@ -1,10 +1,11 @@
-import { emailSchema } from '@max-sport/shared';
+import { emailSchema, usernameSchema } from '@max-sport/shared';
 import { z } from 'zod';
 import { hashPassword } from '../auth/password.js';
 import { loadProjectEnv, parseRuntimeConfig } from '../config.js';
 import { createDatabase } from '../database.js';
 
 const credentialsSchema = z.object({
+  ADMIN_USERNAME: usernameSchema.default('admin'),
   ADMIN_EMAIL: emailSchema,
   ADMIN_NAME: z.string().trim().min(1).max(120),
   ADMIN_PASSWORD: z.string().min(15).max(128),
@@ -34,7 +35,12 @@ async function main() {
     throw new Error(`Revisa ${fields}. ADMIN_PASSWORD requiere entre 15 y 128 caracteres.`);
   }
 
-  const { ADMIN_EMAIL: email, ADMIN_NAME: displayName, ADMIN_PASSWORD: password } = parsed.data;
+  const {
+    ADMIN_USERNAME: username,
+    ADMIN_EMAIL: email,
+    ADMIN_NAME: displayName,
+    ADMIN_PASSWORD: password,
+  } = parsed.data;
   const passwordHash = await hashPassword(password);
   const database = createDatabase(config.DATABASE_URL);
 
@@ -42,7 +48,7 @@ async function main() {
     const created = await database.$transaction(
       async (transaction) => {
         const existingUser = await transaction.user.findFirst({
-          where: { OR: [{ email }, { role: { code: 'ADMIN' } }] },
+          where: { OR: [{ username }, { email }, { role: { code: 'ADMIN' } }] },
           select: { id: true },
         });
         if (existingUser) return false;
@@ -53,7 +59,7 @@ async function main() {
           update: {},
         });
         const user = await transaction.user.create({
-          data: { email, displayName, passwordHash, roleId: role.id },
+          data: { username, email, displayName, passwordHash, roleId: role.id },
         });
         await transaction.shopSettings.upsert({ where: { id: 1 }, create: { id: 1 }, update: {} });
         for (const currency of currencies) {
@@ -74,7 +80,7 @@ async function main() {
     if (created) {
       console.info(demo ? 'Cuenta de demostración local creada.' : 'Administrador inicial creado.');
     } else {
-      console.error('Ya existe un administrador o una cuenta con ese correo.');
+      console.error('Ya existe un administrador o una cuenta con ese usuario o correo.');
       process.exitCode = 1;
     }
   } catch (error) {

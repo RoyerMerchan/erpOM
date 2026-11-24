@@ -12,7 +12,7 @@ import { useSessionStore } from '../stores/session';
 
 const session = useSessionStore();
 const router = useRouter();
-const form = reactive({ email: '', password: '' });
+const form = reactive({ username: '', password: '' });
 const fieldErrors = reactive<Partial<Record<keyof typeof form, string>>>({});
 const requestError = ref('');
 const submitting = ref(false);
@@ -24,16 +24,18 @@ function clearError(field: keyof typeof form) {
 
 async function submit() {
   if (submitting.value) return;
-  clearError('email');
+  clearError('username');
   clearError('password');
   const parsed = loginSchema.safeParse(form);
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
       const field = issue.path[0];
-      if (field === 'email' || field === 'password') fieldErrors[field] = issue.message;
+      if ((field === 'username' || field === 'password') && !fieldErrors[field]) {
+        fieldErrors[field] = issue.message;
+      }
     }
     await nextTick();
-    document.getElementById(fieldErrors.email ? 'email' : 'password')?.focus();
+    document.getElementById(fieldErrors.username ? 'username' : 'password')?.focus();
     return;
   }
 
@@ -67,22 +69,23 @@ async function submit() {
 
         <form class="login-form" novalidate @submit.prevent="submit">
           <div class="access-field">
-            <label for="email">Correo electrónico</label>
+            <label for="username">Usuario</label>
             <InputText
-              id="email"
-              v-model="form.email"
-              name="email"
-              type="email"
+              id="username"
+              v-model="form.username"
+              name="username"
               autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
               required
               fluid
-              :invalid="Boolean(fieldErrors.email)"
-              :aria-describedby="fieldErrors.email ? 'email-error' : undefined"
-              :aria-invalid="Boolean(fieldErrors.email)"
-              @update:model-value="clearError('email')"
+              :invalid="Boolean(fieldErrors.username)"
+              :aria-describedby="fieldErrors.username ? 'username-error' : undefined"
+              :aria-invalid="Boolean(fieldErrors.username)"
+              @update:model-value="clearError('username')"
             />
-            <p v-if="fieldErrors.email" id="email-error" class="field-error">
-              {{ fieldErrors.email }}
+            <p v-if="fieldErrors.username" id="username-error" class="field-error">
+              {{ fieldErrors.username }}
             </p>
           </div>
 

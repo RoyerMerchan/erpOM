@@ -82,7 +82,12 @@ async function submit() {
 
 <template>
   <AppShell>
-    <header class="module-heading"><h1>Mi cuenta</h1></header>
+    <header class="module-heading">
+      <h1>Mi cuenta</h1>
+      <p v-if="session.user">
+        Usuario <strong>{{ session.user.username }}</strong>
+      </p>
+    </header>
     <section class="records-panel settings-card" aria-labelledby="change-password">
       <h2 id="change-password">Cambiar contraseña</h2>
       <p v-if="session.user?.mustChangePassword" class="record-hint">

@@ -26,6 +26,7 @@ const select = {
   id: true,
   active: true,
   displayName: true,
+  username: true,
   email: true,
   mustChangePassword: true,
   role: { select: { code: true, label: true } },
@@ -75,6 +76,7 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
         ? {
             OR: [
               { displayName: insensitive(query.q) },
+              { username: insensitive(query.q) },
               { email: insensitive(query.q) },
               { role: { label: insensitive(query.q) } },
             ],
@@ -99,7 +101,7 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
   });
 
   router.post('/', security.requireOrigin, ...auth('create'), body, async (request, response) => {
-    const { displayName, email, roleCode, temporaryPassword } = validate(
+    const { displayName, username, email, roleCode, temporaryPassword } = validate(
       userCreateInput,
       request.body,
     );
@@ -110,6 +112,7 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
       const created = await tx.user.create({
         data: {
           displayName,
+          username,
           email,
           passwordHash,
           mustChangePassword: true,
@@ -130,7 +133,7 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
 
   router.put('/:id', security.requireOrigin, ...auth('update'), body, async (request, response) => {
     const id = validate(idSchema, request.params.id);
-    const { displayName, email, roleCode, temporaryPassword } = validate(
+    const { displayName, username, email, roleCode, temporaryPassword } = validate(
       userUpdateInput,
       request.body,
     );
@@ -154,13 +157,15 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
         where: { id },
         data: {
           displayName,
+          ...(username !== undefined ? { username } : {}),
           email,
           role: { connect: { code: roleCode } },
           ...(passwordHash ? { passwordHash, mustChangePassword: true } : {}),
         },
         select,
       });
-      if (roleChanged || passwordHash || previous.email !== email) {
+      const usernameChanged = previous.username !== updated.username;
+      if (roleChanged || passwordHash || usernameChanged || previous.email !== email) {
         await tx.userSession.deleteMany({ where: { userId: id } });
       }
       await writeAudit(tx, actor.id, {
@@ -170,6 +175,7 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
         before: auditProfile(previous),
         after: {
           ...auditProfile(updated),
+          usernameChanged,
           emailChanged: previous.email !== email,
           nameChanged: previous.displayName !== displayName,
           temporaryPasswordSet: Boolean(passwordHash),

@@ -94,10 +94,14 @@ button:focus-visible {
     repeating-linear-gradient(135deg, #ffffff10 0 1px, transparent 1px 42px);
 }
 
+.login-brand .brand-mark {
+  background: #fff;
+}
+
 .login-statement {
   max-width: 12ch;
   margin: 0 0 0.4rem;
-  color: var(--lime);
+  color: #fff;
   font-size: clamp(2.15rem, 4.8vw, 5rem);
   line-height: 1.02;
   font-weight: 760;

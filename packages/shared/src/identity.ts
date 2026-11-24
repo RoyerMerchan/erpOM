@@ -8,16 +8,28 @@ export const emailSchema = z
   .max(254, 'El correo es demasiado largo.')
   .pipe(z.email('Ingresa un correo electrónico válido.'));
 
+export const usernameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3, 'El usuario debe tener al menos 3 caracteres.')
+  .max(40, 'El usuario debe tener hasta 40 caracteres.')
+  .regex(
+    /^[a-z0-9][a-z0-9._-]*$/,
+    'Empieza el usuario con una letra o número. Usa letras, números, puntos, guiones o guiones bajos.',
+  );
+
 export const passwordSchema = z
   .string()
   .min(1, 'Ingresa tu contraseña.')
   .max(128, 'La contraseña es demasiado larga.');
 export const newPasswordSchema = passwordSchema.min(15, 'Usa al menos 15 caracteres.');
 
-export const loginSchema = z.object({ email: emailSchema, password: passwordSchema });
+export const loginSchema = z.object({ username: usernameSchema, password: passwordSchema });
 export const sessionResponseSchema = z.object({
   user: z.object({
     id: z.uuid(),
+    username: usernameSchema,
     email: z.email(),
     displayName: z.string(),
     role: z.object({ code: z.string(), label: z.string() }),

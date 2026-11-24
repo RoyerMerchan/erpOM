@@ -17,9 +17,10 @@ Copia `.env.example` solo al preparar un entorno nuevo. Si eliges otro puerto de
 
 ### Crear el administrador inicial
 
-Indica un correo y un nombre, y elige una contraseña de 15 a 128 caracteres. En PowerShell puedes introducirla sin mostrarla en pantalla.
+Indica un nombre de usuario único, un correo de contacto y un nombre visible. Elige una contraseña de 15 a 128 caracteres. En PowerShell puedes introducirla sin mostrarla en pantalla.
 
 ```powershell
+$env:ADMIN_USERNAME = 'admin'
 $env:ADMIN_EMAIL = 'admin@example.test'
 $env:ADMIN_NAME = 'Administrador'
 $adminSecret = Read-Host 'Contraseña del administrador' -AsSecureString
@@ -27,7 +28,7 @@ $env:ADMIN_PASSWORD = [System.Net.NetworkCredential]::new('', $adminSecret).Pass
 try {
   pnpm db:bootstrap
 } finally {
-  Remove-Item Env:ADMIN_PASSWORD, Env:ADMIN_EMAIL, Env:ADMIN_NAME -ErrorAction SilentlyContinue
+  Remove-Item Env:ADMIN_PASSWORD, Env:ADMIN_USERNAME, Env:ADMIN_EMAIL, Env:ADMIN_NAME -ErrorAction SilentlyContinue
   Remove-Variable adminSecret
 }
 ```
@@ -40,7 +41,7 @@ El comando inicializa la tienda y las cuatro monedas. Crea las cuentas operativa
 pnpm dev
 ```
 
-Abre <http://localhost:5173/> e inicia sesión con la cuenta creada. Vite envía `/api` a Express en `127.0.0.1:3000`. La API usa el `APP_ORIGIN` de `.env` al verificar las peticiones de autenticación.
+Abre <http://localhost:5173/> e inicia sesión con el usuario y la contraseña de la cuenta creada. Vite envía `/api` a Express en `127.0.0.1:3000`. La API usa el `APP_ORIGIN` de `.env` al verificar las peticiones de autenticación.
 
 Al actualizar una instalación de la Fase 0, ejecuta `pnpm db:migrate` antes de arrancar. El administrador existente recibe los permisos de su rol durante la migración. Desde **Usuarios y roles** puede asignar uno de los cinco roles y crear cuentas con contraseña temporal.
 

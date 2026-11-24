@@ -2,6 +2,8 @@
 
 Las migraciones vigentes contienen usuarios, catálogos, compras, ventas, apartados, cambios, devoluciones, registros financieros, movimientos monetarios y de inventario, y versiones de catálogo PDF.
 
+Cada cuenta tiene un nombre de usuario único para iniciar sesión y un correo de contacto. El usuario admite de 3 a 40 caracteres en minúsculas. Comienza con una letra ASCII o un número y admite también puntos, guiones y guiones bajos.
+
 ```mermaid
 erDiagram
   ROLE ||--o{ USER : asigna

@@ -15,19 +15,20 @@ export async function staff(role: 'ADMIN' | 'SELLER') {
     throw new Error('Falta una base dedicada para las pruebas E2E.');
   const db = createDatabase(databaseUrl);
   const key = randomUUID().slice(0, 12);
-  const email = 'qa-' + key + '@example.test';
+  const username = 'qa-' + key;
   const password = 'qa-' + randomUUID();
   try {
     const user = await db.user.create({
       data: {
-        email,
+        username,
+        email: username + '@example.test',
         displayName: 'Operador QA ' + key,
         passwordHash: await hashPassword(password),
         role: { connect: { code: role } },
       },
       select: { id: true },
     });
-    return { email, password, key, id: user.id };
+    return { username, password, key, id: user.id };
   } finally {
     await db.$disconnect();
   }
@@ -35,7 +36,12 @@ export async function staff(role: 'ADMIN' | 'SELLER') {
 
 export async function login(page: Page, user: Awaited<ReturnType<typeof staff>>) {
   await page.goto('/login');
-  await page.getByLabel('Correo electrónico').fill(user.email);
+  await expect(page.locator('.login-brand .brand-mark')).toHaveCSS(
+    'background-color',
+    'rgb(255, 255, 255)',
+  );
+  await expect(page.locator('.login-statement')).toHaveCSS('color', 'rgb(255, 255, 255)');
+  await page.getByLabel('Usuario', { exact: true }).fill(user.username);
   await page.getByLabel('Contraseña', { exact: true }).fill(user.password);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Panel de operaciones' })).toBeVisible();

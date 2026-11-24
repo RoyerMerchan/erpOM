@@ -11,6 +11,7 @@ const sessionDurationMs = 8 * 60 * 60 * 1_000;
 
 export const identitySelect = {
   id: true,
+  username: true,
   email: true,
   displayName: true,
   mustChangePassword: true,
@@ -28,6 +29,7 @@ export function toSessionUser(
 ): SessionUser {
   return {
     id: user.id,
+    username: user.username,
     email: user.email,
     displayName: user.displayName,
     role: { code: user.role.code, label: user.role.label },

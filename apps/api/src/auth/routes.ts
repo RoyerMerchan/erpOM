@@ -10,7 +10,7 @@ import { identitySelect, lockUser, sessionActor, toSessionUser } from './session
 import type { SessionSecurity } from './session.js';
 
 const invalidCredentials = () =>
-  new HttpError(401, 'INVALID_CREDENTIALS', 'El correo o la contraseña no son correctos.');
+  new HttpError(401, 'INVALID_CREDENTIALS', 'El usuario o la contraseña no son correctos.');
 
 function authLimit(limit: number, code: string) {
   return rateLimit({
@@ -31,9 +31,9 @@ export function createAuthRouter(database: Database, security: SessionSecurity) 
   const changeCredentials = authLimit(8, 'PASSWORD_LIMIT');
 
   router.post('/login', security.requireOrigin, loginAccount, body, async (request, response) => {
-    const { email, password } = validate(loginSchema, request.body);
+    const { username, password } = validate(loginSchema, request.body);
     const user = await database.user.findUnique({
-      where: { email },
+      where: { username },
       select: { id: true, passwordHash: true, active: true },
     });
     const matches = await verifyPassword(password, user?.passwordHash);
@@ -50,7 +50,7 @@ export function createAuthRouter(database: Database, security: SessionSecurity) 
       if (
         !current?.active ||
         current.passwordHash !== user.passwordHash ||
-        current.email !== email
+        current.username !== username
       ) {
         throw invalidCredentials();
       }

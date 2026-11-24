@@ -190,9 +190,10 @@ export const catalogs: Record<ResourceKey, Catalog> = {
   users: {
     title: 'Usuarios',
     createLabel: 'Nuevo usuario',
-    searchLabel: 'Buscar por nombre, correo o rol',
+    searchLabel: 'Buscar por nombre, usuario, correo o rol',
     columns: [
       textColumn('displayName', 'Nombre'),
+      textColumn('username', 'Usuario'),
       textColumn('email', 'Correo electrónico'),
       { label: 'Rol', value: (row) => textField(nestedRow(row, 'role'), 'label') },
       {
@@ -205,6 +206,13 @@ export const catalogs: Record<ResourceKey, Catalog> = {
     editSchema: userUpdateInput,
     fields: [
       { key: 'displayName', label: 'Nombre', required: true, max: 120 },
+      {
+        key: 'username',
+        label: 'Usuario',
+        required: true,
+        max: 40,
+        help: 'De 3 a 40 caracteres. Usa letras, números, puntos, guiones o guiones bajos.',
+      },
       { key: 'email', label: 'Correo electrónico', required: true, max: 254 },
       { key: 'roleCode', label: 'Rol', kind: 'select', lookup: 'roles', required: true },
       {

@@ -4,13 +4,13 @@ Prefijo `/api/v1`. La web hace peticiones al mismo origen y mantiene la sesión 
 
 ## Fase 0
 
-| Método y ruta              | Resultado                                                                                                                                                                                                        |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/v1/health/live`  | `200` con `{"status":"ok"}` cuando Express responde.                                                                                                                                                             |
-| `GET /api/v1/health/ready` | `200` con `{"status":"ready"}` al consultar PostgreSQL. `503` cuando falla la consulta.                                                                                                                          |
-| `POST /api/v1/auth/login`  | Acepta JSON con `email` y `password`. Emite la cookie de sesión y devuelve `{"user": {...}}` con el identificador, nombre, correo y rol público. `401` para credenciales inválidas y `429` al superar el límite. |
-| `GET /api/v1/auth/me`      | Devuelve el mismo perfil público para una sesión vigente. `401` con sesión ausente, revocada, vencida o usuario inactivo.                                                                                        |
-| `POST /api/v1/auth/logout` | Revoca la sesión presentada y borra la cookie. `204`, también para una sesión ya cerrada.                                                                                                                        |
+| Método y ruta              | Resultado                                                                                                                                                                                                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/health/live`  | `200` con `{"status":"ok"}` cuando Express responde.                                                                                                                                                                                                       |
+| `GET /api/v1/health/ready` | `200` con `{"status":"ready"}` al consultar PostgreSQL. `503` cuando falla la consulta.                                                                                                                                                                    |
+| `POST /api/v1/auth/login`  | Acepta JSON con `username` y `password`. Emite la cookie de sesión y devuelve `{"user": {...}}` con el identificador, usuario, nombre, correo y rol público. `400` para datos inválidos, `401` para credenciales incorrectas y `429` al superar el límite. |
+| `GET /api/v1/auth/me`      | Devuelve el mismo perfil público para una sesión vigente. `401` con sesión ausente, revocada, vencida o usuario inactivo.                                                                                                                                  |
+| `POST /api/v1/auth/logout` | Revoca la sesión presentada y borra la cookie. `204`, también para una sesión ya cerrada.                                                                                                                                                                  |
 
 Los errores usan `{"error":{"code":"CODIGO","message":"Mensaje en español","requestId":"..."}}`. `X-Request-Id` permite correlacionar la respuesta con los logs. Los errores internos se exponen con un mensaje genérico y los logs excluyen cuerpos de petición, cookies y cabeceras de autenticación.
 
@@ -36,7 +36,7 @@ Los recursos son `brands`, `models`, `variants`, `customers`, `suppliers`, `acco
 
 `salePriceUsd` y `unitsPerUsd` son cadenas decimales. El alta de tasa recibe `currencyCode`, `unitsPerUsd` y `effectiveAt` con zona. La corrección recibe el importe y la nueva fecha efectiva, conserva la moneda, archiva el original y enlaza la versión nueva mediante `replacesId`. La lista conserva fecha efectiva, fecha de creación, autor y estado de archivo.
 
-`POST /users` exige `displayName`, `email`, `roleCode` y `temporaryPassword`. En `PUT /users/:id`, `temporaryPassword` es opcional. A la siguiente sesión, el usuario debe cambiarla antes de operar. Un cambio de rol, correo, contraseña o archivo revoca las sesiones previas de la cuenta afectada.
+`POST /users` exige `displayName`, `username`, `email`, `roleCode` y `temporaryPassword`. El nombre de usuario es único y se guarda en minúsculas. La búsqueda en `GET /users` incluye el nombre de usuario. En `PUT /users/:id`, `username` y `temporaryPassword` son opcionales. Si se asigna una contraseña temporal, la persona debe cambiarla antes de operar. Los cambios de usuario, rol, correo, contraseña y estado de archivo revocan las sesiones de la cuenta afectada.
 
 ## Fase 2
 

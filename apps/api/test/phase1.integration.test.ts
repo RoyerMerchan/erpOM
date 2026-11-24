@@ -55,9 +55,15 @@ function agent(role: RoleCode) {
 beforeAll(async () => {
   const passwordHash = await hashPassword(password);
   for (const role of roleCodeSchema.options) {
-    const email = marker(role.toLowerCase()) + '@example.test';
+    const username = marker(role.toLowerCase());
     const created = await db.user.create({
-      data: { email, passwordHash, displayName: marker(role), role: { connect: { code: role } } },
+      data: {
+        username,
+        email: username + '@example.test',
+        passwordHash,
+        displayName: marker(role),
+        role: { connect: { code: role } },
+      },
       select: { id: true },
     });
     ids.set(role, created.id);
@@ -65,7 +71,7 @@ beforeAll(async () => {
     await userAgent
       .post(prefix + '/auth/login')
       .set('Origin', origin)
-      .send({ email, password })
+      .send({ username, password })
       .expect(200);
     agents.set(role, userAgent);
   }
@@ -429,8 +435,10 @@ it('aplica en la sesión los permisos configurables de costos y utilidad', async
 
 it('obliga a cambiar contraseña temporal y revoca sesiones al cambiar credenciales, rol o estado', async () => {
   const admin = agent('ADMIN');
-  const email = marker('new') + '@example.test';
+  const username = marker('new');
+  const email = marker('staff-contact') + '@example.test';
   const account = {
+    username: username.toUpperCase(),
     email,
     displayName: marker('Staff'),
     roleCode: 'SELLER',
@@ -445,11 +453,22 @@ it('obliga a cambiar contraseña temporal y revoca sesiones al cambiar credencia
         .expect(201)
     ).body,
   );
+  expect(created.username).toBe(username);
+  await admin
+    .post(prefix + '/users')
+    .set('Origin', origin)
+    .send({ ...account, username, email: marker('duplicate') + '@example.test' })
+    .expect(409);
+  const search = await admin
+    .get(prefix + '/users')
+    .query({ q: username })
+    .expect(200);
+  expect(search.body.items).toContainEqual(created);
   const staff = request.agent(app);
   const first = await staff
     .post(prefix + '/auth/login')
     .set('Origin', origin)
-    .send({ email, password })
+    .send({ username, password })
     .expect(200);
   const [cookie = ''] = String(first.headers['set-cookie']).split(';', 1);
   expect(first.body.user.mustChangePassword).toBe(true);
@@ -474,14 +493,37 @@ it('obliga a cambiar contraseña temporal y revoca sesiones al cambiar credencia
   await staff
     .post(prefix + '/auth/login')
     .set('Origin', origin)
-    .send({ email, password })
+    .send({ username, password })
     .expect(401);
   await staff
     .post(prefix + '/auth/login')
     .set('Origin', origin)
-    .send({ email, password: newPassword })
+    .send({ username, password: newPassword })
     .expect(200);
   await staff.get(prefix + '/customers').expect(200);
+
+  const renamedUsername = marker('renamed');
+  await admin
+    .put(prefix + '/users/' + created.id)
+    .set('Origin', origin)
+    .send({
+      email,
+      username: renamedUsername,
+      displayName: account.displayName,
+      roleCode: 'SELLER',
+    })
+    .expect(200);
+  await staff.get(prefix + '/auth/me').expect(401);
+  await staff
+    .post(prefix + '/auth/login')
+    .set('Origin', origin)
+    .send({ username, password: newPassword })
+    .expect(401);
+  await staff
+    .post(prefix + '/auth/login')
+    .set('Origin', origin)
+    .send({ username: renamedUsername, password: newPassword })
+    .expect(200);
 
   await admin
     .put(prefix + '/users/' + created.id)
@@ -492,7 +534,7 @@ it('obliga a cambiar contraseña temporal y revoca sesiones al cambiar credencia
   await staff
     .post(prefix + '/auth/login')
     .set('Origin', origin)
-    .send({ email, password: newPassword })
+    .send({ username: renamedUsername, password: newPassword })
     .expect(200);
   await staff.get(prefix + '/customers').expect(403);
   await admin
@@ -510,4 +552,5 @@ it('obliga a cambiar contraseña temporal y revoca sesiones al cambiar credencia
     .expect(200);
   expect(JSON.stringify(events.body)).not.toContain(password);
   expect(JSON.stringify(events.body)).not.toContain(email);
+  expect(JSON.stringify(events.body)).not.toContain(renamedUsername);
 }, 25_000);

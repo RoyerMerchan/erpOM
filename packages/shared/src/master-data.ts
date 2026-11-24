@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { roleCodeSchema } from './access.js';
-import { emailSchema, newPasswordSchema, passwordSchema } from './identity.js';
+import { emailSchema, newPasswordSchema, passwordSchema, usernameSchema } from './identity.js';
 
 const requiredText = (max: number) => z.string().trim().min(1, 'Completa este campo.').max(max);
 const optionalText = (max: number) =>
@@ -93,11 +93,13 @@ export const rateInput = rateRevisionInput
   });
 const staffProfile = z.object({
   displayName: requiredText(120),
+  username: usernameSchema,
   email: emailSchema,
   roleCode: roleCodeSchema,
 });
 export const userCreateInput = staffProfile.extend({ temporaryPassword: newPasswordSchema });
 export const userUpdateInput = staffProfile.extend({
+  username: usernameSchema.optional(),
   temporaryPassword: newPasswordSchema.optional(),
 });
 export const changePasswordInput = z
@@ -180,6 +182,7 @@ export const rateRecord = row.extend({
   replacesId: z.uuid().nullable(),
 });
 export const userRecord = row.extend({
+  username: usernameSchema,
   email: z.string(),
   displayName: z.string(),
   role: z.object({ code: z.string(), label: z.string() }),
