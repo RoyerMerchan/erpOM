@@ -41,9 +41,21 @@ export async function login(page: Page, user: Awaited<ReturnType<typeof staff>>)
   await expect
     .poll(() => logo.evaluate((img) => (img as HTMLImageElement).naturalWidth))
     .toBeGreaterThan(0);
+  await expect
+    .poll(() =>
+      page.locator('.login-photo').evaluate((img) => (img as HTMLImageElement).naturalWidth),
+    )
+    .toBeGreaterThan(0);
   await expect(page.locator('.login-statement')).toHaveCSS('color', 'rgb(255, 255, 255)');
   await page.getByLabel('Usuario', { exact: true }).fill(user.username);
-  await page.getByLabel('Contraseña', { exact: true }).fill(user.password);
+  const password = page.getByLabel('Contraseña', { exact: true });
+  await password.fill(user.password);
+  await page.getByRole('button', { name: 'Mostrar contraseña' }).press('Space');
+  await expect(password).toHaveAttribute('type', 'text');
+  const hidePassword = page.getByRole('button', { name: 'Ocultar contraseña' });
+  await expect(hidePassword).toBeFocused();
+  await hidePassword.press('Enter');
+  await expect(password).toHaveAttribute('type', 'password');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Panel de operaciones' })).toBeVisible();
 }

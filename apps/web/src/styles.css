@@ -73,65 +73,6 @@ button:focus-visible {
   opacity: 0.82;
 }
 
-.login-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
-  min-height: 100svh;
-  background: var(--surface);
-}
-
-.login-brand {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 4rem;
-  padding: clamp(2rem, 6vw, 6rem);
-  color: var(--surface);
-  background-color: var(--navy);
-  background-image:
-    radial-gradient(ellipse at 10% 100%, #2b436b 0, transparent 68%),
-    repeating-linear-gradient(135deg, #ffffff10 0 1px, transparent 1px 42px);
-}
-
-.login-logo {
-  width: clamp(8rem, 16vw, 14rem);
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
-  mix-blend-mode: screen;
-}
-
-.login-logo img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 41%;
-  transform: scale(1.72);
-}
-
-.login-statement {
-  max-width: 12ch;
-  margin: 0 0 0.4rem;
-  color: #fff;
-  font-size: clamp(2.15rem, 4.8vw, 5rem);
-  line-height: 1.02;
-  font-weight: 760;
-  letter-spacing: -0.065em;
-  text-wrap: balance;
-}
-
-.login-main {
-  display: grid;
-  place-items: center;
-  padding: clamp(1.5rem, 5vw, 4rem);
-}
-
-.login-form-wrap {
-  width: min(100%, 25rem);
-}
-
-.login-form-wrap h1,
 .workspace-title {
   margin: 0 0 2rem;
   font-size: clamp(2rem, 4vw, 2.65rem);
@@ -140,43 +81,10 @@ button:focus-visible {
   letter-spacing: -0.055em;
 }
 
-.login-message {
-  margin-bottom: 1.25rem;
-}
-
-.login-form {
-  display: grid;
-  gap: 1.3rem;
-}
-
-.access-field {
-  display: grid;
-  min-width: 0;
-  gap: 0.55rem;
-}
-
-.access-field label {
-  font-size: 0.94rem;
-  font-weight: 650;
-}
-
-.login-form .p-inputtext,
-.login-form .p-password {
-  width: 100%;
-  min-height: 3rem;
-  font-size: 1rem;
-}
-
 .field-error {
   margin: 0;
   color: #a22337;
   font-size: 0.875rem;
-}
-
-.access-submit.p-button {
-  min-height: 3rem;
-  margin-top: 0.3rem;
-  border-radius: 0.55rem;
 }
 
 .workspace-shell {
@@ -433,28 +341,6 @@ button:focus-visible {
 }
 
 @media (max-width: 760px) {
-  .login-shell {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-  }
-
-  .login-brand {
-    gap: 1.35rem;
-    padding: 1.5rem;
-  }
-
-  .login-statement {
-    max-width: none;
-    margin-bottom: 0;
-    font-size: clamp(1.6rem, 5vw, 2.35rem);
-    letter-spacing: -0.045em;
-  }
-
-  .login-main {
-    align-items: start;
-    padding-block: clamp(2rem, 7vw, 3.25rem);
-  }
-
   .workspace-shell {
     grid-template-columns: minmax(0, 1fr);
   }
