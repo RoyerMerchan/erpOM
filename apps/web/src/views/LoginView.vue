@@ -7,9 +7,9 @@ import Password from 'primevue/password';
 import { nextTick, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiRequestError } from '../api';
-import BrandLockup from '../components/BrandLockup.vue';
 import { useSessionStore } from '../stores/session';
 
+const loginLogoUrl = `${import.meta.env.BASE_URL}c3fc4a9b-dec5-473f-8fc9-866f44ff94a2.jpg`;
 const session = useSessionStore();
 const router = useRouter();
 const form = reactive({ username: '', password: '' });
@@ -54,8 +54,10 @@ async function submit() {
 
 <template>
   <div class="login-shell">
-    <aside class="login-brand" aria-label="MAX Sport Manager">
-      <BrandLockup />
+    <aside class="login-brand">
+      <div class="login-logo">
+        <img :src="loginLogoUrl" alt="OM Store" width="640" height="640" />
+      </div>
       <p class="login-statement">Inventario y punto de venta</p>
     </aside>
 

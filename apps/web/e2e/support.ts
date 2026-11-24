@@ -36,10 +36,11 @@ export async function staff(role: 'ADMIN' | 'SELLER') {
 
 export async function login(page: Page, user: Awaited<ReturnType<typeof staff>>) {
   await page.goto('/login');
-  await expect(page.locator('.login-brand .brand-mark')).toHaveCSS(
-    'background-color',
-    'rgb(255, 255, 255)',
-  );
+  const logo = page.getByRole('img', { name: 'OM Store' });
+  await expect(logo).toBeVisible();
+  await expect
+    .poll(() => logo.evaluate((img) => (img as HTMLImageElement).naturalWidth))
+    .toBeGreaterThan(0);
   await expect(page.locator('.login-statement')).toHaveCSS('color', 'rgb(255, 255, 255)');
   await page.getByLabel('Usuario', { exact: true }).fill(user.username);
   await page.getByLabel('Contraseña', { exact: true }).fill(user.password);
