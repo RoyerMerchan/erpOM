@@ -5,14 +5,14 @@ import { useId } from 'vue';
 import LookupSelect from '../master-data/LookupSelect.vue';
 import type { FinanceFilterDraft } from './form';
 
-defineProps<{ daily?: boolean; datesOnly?: boolean }>();
+defineProps<{ daily?: boolean; datesOnly?: boolean; accountsOnly?: boolean }>();
 const model = defineModel<FinanceFilterDraft>({ required: true });
 const id = useId();
 </script>
 
 <template>
   <div class="finance-fields">
-    <div v-if="!daily" class="field">
+    <div v-if="!daily && !accountsOnly" class="field">
       <label :for="id + '-period'">Período</label>
       <select :id="id + '-period'" v-model="model.period" class="sale-native-select">
         <option v-for="(title, period) in financePeriodLabels" :key="period" :value="period">
@@ -20,7 +20,7 @@ const id = useId();
         </option>
       </select>
     </div>
-    <template v-if="model.period === 'RANGE' && !daily">
+    <template v-if="!accountsOnly && model.period === 'RANGE' && !daily">
       <div class="field">
         <label :for="id + '-from'">Desde</label>
         <InputText :id="id + '-from'" type="date" v-model="model.from" required fluid />
@@ -37,7 +37,7 @@ const id = useId();
         />
       </div>
     </template>
-    <div v-else class="field">
+    <div v-else-if="!accountsOnly" class="field">
       <label :for="id + '-date'">{{
         daily || model.period === 'DAY' ? 'Fecha' : 'Fecha del período'
       }}</label>
@@ -45,9 +45,10 @@ const id = useId();
     </div>
     <template v-if="!datesOnly">
       <div class="field">
-        <label :for="id + '-currency'">Moneda de caja</label>
+        <label :id="id + '-currency-label'" :for="id + '-currency'">Moneda de caja</label>
         <LookupSelect
           :id="id + '-currency'"
+          :labelled-by="id + '-currency-label'"
           v-model="model.currencyCode"
           resource="currencies"
           placeholder="Todas"
@@ -56,9 +57,10 @@ const id = useId();
         />
       </div>
       <div class="field">
-        <label :for="id + '-account'">Cuenta de caja</label>
+        <label :id="id + '-account-label'" :for="id + '-account'">Cuenta de caja</label>
         <LookupSelect
           :id="id + '-account'"
+          :labelled-by="id + '-account-label'"
           v-model="model.accountId"
           resource="accounts"
           placeholder="Todas"

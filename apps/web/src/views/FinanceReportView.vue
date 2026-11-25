@@ -171,52 +171,64 @@ onBeforeUnmount(() => {
           </div>
         </dl>
 
-        <div :class="{ 'finance-two-up': view !== 'profit' }">
-          <section class="sale-panel finance-stack" aria-labelledby="finance-recognition">
-            <header class="finance-section-heading">
-              <h2 id="finance-recognition">Resultados de la tienda</h2>
-              <p>Ventas reconocidas y gastos del período para toda la tienda.</p>
-            </header>
-            <dl class="finance-metrics">
-              <div
-                v-for="item in recognition"
-                :key="item.label"
-                :class="{ 'finance-metric-total': item.important }"
-              >
-                <dt>{{ item.label }}</dt>
-                <dd>{{ formatMoney(item.value, 'USD') }}</dd>
-              </div>
-              <div>
-                <dt>Ventas confirmadas</dt>
-                <dd>{{ report.recognition.salesCount }}</dd>
-              </div>
-              <div v-if="report.recognition.grossMarginPct != null">
-                <dt>Margen bruto</dt>
-                <dd>{{ formatMoney(report.recognition.grossMarginPct) }} %</dd>
-              </div>
-            </dl>
-          </section>
-          <section
-            v-if="view !== 'profit'"
-            class="sale-panel finance-stack"
-            aria-labelledby="finance-cash"
-          >
-            <header class="finance-section-heading">
-              <h2 id="finance-cash">Conciliación de caja</h2>
-              <p>Movimientos del período para las cuentas y monedas seleccionadas.</p>
-            </header>
-            <dl class="finance-metrics">
-              <div
-                v-for="item in cash"
-                :key="item.label"
-                :class="{ 'finance-metric-total': item.important }"
-              >
-                <dt>{{ item.label }}</dt>
-                <dd>{{ formatMoney(item.value, 'USD') }}</dd>
-              </div>
-            </dl>
-          </section>
-        </div>
+        <p
+          v-if="view !== 'profit' && (applied?.accountId || applied?.currencyCode)"
+          class="sale-muted"
+        >
+          Las ventas corresponden a toda la tienda. El filtro de cuenta o moneda se aplica a caja.
+        </p>
+        <component
+          :is="view === 'summary' ? 'details' : 'div'"
+          :class="{ 'sale-panel finance-filter-extra': view === 'summary' }"
+        >
+          <summary v-if="view === 'summary'">Ver desglose de resultados y caja</summary>
+          <div :class="{ 'finance-two-up': view !== 'profit' }">
+            <section class="sale-panel finance-stack" aria-labelledby="finance-recognition">
+              <header class="finance-section-heading">
+                <h2 id="finance-recognition">Resultados de la tienda</h2>
+                <p>Ventas reconocidas y gastos del período para toda la tienda.</p>
+              </header>
+              <dl class="finance-metrics">
+                <div
+                  v-for="item in recognition"
+                  :key="item.label"
+                  :class="{ 'finance-metric-total': item.important }"
+                >
+                  <dt>{{ item.label }}</dt>
+                  <dd>{{ formatMoney(item.value, 'USD') }}</dd>
+                </div>
+                <div>
+                  <dt>Ventas confirmadas</dt>
+                  <dd>{{ report.recognition.salesCount }}</dd>
+                </div>
+                <div v-if="report.recognition.grossMarginPct != null">
+                  <dt>Margen bruto</dt>
+                  <dd>{{ formatMoney(report.recognition.grossMarginPct) }} %</dd>
+                </div>
+              </dl>
+            </section>
+            <section
+              v-if="view !== 'profit'"
+              class="sale-panel finance-stack"
+              aria-labelledby="finance-cash"
+            >
+              <header class="finance-section-heading">
+                <h2 id="finance-cash">Conciliación de caja</h2>
+                <p>Movimientos del período para las cuentas y monedas seleccionadas.</p>
+              </header>
+              <dl class="finance-metrics">
+                <div
+                  v-for="item in cash"
+                  :key="item.label"
+                  :class="{ 'finance-metric-total': item.important }"
+                >
+                  <dt>{{ item.label }}</dt>
+                  <dd>{{ formatMoney(item.value, 'USD') }}</dd>
+                </div>
+              </dl>
+            </section>
+          </div>
+        </component>
 
         <section v-if="view !== 'profit'" class="finance-stack" aria-labelledby="finance-balances">
           <header class="finance-section-heading">

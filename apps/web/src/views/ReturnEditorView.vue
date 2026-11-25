@@ -43,7 +43,7 @@ const loading = ref(true);
 const calculating = ref(false);
 const posting = ref(false);
 const error = ref('');
-const quote = ref<{ data: CorrectionPreview; key: string }>();
+const quote = ref<{ data: CorrectionPreview; key: string; selectionKey: string }>();
 const quoteInvalid = ref(false);
 const attempt = ref<ConfirmCorrectionInput>();
 const idFor = operationKey();
@@ -54,23 +54,28 @@ const moneySide = (data: CorrectionPreview | undefined) =>
     : data.differenceUsd.startsWith('-')
       ? 'refund'
       : 'charge';
-const payload = computed(() => {
-  const side = moneySide(quote.value?.data);
-  const amounts = paymentInputs(money.value);
-  const items = lines.value.flatMap((line) =>
+const selection = computed(() => ({
+  items: lines.value.flatMap((line) =>
     [
       { saleItemId: line.id, condition: 'SELLABLE', quantity: Number(line.sellable) },
       { saleItemId: line.id, condition: 'DEFECTIVE', quantity: Number(line.damaged) },
     ].filter(({ quantity }) => quantity !== 0),
-  );
+  ),
+  replacement: mode.value === 'EXCHANGE' ? cartInput(replacement.value) : [],
+}));
+const selectionKey = computed(() => JSON.stringify(selection.value));
+const currentMoneySide = computed(() =>
+  quote.value?.selectionKey === selectionKey.value ? moneySide(quote.value.data) : null,
+);
+const payload = computed(() => {
+  const amounts = paymentInputs(money.value);
   return correctionInput.safeParse({
     saleId: props.saleId,
-    items,
+    ...selection.value,
     reason: reason.value,
     notes: notes.value,
-    replacement: mode.value === 'EXCHANGE' ? cartInput(replacement.value) : [],
-    refunds: side === 'refund' ? amounts : [],
-    payments: side === 'charge' ? amounts : [],
+    refunds: currentMoneySide.value === 'refund' ? amounts : [],
+    payments: currentMoneySide.value === 'charge' ? amounts : [],
   });
 });
 const fresh = computed(
@@ -114,12 +119,15 @@ async function calculate() {
     return;
   }
   const selected = payload.value.data;
+  const before = selectionKey.value;
   calculating.value = true;
   error.value = '';
   try {
     const updated = await previewCorrection(selected);
-    if (moneySide(updated) !== moneySide(quote.value?.data)) money.value = [];
-    quote.value = { data: updated, key: JSON.stringify(selected) };
+    if (before !== selectionKey.value) return;
+    if (before !== quote.value?.selectionKey || moneySide(updated) !== moneySide(quote.value?.data))
+      money.value = [];
+    quote.value = { data: updated, key: JSON.stringify(selected), selectionKey: before };
     quoteInvalid.value = false;
   } catch (failure) {
     quoteInvalid.value = true;
@@ -234,7 +242,7 @@ onMounted(() => void load());
         <StockCart v-if="mode === 'EXCHANGE'" v-model="replacement" heading="Tallas de reemplazo" />
       </div>
       <section class="sale-panel activity-stack" aria-labelledby="return-review">
-        <h2 id="return-review">Liquidación</h2>
+        <h2 id="return-review">Cobro o reembolso</h2>
         <div class="activity-stack" :inert="!!attempt">
           <div class="field">
             <label for="return-reason">Motivo</label>
@@ -245,13 +253,12 @@ onMounted(() => void load());
             <Textarea id="return-notes" v-model="notes" rows="2" maxlength="2000" fluid />
           </div>
           <TenderList
-            v-if="moneySide(quote?.data)"
+            v-if="currentMoneySide"
             v-model="money"
-            :label="moneySide(quote?.data) === 'refund' ? 'Reembolso' : 'Cobro'"
+            :label="currentMoneySide === 'refund' ? 'Reembolso' : 'Cobro'"
           />
         </div>
-        <div v-if="quote" class="activity-stack" aria-live="polite">
-          <p v-if="!fresh" class="sale-muted">Hay cambios pendientes de calcular.</p>
+        <div v-if="quote && fresh" class="activity-stack" aria-live="polite">
           <dl class="activity-summary">
             <div>
               <dt>Importe devuelto</dt>
@@ -288,10 +295,17 @@ onMounted(() => void load());
               <dd>{{ formatMoney(quote.data.restoredCogsUsd, 'USD') }}</dd>
             </div>
           </dl>
-          <p v-if="fresh && !quote.data.ready" class="sale-muted">
+          <p v-if="!quote.data.ready" class="sale-muted">
             Completa el cobro o el reembolso por el importe requerido.
           </p>
         </div>
+        <p v-else class="sale-muted" role="status">
+          {{
+            quote
+              ? 'Los datos cambiaron. Vuelve a calcular el movimiento.'
+              : 'Calcula para saber cuánto debes cobrar o devolver.'
+          }}
+        </p>
         <Message v-if="error" severity="error">{{ error }}</Message>
         <div class="sale-actions">
           <Button

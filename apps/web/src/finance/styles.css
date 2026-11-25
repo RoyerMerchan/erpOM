@@ -22,7 +22,39 @@
 }
 
 .finance-fields .field {
+  display: grid;
   min-width: 0;
+  gap: 0.35rem;
+}
+
+.finance-fields .field > label {
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+
+.finance-fields .field > .sale-native-select {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.7rem;
+}
+
+.finance-filter-extra > summary {
+  color: var(--indigo);
+  font-size: 0.9rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.finance-filter-extra[open] > :not(summary) {
+  margin-top: 0.7rem;
+}
+
+.finance-table-note {
+  margin: 0;
+  padding: 0.85rem 0.9rem;
+  color: var(--muted);
+  font-size: 0.84rem;
 }
 
 .finance-section-heading h2 {

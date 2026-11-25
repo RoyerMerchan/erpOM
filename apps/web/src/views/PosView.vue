@@ -490,78 +490,92 @@ onMounted(() => void fetchProducts());
         </fieldset>
 
         <div v-if="cart.length" class="pos-checkout-footer">
-          <div v-if="quote" class="sale-totals" aria-live="polite">
-            <p v-if="!currentQuote" class="sale-muted">Hay cambios pendientes de calcular.</p>
+          <div v-if="currentQuote" class="sale-totals" aria-live="polite">
             <dl>
-              <div>
-                <dt>Subtotal</dt>
-                <dd>{{ formatMoney(quote.data.subtotalUsd, 'USD') }}</dd>
-              </div>
-              <div>
-                <dt>Descuentos</dt>
-                <dd>{{ formatMoney(quote.data.discountUsd, 'USD') }}</dd>
-              </div>
               <div class="sale-total">
-                <dt>Total</dt>
-                <dd>{{ formatMoney(quote.data.totalUsd, 'USD') }}</dd>
+                <dt>Total de la venta</dt>
+                <dd>{{ formatMoney(currentQuote.totalUsd, 'USD') }}</dd>
               </div>
-              <div v-if="quote.data.localTotal">
-                <dt>Equivalente en {{ quote.data.localTotal.currencyCode }}</dt>
+              <div v-if="currentQuote.localTotal">
+                <dt>Equivalente en {{ currentQuote.localTotal.currencyCode }}</dt>
                 <dd>
                   {{
-                    formatMoney(quote.data.localTotal.amount, quote.data.localTotal.currencyCode)
+                    formatMoney(
+                      currentQuote.localTotal.amount,
+                      currentQuote.localTotal.currencyCode,
+                    )
                   }}
                 </dd>
               </div>
               <div>
                 <dt>Recibido</dt>
-                <dd>{{ formatMoney(quote.data.tenderedUsd, 'USD') }}</dd>
+                <dd>{{ formatMoney(currentQuote.tenderedUsd, 'USD') }}</dd>
+              </div>
+              <div v-if="currentQuote.changeDueUsd !== '0.00'">
+                <dt>Vuelto necesario</dt>
+                <dd>{{ formatMoney(currentQuote.changeDueUsd, 'USD') }}</dd>
+              </div>
+              <div v-if="currentQuote.changeUsd !== '0.00'">
+                <dt>Vuelto ingresado</dt>
+                <dd>{{ formatMoney(currentQuote.changeUsd, 'USD') }}</dd>
               </div>
               <div>
-                <dt>Vuelto requerido</dt>
-                <dd>{{ formatMoney(quote.data.changeDueUsd, 'USD') }}</dd>
-              </div>
-              <div>
-                <dt>Vuelto registrado</dt>
-                <dd>{{ formatMoney(quote.data.changeUsd, 'USD') }}</dd>
-              </div>
-              <div>
-                <dt>Abonado neto</dt>
-                <dd>{{ formatMoney(quote.data.netCollectedUsd, 'USD') }}</dd>
-              </div>
-              <div>
-                <dt>Saldo pendiente</dt>
-                <dd>{{ formatMoney(quote.data.balanceDueUsd, 'USD') }}</dd>
-              </div>
-              <div v-if="quote.data.cogsUsd !== undefined">
-                <dt>Costo estimado</dt>
-                <dd>{{ formatMoney(quote.data.cogsUsd, 'USD') }}</dd>
-              </div>
-              <div v-if="quote.data.grossProfitUsd !== undefined">
-                <dt>Utilidad estimada</dt>
-                <dd>{{ formatMoney(quote.data.grossProfitUsd, 'USD') }}</dd>
+                <dt>Falta cobrar</dt>
+                <dd>{{ formatMoney(currentQuote.balanceDueUsd, 'USD') }}</dd>
               </div>
             </dl>
-            <ul
-              v-if="quote.data.tenders.length"
-              class="sale-detail-list"
-              aria-label="Equivalencias de los cobros"
-            >
-              <li v-for="(tender, index) in quote.data.tenders" :key="index">
+            <details class="pos-section">
+              <summary>Ver desglose de la venta</summary>
+              <dl>
                 <div>
-                  <strong
-                    >{{ tender.kind === 'PAYMENT' ? 'Cobro' : 'Vuelto' }} ·
-                    {{ tender.accountName }}</strong
-                  >
-                  <span>{{ formatMoney(tender.amountOriginal, tender.currencyCode) }}</span>
+                  <dt>Subtotal</dt>
+                  <dd>{{ formatMoney(currentQuote.subtotalUsd, 'USD') }}</dd>
                 </div>
-                <strong>{{ formatMoney(tender.amountUsd, 'USD') }}</strong>
-              </li>
-            </ul>
-            <p v-if="currentQuote && !currentQuote.ready" class="sale-muted">
+                <div>
+                  <dt>Descuentos</dt>
+                  <dd>{{ formatMoney(currentQuote.discountUsd, 'USD') }}</dd>
+                </div>
+                <div>
+                  <dt>Cobro después del vuelto</dt>
+                  <dd>{{ formatMoney(currentQuote.netCollectedUsd, 'USD') }}</dd>
+                </div>
+                <div v-if="currentQuote.cogsUsd !== undefined">
+                  <dt>Costo estimado</dt>
+                  <dd>{{ formatMoney(currentQuote.cogsUsd, 'USD') }}</dd>
+                </div>
+                <div v-if="currentQuote.grossProfitUsd !== undefined">
+                  <dt>Ganancia bruta estimada</dt>
+                  <dd>{{ formatMoney(currentQuote.grossProfitUsd, 'USD') }}</dd>
+                </div>
+              </dl>
+              <ul
+                v-if="currentQuote.tenders.length"
+                class="sale-detail-list"
+                aria-label="Equivalencias de los cobros"
+              >
+                <li v-for="(tender, index) in currentQuote.tenders" :key="index">
+                  <div>
+                    <strong
+                      >{{ tender.kind === 'PAYMENT' ? 'Cobro' : 'Vuelto' }} ·
+                      {{ tender.accountName }}</strong
+                    >
+                    <span>{{ formatMoney(tender.amountOriginal, tender.currencyCode) }}</span>
+                  </div>
+                  <strong>{{ formatMoney(tender.amountUsd, 'USD') }}</strong>
+                </li>
+              </ul>
+            </details>
+            <p v-if="!currentQuote.ready" class="sale-muted">
               Completa el cobro y el vuelto para confirmar.
             </p>
           </div>
+          <p v-else class="sale-muted" role="status">
+            {{
+              quote
+                ? 'Los datos cambiaron. Vuelve a calcular la venta.'
+                : 'Calcula la venta para ver el total y comprobar el cobro.'
+            }}
+          </p>
           <Message v-if="error" severity="error">{{ error }}</Message>
           <div class="sale-actions">
             <Button

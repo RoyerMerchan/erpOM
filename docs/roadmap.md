@@ -102,3 +102,10 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 
 - El rol de superusuario se asigna desde operaciones. Solo el titular ve su ficha y sus accesos en el directorio, el selector de vendedores y la auditoría de cuentas. La interfaz de usuarios bloquea la asignación del rol y protege la ficha frente a cambios de otras cuentas.
 - Se aplicaron nueve migraciones en una base de QA. Pasaron `pnpm lint`, `pnpm build`, 28 pruebas unitarias y de humo y las 31 pruebas de integración, con una segunda ejecución de la suite de acceso para verificar la privacidad y la protección del rol.
+
+## Revisión de flujos de operación
+
+- Compras agrupa los datos opcionales del documento y muestra la tasa cuando la moneda lo requiere. El punto de venta separa el total y el cobro del desglose. Caja agrupa los filtros adicionales y diferencia los totales de tienda de los importes filtrados por cuenta.
+- Las vistas previas de venta, cambios, devoluciones y movimientos manuales ocultan los importes cuando cambian sus datos. Un reintento de apartado después de perder la respuesta usa la misma solicitud y clave de operación.
+- En la inspección de producción, la base tenía cero variantes, compras, ventas, apartados y movimientos de caja. La consulta fue de solo lectura. Las pruebas de integración se ejecutaron en una base de QA con las nueve migraciones y pasaron los 31 casos.
+- Pasaron lint, compilación, 28 pruebas unitarias y de humo y las dos pruebas de Edge. La prueba móvil recuperó el mismo apartado después de perder la respuesta del servidor. La prueba de operaciones verificó que el POS ocultara importes previos al cambiar un cobro y concilió USD 95 de ventas netas, USD 41 de costo de ventas, USD 12 de gastos y USD 42 de ganancia estimada. La consulta de consistencia en QA no encontró diferencias de inventario, caja, pagos a proveedores o abonos de apartados.

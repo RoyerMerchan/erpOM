@@ -243,7 +243,7 @@ onMounted(load);
     >
     <form v-else class="procurement-stack" novalidate @submit.prevent="save">
       <section class="records-panel procurement-card" aria-labelledby="purchase-document">
-        <h2 id="purchase-document">Documento de compra</h2>
+        <h2 id="purchase-document">Proveedor y moneda</h2>
         <div class="record-fields procurement-fields">
           <div class="record-field">
             <label id="purchase-supplier-label" for="purchase-supplier">Proveedor</label>
@@ -274,10 +274,6 @@ onMounted(load);
             <small class="record-hint">{{ browserTimeZone }}</small>
           </div>
           <div class="record-field">
-            <label for="purchase-reference">Factura o referencia</label
-            ><InputText id="purchase-reference" v-model="draft.reference" maxlength="120" fluid />
-          </div>
-          <div class="record-field">
             <label id="purchase-currency-label" for="purchase-currency">Moneda de la compra</label>
             <LookupSelect
               id="purchase-currency"
@@ -287,19 +283,20 @@ onMounted(load);
               @update:model-value="draft.rate = ''"
             />
           </div>
-          <div class="record-field">
+          <div v-if="currency && currency !== 'USD'" class="record-field">
             <label for="purchase-rate">1 USD = X {{ currency }}</label>
             <InputText
               id="purchase-rate"
-              :model-value="currency === 'USD' ? '1' : draft.rate"
-              :disabled="currency === 'USD'"
+              v-model="draft.rate"
               inputmode="decimal"
               maxlength="31"
               fluid
-              @update:model-value="draft.rate = String($event ?? '')"
             />
+            <small class="record-hint"
+              >Escribe cuántas unidades de {{ currency }} equivalen a un dólar en esta
+              compra.</small
+            >
             <Button
-              v-if="currency && currency !== 'USD'"
               type="button"
               text
               size="small"
@@ -310,21 +307,39 @@ onMounted(load);
               @click="useLatestQuote"
             />
           </div>
-          <div class="record-field">
-            <label for="purchase-freight">Flete en {{ currency }}</label
-            ><InputText
-              id="purchase-freight"
-              v-model="draft.freight"
-              inputmode="decimal"
-              maxlength="25"
-              fluid
-            />
-          </div>
-          <div class="record-field record-field-wide">
-            <label for="purchase-notes">Observaciones</label
-            ><Textarea id="purchase-notes" v-model="draft.notes" maxlength="2000" rows="2" fluid />
-          </div>
         </div>
+        <details class="pos-section">
+          <summary>Factura, envío y notas</summary>
+          <div class="record-fields procurement-fields">
+            <div class="record-field">
+              <label for="purchase-reference">Factura o referencia</label>
+              <InputText id="purchase-reference" v-model="draft.reference" maxlength="120" fluid />
+            </div>
+            <div class="record-field">
+              <label for="purchase-freight">Costo de envío en {{ currency }}</label
+              ><InputText
+                id="purchase-freight"
+                v-model="draft.freight"
+                inputmode="decimal"
+                maxlength="25"
+                fluid
+              />
+              <small class="record-hint"
+                >Incluye aquí el envío que te cobra el proveedor. Se reparte entre los pares.</small
+              >
+            </div>
+            <div class="record-field record-field-wide">
+              <label for="purchase-notes">Observaciones</label
+              ><Textarea
+                id="purchase-notes"
+                v-model="draft.notes"
+                maxlength="2000"
+                rows="2"
+                fluid
+              />
+            </div>
+          </div>
+        </details>
       </section>
       <SizeMatrix
         v-for="(group, index) in draft.groups"
@@ -360,9 +375,7 @@ onMounted(load);
         </div>
         <PurchaseTotals v-if="preview" :totals="preview" :currency="currency" aria-live="polite" />
         <Message v-if="error" severity="error" class="procurement-feedback">{{ error }}</Message>
-        <p v-if="fromInventory" class="record-hint">
-          Los pares aparecen en Existencias al confirmar la recepción.
-        </p>
+        <p class="record-hint">Los pares se suman al inventario al confirmar la recepción.</p>
         <div class="procurement-actions">
           <Button
             type="submit"

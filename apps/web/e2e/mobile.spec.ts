@@ -61,6 +61,11 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
   await page.goto('/inventario');
   await page.getByRole('link', { name: 'Agregar existencia' }).click();
   await expect(page.getByRole('heading', { name: 'Agregar existencia' })).toBeVisible();
+  await expect(page.getByLabel('1 USD = X USD')).toHaveCount(0);
+  await expect(page.getByLabel('Factura o referencia')).toBeHidden();
+  await page.getByText('Factura, envío y notas', { exact: true }).click();
+  await expect(page.getByLabel('Factura o referencia')).toBeVisible();
+  await page.getByText('Factura, envío y notas', { exact: true }).click();
   await choose(page, page.getByLabel('Proveedor', { exact: true }), supplier.name, supplier.name);
   await choose(page, page.getByLabel('Moneda de la compra'), /^COP/);
   await page.getByLabel('1 USD = X COP').fill('4000');
@@ -122,6 +127,33 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
   const movements = page.getByRole('dialog', { name: 'Movimientos de stock' });
   await expect(movements.getByText('Recepción · +2')).toBeVisible();
 
+  const customer = await createContact(page.request, '/customers', 'Cliente móvil ' + user.key);
+  await page.goto('/apartados/nuevo');
+  await choose(page, page.getByLabel('Cliente', { exact: true }), customer.name, customer.name);
+  await page.getByLabel('Modelo, marca o SKU').fill(user.key);
+  await page.getByRole('button', { name: 'Buscar', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Agregar Legend móvil ' + user.key + ', talla 38' })
+    .click();
+  let submitted: unknown;
+  let savedId: string | undefined;
+  await page.route('**/api/v1/layaways', async (route) => {
+    if (route.request().method() !== 'POST') return route.continue();
+    if (submitted) {
+      expect(route.request().postDataJSON()).toEqual(submitted);
+      return route.continue();
+    }
+    submitted = route.request().postDataJSON();
+    const saved = await route.fetch();
+    expect(saved.status()).toBe(201);
+    savedId = (await saved.json()).id;
+    await route.abort();
+  });
+  await page.getByRole('button', { name: 'Reservar tallas' }).click();
+  await page.getByRole('button', { name: 'Comprobar reserva' }).click();
+  await expect(page).toHaveURL(new RegExp(`/apartados/${savedId}$`));
+  await page.unroute('**/api/v1/layaways');
+
   for (const [route, title] of [
     ['/inventario', 'Existencias'],
     ['/ventas/pos', 'Punto de venta'],
@@ -133,6 +165,11 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
     await expect(page.getByRole('heading', { name: title, exact: true, level: 1 })).toBeVisible();
     await withoutOverflow(route);
   }
+  await page.goto('/finanzas/movimientos');
+  await expect(page.getByLabel('Cuenta de caja')).toBeHidden();
+  await page.getByText('Más filtros', { exact: true }).press('Enter');
+  await expect(page.getByLabel('Cuenta de caja')).toBeVisible();
+  await withoutOverflow('/finanzas/movimientos');
 
   await page.goto('/apartados');
   const filters = page.getByRole('search', { name: 'Filtrar apartados' });

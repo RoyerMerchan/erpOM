@@ -174,6 +174,17 @@ test('concilia una compra COP, una venta mixta, un apartado y una devolución', 
   await tender(1).getByLabel('Importe en VES').fill('2000');
   await tender(1).getByLabel('1 USD equivale a VES').fill('40');
   await page.getByRole('button', { name: 'Calcular venta' }).click();
+  const quotedTotal = page.getByText('Total de la venta', { exact: true });
+  await expect(quotedTotal).toBeVisible();
+  await tender(1).getByLabel('Importe en VES').fill('1600');
+  await expect(quotedTotal).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Confirmar venta' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Calcular venta' }).click();
+  await expect(page.getByText('Falta cobrar', { exact: true }).locator('..')).toContainText(
+    '10,00 USD',
+  );
+  await tender(1).getByLabel('Importe en VES').fill('2000');
+  await page.getByRole('button', { name: 'Calcular venta' }).click();
   await page.getByRole('button', { name: 'Confirmar venta' }).click();
   const completed = responseAt(page, '/sales');
   await page

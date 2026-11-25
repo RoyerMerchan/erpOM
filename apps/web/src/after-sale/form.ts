@@ -15,7 +15,7 @@ export const paymentInputs = (entries: TenderDraft[]) =>
 export function cartTotal(entries: StockSelection[]) {
   let total = 0n;
   for (const { row, quantity } of entries) {
-    if (!/^[1-9]\d{0,5}$/.test(quantity)) return null;
+    if (!/^[1-9]\d{0,5}$/.test(quantity) || Number(quantity) > row.available) return null;
     const [whole = '0', fraction = ''] = row.salePriceUsd.split('.');
     const cents = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0'));
     total += cents * BigInt(quantity);

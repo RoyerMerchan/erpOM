@@ -4,7 +4,7 @@ import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import Paginator from 'primevue/paginator';
-import { onMounted, ref, useId } from 'vue';
+import { computed, onMounted, ref, useId } from 'vue';
 import { usePagedList } from '../master-data/usePagedList';
 import { formatMoney } from '../purchasing/form';
 import { getInventory } from '../purchasing/service';
@@ -13,6 +13,7 @@ import type { StockSelection } from './form';
 
 defineProps<{ heading: string }>();
 const cart = defineModel<StockSelection[]>({ required: true });
+const subtotal = computed(() => cartTotal(cart.value));
 const label = useId();
 const search = ref('');
 const applied = ref('');
@@ -117,10 +118,11 @@ onMounted(() => void fetchPage());
           @click="cart.splice(index, 1)"
         />
       </div>
-      <dl class="activity-amount">
-        <dt>Subtotal USD</dt>
-        <dd>{{ formatMoney(cartTotal(cart), 'USD') }}</dd>
+      <dl v-if="subtotal !== null" class="activity-amount">
+        <dt>Subtotal estimado</dt>
+        <dd>{{ formatMoney(subtotal, 'USD') }}</dd>
       </dl>
+      <p v-else class="sale-muted" role="status">Revisa la cantidad disponible de cada talla.</p>
     </div>
   </section>
 </template>

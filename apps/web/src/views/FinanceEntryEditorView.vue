@@ -228,11 +228,14 @@ function requestConfirmation() {
         :aria-busy="calculating"
       >
         <h2 id="finance-entry-quote">Vista previa</h2>
-        <p v-if="!quote" class="sale-muted">
-          Calcula los importes antes de registrar el movimiento.
+        <p v-if="!quote || !fresh" class="sale-muted" role="status">
+          {{
+            quote
+              ? 'Los datos cambiaron. Vuelve a calcular los importes.'
+              : 'Calcula los importes antes de registrar el movimiento.'
+          }}
         </p>
         <template v-else>
-          <p v-if="!fresh" class="sale-muted">Hay cambios pendientes de calcular.</p>
           <ul class="sale-detail-list">
             <li v-for="line in quote.data.lines" :key="line.accountId">
               <div>

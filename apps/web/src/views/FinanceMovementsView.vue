@@ -98,6 +98,7 @@ watch(managing, (visible) => {
     <header class="module-heading">
       <div>
         <h1>{{ heading }}</h1>
+        <p v-if="view === 'all'">Consulta el dinero que entró o salió de tus cuentas.</p>
         <p v-if="titleDate">{{ titleDate }}</p>
       </div>
       <div class="sale-actions">
@@ -121,32 +122,39 @@ watch(managing, (visible) => {
     </header>
 
     <form class="sale-panel finance-filter" role="search" @submit.prevent="apply">
-      <FinanceFilters v-model="draft" />
-      <div class="finance-fields">
-        <div class="field">
-          <label for="journal-q">Referencia, concepto o cuenta</label>
-          <InputText id="journal-q" v-model="q" maxlength="120" fluid />
+      <FinanceFilters v-model="draft" dates-only />
+      <details
+        class="finance-filter-extra"
+        :open="Boolean(initial.success && (initial.data.accountId || initial.data.currencyCode))"
+      >
+        <summary>Más filtros</summary>
+        <FinanceFilters v-model="draft" accounts-only />
+        <div class="finance-fields">
+          <div class="field">
+            <label for="journal-q">Referencia, concepto o cuenta</label>
+            <InputText id="journal-q" v-model="q" maxlength="120" fluid />
+          </div>
+          <div v-if="view !== 'expenses'" class="field">
+            <label for="journal-kind">Tipo de movimiento</label>
+            <select id="journal-kind" v-model="filter" class="sale-native-select">
+              <option :value="undefined">Todos</option>
+              <option v-for="[value, label] in options" :key="value" :value="value">
+                {{ label }}
+              </option>
+            </select>
+          </div>
+          <div v-else class="field">
+            <label for="journal-category">Categoría de gasto</label>
+            <FinanceCategorySelect
+              :key="categoryRevision"
+              id="journal-category"
+              v-model="category"
+              include-archived
+              clearable
+            />
+          </div>
         </div>
-        <div v-if="view !== 'expenses'" class="field">
-          <label for="journal-kind">Tipo de movimiento</label>
-          <select id="journal-kind" v-model="filter" class="sale-native-select">
-            <option :value="undefined">Todos</option>
-            <option v-for="[value, label] in options" :key="value" :value="value">
-              {{ label }}
-            </option>
-          </select>
-        </div>
-        <div v-else class="field">
-          <label for="journal-category">Categoría de gasto</label>
-          <FinanceCategorySelect
-            :key="categoryRevision"
-            id="journal-category"
-            v-model="category"
-            include-archived
-            clearable
-          />
-        </div>
-      </div>
+      </details>
       <Button
         type="submit"
         label="Filtrar"
@@ -158,6 +166,9 @@ watch(managing, (visible) => {
     </form>
 
     <section class="records-panel" aria-label="Registro de movimientos">
+      <p class="finance-table-note">
+        USD histórico es el equivalente en dólares con la tasa guardada al registrar el movimiento.
+      </p>
       <Message v-if="error" severity="error" class="records-message">
         {{ error }}
         <button type="button" class="inline-action" @click="load(applied, page)">Reintentar</button>

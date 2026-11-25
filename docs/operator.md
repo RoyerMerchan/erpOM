@@ -24,3 +24,17 @@ Si pierdes la conexión después de confirmar, vuelve al listado o al detalle y 
 El inventario lleva una fila por marca, modelo, talla y, cuando aplica, color. Por ejemplo, Nike Revolution talla 38 y Nike Revolution talla 39 se cuentan por separado. El sistema llama variante a cada combinación y la crea al recibir la mercancía.
 
 **Disponibles** son los pares que puedes vender. Selecciona el producto para ver cuántos pares hay en tienda, cuántos están apartados y consultar sus movimientos. Si tienes 5 pares de la talla 38 y 2 están apartados, te quedan 3 disponibles.
+
+## Qué cambia al confirmar
+
+| Acción                          | Qué registra el sistema                                                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Confirmar recepción             | Suma los pares a Inventario y guarda su costo con la tasa de la compra. El pago al proveedor se registra aparte cuando sale el dinero. |
+| Confirmar venta                 | Descuenta los pares, genera el comprobante y registra en Caja cada cobro y el vuelto que entregaste.                                   |
+| Reservar un apartado            | Separa los pares del stock disponible. Si hubo un abono, entra a Caja como anticipo. La venta se registra al entregar.                 |
+| Confirmar cambio o devolución   | Corrige el comprobante original. Los pares recuperables vuelven al inventario. Caja registra lo cobrado o reembolsado.                 |
+| Registrar gasto o transferencia | Un gasto reduce la cuenta de pago. Una transferencia mueve dinero entre dos cuentas.                                                   |
+
+El punto de venta, los cambios y los movimientos manuales te piden volver a calcular si cambias los datos después de revisar una vista previa. Si la conexión se corta al reservar un apartado, pulsa **Comprobar reserva** para verificar el mismo intento.
+
+En Finanzas, el filtro por cuenta o moneda afecta los movimientos y saldos de caja. Las ventas del resumen corresponden a toda la tienda. **USD histórico** es el equivalente guardado con la tasa de esa operación.
