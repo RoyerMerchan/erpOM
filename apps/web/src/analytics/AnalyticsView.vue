@@ -14,6 +14,7 @@ import {
   dashboardTableIds,
   formatValue,
   overviewMetricIds,
+  reportCards,
   reportDraft,
   reportParams,
 } from './form';
@@ -218,26 +219,36 @@ onBeforeUnmount(() => {
       </template>
       <template v-else>
         <section v-for="block in result.sections" :key="block.section" class="analytics-content">
-          <p
-            v-if="block.section === 'SALES' || block.section === 'RETURNS'"
-            class="sale-muted analytics-scope"
-          >
-            Las ventas se reconocen en su fecha de confirmación y las rectificaciones en su fecha de
-            registro. El filtro de cuenta, moneda o método selecciona los comprobantes asociados.
-          </p>
-          <p v-else-if="block.section === 'CASH'" class="sale-muted analytics-scope">
-            Los importes de caja se agrupan por fecha de movimiento, cuenta y moneda.
-          </p>
-          <p
-            v-else-if="['STOCK', 'PURCHASES', 'LAYAWAYS'].includes(block.section)"
-            class="sale-muted analytics-scope"
-          >
-            Las existencias, los estados y los saldos pendientes corresponden al momento de la
-            consulta.
-          </p>
-          <ReportMetrics :metrics="block.metrics" :timezone />
+          <ReportMetrics
+            class="analytics-report-cards"
+            :metrics="reportCards(block)"
+            :timezone
+            hide-comparison
+          />
+          <details class="sale-panel analytics-report-details">
+            <summary>Ver desglose</summary>
+            <p
+              v-if="block.section === 'SALES' || block.section === 'RETURNS'"
+              class="sale-muted analytics-scope"
+            >
+              Las ventas se reconocen en su fecha de confirmación y las rectificaciones en su fecha
+              de registro. El filtro de cuenta, moneda o método selecciona los comprobantes
+              asociados.
+            </p>
+            <p v-else-if="block.section === 'CASH'" class="sale-muted analytics-scope">
+              Los importes de caja se agrupan por fecha de movimiento, cuenta y moneda.
+            </p>
+            <p
+              v-else-if="['STOCK', 'PURCHASES', 'LAYAWAYS'].includes(block.section)"
+              class="sale-muted analytics-scope"
+            >
+              Las existencias, los estados y los saldos pendientes corresponden al momento de la
+              consulta.
+            </p>
+            <ReportMetrics :metrics="block.metrics" :timezone compact />
+            <ReportTable v-for="table in block.tables" :key="table.id" :table :timezone />
+          </details>
           <ReportChart v-if="block.trend" :trend="block.trend" :timezone />
-          <ReportTable v-for="table in block.tables" :key="table.id" :table :timezone />
         </section>
       </template>
     </div>

@@ -127,6 +127,29 @@ export const overviewMetricIds = [
   'margin',
   'stock-available',
 ];
+const primaryReportMetricIds: Record<AnalyticsSection, string[]> = {
+  SALES: ['net-sales', 'pairs-sold', 'operating-expense', 'net-profit'],
+  CASH: ['cashInUsd', 'cashOutUsd', 'cashFlowUsd'],
+  STOCK: ['stock-available', 'stock-held', 'stock-low'],
+  PURCHASES: ['received-purchases', 'net-received-pairs', 'supplier-debt'],
+  LAYAWAYS: ['open-layaways', 'paid-layaways', 'overdue-layaways', 'customer-debt'],
+  RETURNS: ['corrections', 'returned-pairs', 'restocked-pairs'],
+};
+const reportCardLabels: Record<string, string> = {
+  'pairs-sold': 'Pares vendidos',
+  'operating-expense': 'Gastos operativos',
+  'net-profit': 'Ganancia estimada',
+  'stock-low': 'Tallas con stock bajo',
+  'net-received-pairs': 'Pares ingresados',
+};
+
+export function reportCards(block: AnalyticsBlock) {
+  return primaryReportMetricIds[block.section].flatMap((id) => {
+    const metric = block.metrics.find((item) => item.id === id);
+    return metric ? [{ ...metric, label: reportCardLabels[id] ?? metric.label }] : [];
+  });
+}
+
 export const dashboardDetailMetricIds = [
   'pairs-sold',
   'gross-profit',

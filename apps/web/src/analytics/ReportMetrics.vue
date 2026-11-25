@@ -3,7 +3,12 @@ import type { AnalyticsMetric } from '@max-sport/shared';
 import { RouterLink } from 'vue-router';
 import { actionLink, formatValue } from './form';
 
-defineProps<{ metrics: AnalyticsMetric[]; timezone: string }>();
+defineProps<{
+  metrics: AnalyticsMetric[];
+  timezone: string;
+  compact?: boolean;
+  hideComparison?: boolean;
+}>();
 
 const icons: Record<string, string> = {
   'net-sales': 'pi-chart-line',
@@ -17,11 +22,15 @@ const icons: Record<string, string> = {
 </script>
 
 <template>
-  <dl v-if="metrics.length" class="analytics-metrics">
+  <dl
+    v-if="metrics.length"
+    class="analytics-metrics"
+    :class="{ 'analytics-metrics-compact': compact }"
+  >
     <div v-for="item in metrics" :key="item.id" class="analytics-metric">
       <dt>
         <i
-          v-if="icons[item.id]"
+          v-if="!compact && icons[item.id]"
           class="pi analytics-metric-icon"
           :class="icons[item.id]"
           aria-hidden="true"
@@ -46,7 +55,7 @@ const icons: Record<string, string> = {
           />
         </component>
       </dd>
-      <dd v-if="item.previous !== undefined" class="analytics-comparison">
+      <dd v-if="!hideComparison && item.previous !== undefined" class="analytics-comparison">
         Anterior {{ formatValue(item.previous, item.format, timezone) }}
       </dd>
     </div>

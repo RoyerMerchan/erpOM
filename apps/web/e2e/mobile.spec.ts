@@ -34,6 +34,24 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
   await expect(drawer).not.toBeVisible();
   await expect(page.getByRole('heading', { name: 'Reportes', exact: true })).toBeVisible();
   await expect(page.getByText('Ventas netas', { exact: true }).first()).toBeVisible();
+  const cards = page.locator('.analytics-report-cards');
+  await expect(cards.locator('dt')).toHaveText([
+    'Ventas netas',
+    'Pares vendidos',
+    'Gastos operativos',
+    'Ganancia estimada',
+  ]);
+  const breakdown = page.locator('.analytics-report-details');
+  const cost = breakdown.getByText('Costo de ventas FIFO', { exact: true }).first();
+  await expect(cost).toBeHidden();
+  const breakdownButton = breakdown.getByText('Ver desglose', { exact: true });
+  await breakdownButton.press('Enter');
+  await expect(cost).toBeVisible();
+  await withoutOverflow('/reportes');
+  await breakdownButton.press('Enter');
+  await expect(cost).toBeHidden();
+  await cards.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: testInfo.outputPath('reportes-360.png') });
   const skip = page.getByRole('link', { name: 'Ir al contenido' });
   await skip.focus();
   await skip.press('Enter');
