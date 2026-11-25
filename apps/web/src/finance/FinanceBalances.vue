@@ -13,8 +13,16 @@ defineProps<{
 
 <template>
   <div class="records-panel finance-balance-table">
-    <DataTable :value="accounts" :table-style="{ minWidth: '45rem' }" data-key="id" scrollable>
-      <template #empty><p class="records-empty">No hay cuentas para estos filtros.</p></template>
+    <DataTable
+      :value="accounts"
+      :table-style="{ minWidth: '45rem' }"
+      data-key="id"
+      scrollable
+      :pt="{ tableContainer: { tabindex: 0, role: 'region', 'aria-label': 'Saldos por cuenta' } }"
+    >
+      <template #empty>
+        <p class="records-empty" role="status">No hay cuentas para estos filtros.</p>
+      </template>
       <Column header="Cuenta">
         <template #body="{ data }">
           <div class="finance-table-label">

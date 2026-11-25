@@ -49,15 +49,21 @@ function axis(date: string) {
         <span><i class="analytics-previous" aria-hidden="true"></i> Anterior</span>
       </div>
     </header>
-    <p v-if="!hasData" class="sale-muted">
-      Los dos períodos tienen un total de USD 0 por intervalo.
+    <p v-if="!hasData" class="analytics-empty sale-muted">
+      <i class="pi pi-chart-bar" aria-hidden="true" />
+      Los totales por intervalo son USD 0 en ambos períodos.
     </p>
     <div v-else class="analytics-chart-body">
       <div class="analytics-axis" aria-hidden="true">
         <span>{{ formatMoney(String(range.max), 'USD') }}</span>
         <span>{{ formatMoney(String(range.min), 'USD') }}</span>
       </div>
-      <div class="analytics-chart-scroll">
+      <div
+        class="analytics-chart-scroll"
+        :tabindex="rows.length > 5 ? 0 : undefined"
+        :aria-label="rows.length > 5 ? 'Desplazar gráfico' : undefined"
+        :role="rows.length > 5 ? 'group' : undefined"
+      >
         <div
           class="analytics-plot"
           :style="{ minWidth: Math.max(rows.length, 2) * 42 + 'px' }"

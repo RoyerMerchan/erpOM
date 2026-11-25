@@ -153,6 +153,7 @@ watch(managing, (visible) => {
         icon="pi pi-filter"
         variant="outlined"
         :loading="loading"
+        :aria-busy="loading"
       />
     </form>
 
@@ -172,10 +173,13 @@ watch(managing, (visible) => {
         data-key="id"
         lazy
         scrollable
+        :pt="{
+          tableContainer: { tabindex: 0, role: 'region', 'aria-label': 'Movimientos de cuentas' },
+        }"
         @page="load(applied, $event.page + 1)"
       >
         <template #empty
-          ><p class="records-empty">
+          ><p class="records-empty" role="status">
             {{ loading ? 'Cargando movimientos…' : 'No hay movimientos para estos filtros.' }}
           </p></template
         >

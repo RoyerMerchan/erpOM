@@ -80,6 +80,7 @@ onMounted(() => void request());
       <DataTable
         :value="items"
         :loading="loading"
+        :aria-busy="loading"
         :rows="limit"
         :total-records="total"
         :first="(page - 1) * limit"
@@ -88,10 +89,13 @@ onMounted(() => void request());
         data-key="id"
         lazy
         scrollable
+        :pt="{
+          tableContainer: { tabindex: 0, role: 'region', 'aria-label': 'Documentos con saldo' },
+        }"
         @page="request($event.page + 1)"
       >
         <template #empty
-          ><p class="records-empty">
+          ><p class="records-empty" role="status">
             {{
               loading ? 'Cargando documentos…' : 'No hay documentos con saldo para esta búsqueda.'
             }}

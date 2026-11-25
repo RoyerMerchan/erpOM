@@ -41,7 +41,14 @@ const seller = computed({
 </script>
 
 <template>
-  <form class="sale-panel analytics-filters" @submit.prevent="emit('apply')">
+  <form
+    class="sale-panel analytics-filters"
+    :aria-labelledby="id + '-title'"
+    @submit.prevent="emit('apply')"
+  >
+    <h2 :id="id + '-title'" class="analytics-filter-title">
+      <i class="pi pi-sliders-h" aria-hidden="true" /> Filtros
+    </h2>
     <div class="analytics-filters-line">
       <div class="field">
         <label :for="id + '-period'">Período</label>
@@ -88,7 +95,7 @@ const seller = computed({
       </div>
     </div>
     <details class="analytics-extra">
-      <summary>Filtros de datos</summary>
+      <summary>Filtros avanzados</summary>
       <div class="finance-fields">
         <div v-if="people && session.can('sales.read.all')" class="field">
           <label :for="id + '-seller'">Vendedor</label>

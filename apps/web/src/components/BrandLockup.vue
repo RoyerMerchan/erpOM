@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 const props = defineProps<{ name?: string; logoUrl?: string | null }>();
+const defaultLogo = `${import.meta.env.BASE_URL}om-erp-favicon.png`;
+const shopName = computed(() => {
+  const name = props.name?.trim();
+  return name && name !== 'MAX Sport Manager' && name !== 'OM ERP' ? name : '';
+});
 const unavailable = ref(false);
 watch(
   () => props.logoUrl,
@@ -13,20 +18,16 @@ watch(
 <template>
   <div class="brand-lockup">
     <img
-      v-if="logoUrl && !unavailable"
-      :src="logoUrl"
-      class="shop-logo"
+      :src="logoUrl && !unavailable ? logoUrl : defaultLogo"
+      class="brand-emblem"
+      :class="{ 'brand-emblem-custom': logoUrl && !unavailable }"
       alt=""
       referrerpolicy="no-referrer"
       @error="unavailable = true"
     />
-    <span v-else class="brand-mark" aria-hidden="true">M</span>
-    <span v-if="name && name !== 'MAX Sport Manager'" class="brand-wordmark brand-shop-name">{{
-      name
-    }}</span>
-    <span v-else class="brand-wordmark">
-      <strong>MAX</strong>
-      <span>Sport Manager</span>
+    <span class="brand-wordmark">
+      <strong>OM ERP</strong>
+      <span v-if="shopName" class="brand-shop-name" :title="shopName">{{ shopName }}</span>
     </span>
   </div>
 </template>

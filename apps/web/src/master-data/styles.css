@@ -1,64 +1,34 @@
-.workspace-body {
-  min-width: 0;
-}
-
-.app-navigation {
-  display: grid;
-  gap: 0.2rem;
-}
-
-.navigation-link.navigation-active {
-  background: #2b405e;
-}
-
-.navigation-link.navigation-active .pi {
-  color: var(--lime);
-}
-
-.shop-logo {
-  flex: none;
-  width: 2.7rem;
-  height: 2.7rem;
-  border-radius: 0.65rem;
-  background: var(--surface);
-  object-fit: contain;
-}
-
-.brand-shop-name {
-  display: block;
-  overflow: hidden;
-  max-width: 100%;
-  text-overflow: ellipsis;
-  font-size: 1rem;
-  font-weight: 750;
-}
-
 .section-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 1.25rem;
+  gap: 0.35rem;
   margin-block: 0 1.45rem;
-  border-bottom: 1px solid var(--line);
+  padding: 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface);
 }
 
 .section-links a {
   display: flex;
   align-items: center;
   min-height: 2.75rem;
-  border-bottom: 2px solid transparent;
+  padding-inline: 0.75rem;
+  border-radius: 0.5rem;
   color: var(--muted);
   font-size: 0.925rem;
   font-weight: 620;
   text-decoration: none;
 }
 
-.section-links a:hover,
-.section-links a.router-link-exact-active {
+.section-links a:hover {
+  background: #f1f6ff;
   color: var(--indigo);
 }
 
 .section-links a.router-link-exact-active {
-  border-color: currentColor;
+  background: #e5efff;
+  color: var(--indigo);
 }
 
 .module-heading {
@@ -66,16 +36,18 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.45rem;
+  gap: 0.85rem 1.25rem;
+  margin-bottom: clamp(1rem, 2.5vw, 1.65rem);
 }
 
 .module-heading h1 {
   margin: 0;
-  font-size: clamp(1.9rem, 4vw, 2.65rem);
-  font-weight: 740;
-  line-height: 1.08;
+  color: var(--ink);
+  font-size: clamp(1.65rem, 3.5vw, 2.55rem);
+  font-weight: 760;
+  line-height: 1.12;
   letter-spacing: -0.045em;
+  overflow-wrap: anywhere;
 }
 
 .module-heading p {
@@ -92,13 +64,44 @@
   border: 1px solid var(--line);
   border-radius: 1rem;
   background: var(--surface);
-  box-shadow: 0 6px 18px #19284509;
+  box-shadow:
+    0 2px 4px #172a4d06,
+    0 12px 28px #172a4d08;
 }
 
 .records-panel .p-datatable-header-cell {
-  background: #f8f9fe;
+  padding: 0.75rem 0.9rem;
+  background: #edf3fb;
+  color: #324766;
   white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.records-panel .p-datatable-table-container {
+  scrollbar-color: #a3b3ce transparent;
+}
+
+.records-panel .p-datatable-table-container:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: -2px;
+}
+
+.records-panel .p-datatable-tbody > tr > td {
+  padding: 0.75rem 0.9rem;
+  border-color: #e5ecf5;
+  color: var(--ink);
   font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.records-panel .p-datatable-tbody > tr:not(.p-datatable-empty-message):focus-within > td {
+  background: #f3f7ff;
+}
+
+@media (hover: hover) {
+  .records-panel .p-datatable-tbody > tr:not(.p-datatable-empty-message):hover > td {
+    background: #f3f7ff;
+  }
 }
 
 .records-panel .p-datatable-tbody > tr:last-child > td {
@@ -106,11 +109,13 @@
 }
 
 .records-panel .p-datatable-column-title {
-  font-weight: 680;
+  font-weight: 730;
 }
 
 .records-panel .p-paginator {
+  border-top: 1px solid var(--line);
   border-radius: 0 0 1rem 1rem;
+  background: #fbfcff;
 }
 
 .records-toolbar {
@@ -119,6 +124,15 @@
   align-items: center;
   gap: 0.65rem;
   padding: 1rem;
+}
+
+.records-panel > :is(.records-toolbar, .sale-history-filters) {
+  border-radius: 1rem 1rem 0 0;
+  background: #f9fbff;
+}
+
+.records-panel > .records-toolbar {
+  border-bottom: 1px solid var(--line);
 }
 
 .records-search {
@@ -133,14 +147,19 @@
 }
 
 .records-message {
-  margin: 0 1rem 1rem;
+  margin: 0.8rem 1rem 1rem;
 }
 
 .records-empty {
   margin: 0;
-  padding: 1.6rem 1rem;
+  padding: 1.45rem 0.75rem;
   color: var(--muted);
   text-align: center;
+  line-height: 1.5;
+}
+
+.records-panel td:has(> .records-empty) {
+  background: #fbfcff;
 }
 
 .record-cell {
@@ -150,11 +169,13 @@
 .record-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.15rem;
+  gap: 0.25rem;
 }
 
 .record-actions .p-button {
   min-height: 2.4rem;
+  padding-inline: 0.6rem;
+  border-radius: 0.6rem;
 }
 
 .record-dialog {
@@ -169,7 +190,7 @@
 .record-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 1.1rem 1rem;
 }
 
 .record-field {
@@ -181,8 +202,15 @@
 
 .record-field label,
 .checkbox-label label {
-  font-size: 0.925rem;
-  font-weight: 620;
+  color: #324460;
+  font-size: 0.855rem;
+  font-weight: 660;
+}
+
+.record-field :is(.p-inputtext, .p-select, .p-textarea),
+.records-toolbar :is(.p-inputtext, .p-select, .p-button) {
+  min-height: 2.75rem;
+  border-radius: 0.65rem;
 }
 
 .record-field-wide {
@@ -200,6 +228,12 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.65rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line);
+}
+
+.record-form-actions .p-button {
+  min-height: 2.75rem;
 }
 
 .record-detail {
@@ -211,6 +245,13 @@
 .record-detail > div {
   display: grid;
   gap: 0.25rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.record-detail > div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .record-detail dt {
@@ -320,22 +361,24 @@
 }
 
 @media (max-width: 760px) {
-  .mobile-header {
-    min-width: 0;
-  }
-
-  .mobile-header .brand-shop-name {
-    max-width: min(32vw, 12rem);
-  }
-
-  .mobile-header .shop-logo {
-    width: 2.2rem;
-    height: 2.2rem;
-  }
-
   .record-fields,
   .role-line {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .records-panel .p-datatable-tbody > tr > td {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .records-panel td > .records-empty {
+    position: sticky;
+    inset-inline-start: 0;
+    max-width: 75vw;
+    text-align: start;
+  }
+
+  .record-actions .p-button {
+    min-height: 2.75rem;
   }
 
   .role-line > .p-button {
@@ -354,6 +397,10 @@
 
   .records-search .p-button .p-button-icon {
     display: none;
+  }
+
+  .record-form-actions .p-button {
+    flex: 1 1 auto;
   }
 
   .p-toast {

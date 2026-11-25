@@ -121,6 +121,7 @@ onMounted(() => void load(filters.value));
       <DataTable
         :value="items"
         :loading="loading"
+        :aria-busy="loading"
         :rows="limit"
         :total-records="total"
         :first="(page - 1) * limit"
@@ -129,10 +130,13 @@ onMounted(() => void load(filters.value));
         data-key="id"
         lazy
         scrollable
+        :pt="{
+          tableContainer: { tabindex: 0, role: 'region', 'aria-label': 'Historial de ventas' },
+        }"
         @page="load(filters, $event.page + 1)"
       >
         <template #empty>
-          <p class="records-empty">
+          <p class="records-empty" role="status">
             {{ loading ? 'Cargando ventas…' : 'No hay ventas para estos filtros.' }}
           </p>
         </template>

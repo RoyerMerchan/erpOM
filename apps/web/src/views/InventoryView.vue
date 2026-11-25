@@ -207,6 +207,7 @@ onMounted(() => void load());
       <DataTable
         :value="items"
         :loading="loading"
+        :aria-busy="loading"
         :rows="limit"
         :total-records="total"
         :first="(page - 1) * limit"
@@ -215,10 +216,13 @@ onMounted(() => void load());
         data-key="id"
         lazy
         scrollable
+        :pt="{
+          tableContainer: { tabindex: 0, role: 'region', 'aria-label': 'Existencias por variante' },
+        }"
         @page="load($event.page + 1)"
       >
         <template #empty
-          ><p class="records-empty">
+          ><p class="records-empty" role="status">
             {{
               loading
                 ? 'Cargando existencias…'

@@ -99,18 +99,40 @@ export const sections: {
     permission: 'currencies.read',
   },
   { path: '/usuarios/roles', label: 'Roles y acceso', area: 'staff', permission: 'roles.read' },
+  { path: '/auditoria', label: 'Auditoría', area: 'audit', permission: 'audit.read' },
 ];
 
-export const menuItems = [
-  { area: 'sales', label: 'Ventas', icon: 'pi-shopping-cart' },
-  { area: 'layaways', label: 'Apartados', icon: 'pi-bookmark' },
-  { area: 'products', label: 'Inventario', icon: 'pi-box' },
-  { area: 'purchases', label: 'Compras', icon: 'pi-shopping-bag' },
-  { area: 'customers', label: 'Clientes', icon: 'pi-users' },
-  { area: 'suppliers', label: 'Proveedores', icon: 'pi-truck' },
-  { area: 'finance', label: 'Finanzas', icon: 'pi-wallet' },
-  { area: 'reports', label: 'Reportes', icon: 'pi-chart-bar' },
-  { area: 'catalog', label: 'Catálogo PDF', icon: 'pi-file-pdf' },
-  { area: 'staff', label: 'Usuarios y roles', icon: 'pi-id-card' },
-  { area: 'settings', label: 'Configuración', icon: 'pi-cog' },
+export const menuGroups = [
+  {
+    label: 'Operación',
+    items: [
+      { area: 'sales', label: 'Ventas', icon: 'pi-shopping-cart' },
+      { area: 'layaways', label: 'Apartados', icon: 'pi-bookmark' },
+      { area: 'products', label: 'Inventario', icon: 'pi-box' },
+      { area: 'purchases', label: 'Compras', icon: 'pi-shopping-bag' },
+      { area: 'catalog', label: 'Catálogo PDF', icon: 'pi-file-pdf' },
+    ],
+  },
+  {
+    label: 'Contactos',
+    items: [
+      { area: 'customers', label: 'Clientes', icon: 'pi-users' },
+      { area: 'suppliers', label: 'Proveedores', icon: 'pi-truck' },
+    ],
+  },
+  {
+    label: 'Finanzas y reportes',
+    items: [
+      { area: 'finance', label: 'Finanzas', icon: 'pi-wallet' },
+      { area: 'reports', label: 'Reportes', icon: 'pi-chart-bar' },
+    ],
+  },
+  {
+    label: 'Administración',
+    items: [
+      { area: 'staff', label: 'Usuarios y roles', icon: 'pi-id-card' },
+      { area: 'settings', label: 'Configuración', icon: 'pi-cog' },
+      { area: 'audit', label: 'Auditoría', icon: 'pi-history' },
+    ],
+  },
 ];

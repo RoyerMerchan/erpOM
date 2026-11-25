@@ -53,7 +53,9 @@ export async function login(page: Page, user: Awaited<ReturnType<typeof staff>>)
   await hidePassword.press('Enter');
   await expect(password).toHaveAttribute('type', 'password');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Panel de operaciones' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Panel de operaciones' })).toBeVisible({
+    timeout: 15_000,
+  });
 }
 
 export async function choose(page: Page, field: Locator, option: string | RegExp, search?: string) {

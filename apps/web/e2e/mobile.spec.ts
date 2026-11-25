@@ -21,6 +21,15 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
   await page.getByRole('button', { name: 'Abrir menú' }).press('Enter');
   const drawer = page.getByRole('dialog', { name: 'Menú' });
   await expect(drawer).toBeVisible();
+  await expect(page.locator('.mobile-header .brand-emblem')).toHaveAttribute(
+    'src',
+    /\/om-erp-favicon\.png$/,
+  );
+  await expect(
+    drawer.getByRole('list', { name: 'Operación' }).getByRole('link', { name: 'Apartados' }),
+  ).toBeVisible();
+  await expect(drawer.getByRole('link', { name: 'Mi cuenta', exact: true })).toBeVisible();
+  await expect(drawer.getByRole('button', { name: 'Cerrar sesión', exact: true })).toBeVisible();
   await drawer.getByRole('link', { name: 'Reportes', exact: true }).click();
   await expect(drawer).not.toBeVisible();
   await expect(page.getByRole('heading', { name: 'Reportes', exact: true })).toBeVisible();

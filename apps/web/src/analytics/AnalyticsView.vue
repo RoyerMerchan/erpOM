@@ -54,16 +54,12 @@ const charts = computed(
 );
 const titles = analyticsSectionLabels;
 const period = computed(() => {
-  if (!result.value) return '';
+  if (!result.value) return;
   const date = (value: string) => formatValue(value, 'DATE', timezone.value);
+  const range = ({ startDate, endDate }: AnalyticsResponse['window']) =>
+    date(startDate) + (startDate === endDate ? '' : ' a ' + date(endDate));
   const { window, comparison } = result.value;
-  return (
-    date(window.startDate) +
-    (window.startDate === window.endDate ? '' : ' a ' + date(window.endDate)) +
-    ' · Anterior ' +
-    date(comparison.startDate) +
-    (comparison.startDate === comparison.endDate ? '' : ' a ' + date(comparison.endDate))
-  );
+  return { current: range(window), previous: range(comparison) };
 });
 
 async function refresh() {
@@ -115,17 +111,30 @@ onBeforeUnmount(() => {
 
 <template>
   <AppShell>
-    <header class="module-heading analytics-heading">
+    <header class="module-heading analytics-heading" :class="{ 'analytics-hero': dashboard }">
       <div>
         <h1>{{ dashboard ? 'Panel de operaciones' : 'Reportes' }}</h1>
-        <p v-if="period">{{ period }} · {{ timezone }}</p>
+        <dl v-if="period" class="analytics-periods">
+          <div>
+            <dt>Período actual</dt>
+            <dd>{{ period.current }}</dd>
+          </div>
+          <div>
+            <dt>Período anterior</dt>
+            <dd>{{ period.previous }}</dd>
+          </div>
+          <div>
+            <dt>Zona horaria</dt>
+            <dd>{{ timezone }}</dd>
+          </div>
+        </dl>
       </div>
       <RouterLink
         v-if="dashboard"
-        class="p-button p-component p-button-outlined"
+        class="p-button p-component analytics-hero-link"
         :to="{ name: 'reports', query: filters }"
       >
-        <i class="pi pi-chart-bar" aria-hidden="true" /> Ver reportes
+        Ver reportes <i class="pi pi-arrow-up-right" aria-hidden="true" />
       </RouterLink>
       <div v-else-if="session.can('analytics.export')" class="sale-actions">
         <Button
@@ -160,10 +169,19 @@ onBeforeUnmount(() => {
       {{ error || exportError }}
       <button v-if="error" type="button" class="inline-action" @click="refresh">Reintentar</button>
     </Message>
-    <p v-if="loading && !result" class="sale-muted" role="status">Cargando datos…</p>
+    <p v-if="loading && !result" class="analytics-status sale-panel" role="status">
+      <i class="pi pi-spin pi-spinner" aria-hidden="true" /> Cargando datos…
+    </p>
     <div v-if="result" class="analytics-content" :aria-busy="loading">
       <template v-if="dashboard">
-        <ReportMetrics :metrics="mainMetrics" :timezone />
+        <section
+          v-if="mainMetrics.length"
+          class="analytics-content analytics-overview"
+          aria-labelledby="dashboard-indicators"
+        >
+          <h2 id="dashboard-indicators" class="analytics-section-title">Indicadores principales</h2>
+          <ReportMetrics :metrics="mainMetrics" :timezone />
+        </section>
         <div v-if="charts.length" class="analytics-two-up">
           <ReportChart v-for="item in charts" :key="item.section" :trend="item.trend" :timezone />
         </div>

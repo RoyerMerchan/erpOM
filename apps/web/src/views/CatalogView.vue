@@ -239,6 +239,7 @@ onMounted(() => void load());
       <DataTable
         :value="items"
         :loading="loading"
+        :aria-busy="loading"
         :total-records="total"
         :rows="limit"
         :first="(page - 1) * limit"
@@ -246,11 +247,18 @@ onMounted(() => void load());
         :table-style="{ minWidth: catalog.columns.length > 4 ? '47rem' : '35rem' }"
         data-key="id"
         scrollable
+        :pt="{
+          tableContainer: {
+            tabindex: 0,
+            role: 'region',
+            'aria-label': `Registros de ${catalog.title.toLowerCase()}`,
+          },
+        }"
         lazy
         @page="load($event.page + 1)"
       >
         <template #empty>
-          <p class="records-empty">
+          <p class="records-empty" role="status">
             {{
               loading
                 ? 'Cargando registros…'

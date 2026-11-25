@@ -16,9 +16,12 @@ const total = computed(() => props.table.rowCount ?? props.table.rows.length);
     <header class="sale-panel-header">
       <h3 :id="id">{{ table.title }}</h3>
     </header>
-    <p v-if="!rows.length" class="sale-muted">Sin registros para los filtros aplicados.</p>
+    <p v-if="!rows.length" class="analytics-empty sale-muted">
+      <i class="pi pi-inbox" aria-hidden="true" />
+      Sin registros para los filtros aplicados.
+    </p>
     <template v-else>
-      <div class="analytics-table-scroll">
+      <div class="analytics-table-scroll" role="group" :aria-label="table.title" tabindex="0">
         <table class="analytics-table" :aria-labelledby="id">
           <thead>
             <tr>

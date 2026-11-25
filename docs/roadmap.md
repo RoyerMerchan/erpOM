@@ -86,3 +86,9 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - El acceso muestra el logotipo de OM Store del JPG de la tienda. En Edge se verificó la carga del logo y el ajuste del formulario a 1366 y 360 px. Pasaron `pnpm lint`, `pnpm test` con 28 pruebas y `pnpm build`.
 - El favicon usa el icono premium de OM ERP en PNG de 64 × 64 px con transparencia exterior. Edge solicitó y decodificó el icono y se comprobaron las esquinas transparentes. Pasaron `pnpm lint`, las 28 pruebas de `pnpm test` y `pnpm build`.
 - El acceso combina un fondo abstracto azul con el formulario adaptable de OM ERP. En Edge se revisaron las vistas a 1680 y 360 px, el foco en los campos inválidos y la preferencia de movimiento reducido. Pasaron `pnpm lint`, las 28 pruebas de `pnpm test`, `pnpm build` y la prueba móvil de Playwright, que incluye el control de contraseña por teclado.
+
+## Interfaz del panel de OM ERP
+
+- El menú agrupa los enlaces en Operación, Contactos, Finanzas y reportes, y Administración según los permisos de la sesión. La cabecera usa la marca de OM ERP y muestra el módulo y la sección actuales en escritorio. Mi cuenta y Cerrar sesión permanecen al pie del menú.
+- Inicio y Reportes usan una jerarquía común para los indicadores, filtros y gráficos. Los formularios y las tablas comparten estilos adaptables, y las regiones de tabla con desplazamiento se pueden enfocar con el teclado.
+- Pasaron `pnpm lint`, las 28 pruebas de `pnpm test` y `pnpm build`. En PostgreSQL 17.12 de QA pasaron las pruebas de Edge de operaciones y permisos del vendedor, y de navegación por teclado y pantallas a 360 px. Se revisaron el panel y el inventario a 1440 px y el panel y su menú a 360 px. La prueba móvil se volvió a ejecutar de forma aislada después de un tiempo de espera de la API local.

@@ -343,6 +343,11 @@ test('concilia una compra COP, una venta mixta, un apartado y una devolución', 
   const sellerPage = await browser.newPage({ baseURL: 'http://localhost:4173' });
   try {
     await login(sellerPage, seller);
+    await expect(sellerPage.getByRole('list', { name: 'Operación' })).toBeVisible();
+    const administration = sellerPage.getByRole('list', { name: 'Administración' });
+    await expect(administration.getByRole('link', { name: 'Configuración' })).toBeVisible();
+    await expect(administration.getByRole('link', { name: 'Usuarios y roles' })).toHaveCount(0);
+    await expect(administration.getByRole('link', { name: 'Auditoría' })).toHaveCount(0);
     const own = await read(sellerPage.request, '/analytics', analyticsResponseSchema, scoped);
     expect(own.sections[0]?.metrics.find(({ id }) => id === 'net-sales')?.value).toBe('0.00');
     expect(own.sections[0]?.metrics.some(({ id }) => ['cogs', 'gross-profit'].includes(id))).toBe(

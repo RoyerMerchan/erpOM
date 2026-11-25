@@ -4,17 +4,28 @@ import Button from 'primevue/button';
 import Drawer from 'primevue/drawer';
 import Message from 'primevue/message';
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ApiRequestError } from '../api';
+import { menuGroups, sections } from '../navigation';
 import { useSessionStore } from '../stores/session';
 import AppNavigation from './AppNavigation.vue';
 import BrandLockup from './BrandLockup.vue';
 
 const session = useSessionStore();
+const route = useRoute();
 const router = useRouter();
 const drawerOpen = ref(false);
 const signingOut = ref(false);
 const signOutError = ref('');
+const activeModule = computed(() =>
+  menuGroups.flatMap(({ items }) => items).find(({ area }) => area === route.meta.area),
+);
+const activeSection = computed(() => sections.find(({ path }) => path === route.path));
+const workspaceLabel = computed(() => {
+  if (activeModule.value) return activeModule.value.label;
+  if (route.name === 'access-denied') return 'Acceso restringido';
+  return route.name === 'account' ? 'Mi cuenta' : 'Panel';
+});
 const initials = computed(() =>
   (session.user?.displayName ?? '')
     .split(/\s+/)
@@ -53,6 +64,18 @@ async function signOut() {
 
     <div class="workspace-body">
       <header class="workspace-topbar">
+        <div class="workspace-location">
+          <span
+            class="workspace-location-icon pi"
+            :class="activeModule?.icon ?? 'pi-th-large'"
+            aria-hidden="true"
+          />
+          <span>{{ workspaceLabel }}</span>
+          <template v-if="activeSection && activeSection.label !== workspaceLabel">
+            <span class="pi pi-angle-right workspace-location-separator" aria-hidden="true" />
+            <span class="workspace-subsection">{{ activeSection.label }}</span>
+          </template>
+        </div>
         <div class="mobile-header">
           <Button
             icon="pi pi-bars"

@@ -252,7 +252,18 @@ onMounted(load);
           aria-labelledby="draft-lines"
         >
           <h2 id="draft-lines">Vista previa por talla</h2>
-          <DataTable :value="draftRows" :table-style="{ minWidth: '48rem' }" scrollable>
+          <DataTable
+            :value="draftRows"
+            :table-style="{ minWidth: '48rem' }"
+            scrollable
+            :pt="{
+              tableContainer: {
+                tabindex: 0,
+                role: 'region',
+                'aria-label': 'Vista previa por talla',
+              },
+            }"
+          >
             <Column field="modelName" header="Modelo" /><Column
               field="size"
               header="Talla"
@@ -297,6 +308,9 @@ onMounted(load);
             data-key="id"
             :table-style="{ minWidth: '43rem' }"
             scrollable
+            :pt="{
+              tableContainer: { tabindex: 0, role: 'region', 'aria-label': 'Productos comprados' },
+            }"
           >
             <Column header="Producto"
               ><template #body="{ data }"
@@ -339,8 +353,13 @@ onMounted(load);
             data-key="id"
             :table-style="{ minWidth: '42rem' }"
             scrollable
+            :pt="{
+              tableContainer: { tabindex: 0, role: 'region', 'aria-label': 'Pagos de la compra' },
+            }"
           >
-            <template #empty><p class="records-empty">Aún no hay pagos registrados.</p></template>
+            <template #empty>
+              <p class="records-empty" role="status">Aún no hay pagos registrados.</p>
+            </template>
             <Column field="accountName" header="Cuenta" />
             <Column header="Fecha"
               ><template #body="{ data }">{{ timeLabel(data.paidAt) }}</template></Column
