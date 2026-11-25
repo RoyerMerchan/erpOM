@@ -75,4 +75,37 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
     await expect(page.getByRole('heading', { name: title, exact: true, level: 1 })).toBeVisible();
     await withoutOverflow(route);
   }
+
+  await page.goto('/apartados');
+  const filters = page.getByRole('search', { name: 'Filtrar apartados' });
+  const search = filters.getByRole('searchbox', { name: 'Número, cliente, modelo o SKU' });
+  const status = filters.getByRole('combobox', { name: 'Estado' });
+  const overdue = filters.getByRole('checkbox', { name: 'Vencidos sin cerrar' });
+  await search.fill('QA');
+  await status.selectOption('PAID');
+  await overdue.focus();
+  await overdue.press('Space');
+  await expect(overdue).toBeChecked();
+  const filtered = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === '/api/v1/layaways' &&
+      url.searchParams.get('q') === 'QA' &&
+      url.searchParams.get('status') === 'PAID' &&
+      url.searchParams.get('overdue') === 'true'
+    );
+  });
+  await filters.getByRole('button', { name: 'Filtrar' }).click();
+  expect((await filtered).ok()).toBe(true);
+  for (const width of [360, 1440]) {
+    await page.setViewportSize({ width, height: 800 });
+    const statusBox = (await status.boundingBox())!;
+    const checkboxBox = (await filters.locator('.activity-check').boundingBox())!;
+    expect(
+      checkboxBox.x >= statusBox.x + statusBox.width ||
+        checkboxBox.y >= statusBox.y + statusBox.height,
+    ).toBe(true);
+    await withoutOverflow('/apartados');
+    await page.screenshot({ path: testInfo.outputPath(`apartados-${width}.png`) });
+  }
 });

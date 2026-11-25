@@ -66,11 +66,16 @@
 
 .activity-check {
   display: flex;
+  flex: 0 1 auto;
   align-items: center;
-  align-self: end;
-  min-height: 2.55rem;
+  min-height: 2.75rem;
   gap: 0.5rem;
+  cursor: pointer;
   font-size: 0.9rem;
+}
+
+.activity-check > .p-checkbox {
+  flex: none;
 }
 
 .activity-message {

@@ -45,10 +45,15 @@ onMounted(applyFilters);
       </RouterLink>
     </header>
     <section class="records-panel" aria-label="Listado de apartados">
-      <form class="sale-history-filters" role="search" @submit.prevent="applyFilters">
+      <form
+        class="sale-history-filters"
+        role="search"
+        aria-label="Filtrar apartados"
+        @submit.prevent="applyFilters"
+      >
         <div class="field sale-history-search">
           <label for="layaway-search">Número, cliente, modelo o SKU</label>
-          <InputText id="layaway-search" v-model="search" maxlength="120" fluid />
+          <InputText id="layaway-search" v-model="search" type="search" maxlength="120" fluid />
         </div>
         <div class="field">
           <label for="layaway-status">Estado</label>
@@ -60,7 +65,8 @@ onMounted(applyFilters);
           </select>
         </div>
         <label class="activity-check" for="layaway-overdue">
-          <Checkbox input-id="layaway-overdue" v-model="overdue" binary /> Vencidos sin cerrar
+          <Checkbox input-id="layaway-overdue" v-model="overdue" binary />
+          <span>Vencidos sin cerrar</span>
         </label>
         <Button type="submit" label="Filtrar" icon="pi pi-filter" variant="outlined" />
       </form>
