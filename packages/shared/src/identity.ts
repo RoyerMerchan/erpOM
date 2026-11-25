@@ -23,7 +23,11 @@ export const passwordSchema = z
   .string()
   .min(1, 'Ingresa tu contraseña.')
   .max(128, 'La contraseña es demasiado larga.');
-export const newPasswordSchema = passwordSchema.min(15, 'Usa al menos 15 caracteres.');
+export const newPasswordMinLength = 6;
+export const newPasswordSchema = passwordSchema.min(
+  newPasswordMinLength,
+  `Usa al menos ${newPasswordMinLength} caracteres.`,
+);
 
 export const loginSchema = z.object({ username: usernameSchema, password: passwordSchema });
 export const sessionResponseSchema = z.object({

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { changePasswordInput } from '@max-sport/shared';
+import { changePasswordInput, newPasswordMinLength } from '@max-sport/shared';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
 import { useToast } from 'primevue/usetoast';
@@ -30,7 +30,7 @@ const fields: Field[] = [
     autocomplete: 'new-password',
     required: true,
     max: 128,
-    help: 'Al menos 15 caracteres.',
+    help: `Al menos ${newPasswordMinLength} caracteres.`,
   },
   {
     key: 'confirmation',

@@ -97,10 +97,11 @@ const staffProfile = z.object({
   email: emailSchema,
   roleCode: roleCodeSchema,
 });
-export const userCreateInput = staffProfile.extend({ temporaryPassword: newPasswordSchema });
+const temporaryPasswordSchema = passwordSchema.min(15, 'Usa al menos 15 caracteres.');
+export const userCreateInput = staffProfile.extend({ temporaryPassword: temporaryPasswordSchema });
 export const userUpdateInput = staffProfile.extend({
   username: usernameSchema.optional(),
-  temporaryPassword: newPasswordSchema.optional(),
+  temporaryPassword: temporaryPasswordSchema.optional(),
 });
 export const changePasswordInput = z
   .object({

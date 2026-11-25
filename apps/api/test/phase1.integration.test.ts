@@ -475,7 +475,12 @@ it('obliga a cambiar contraseña temporal y revoca sesiones al cambiar credencia
   expect((await staff.get(prefix + '/customers').expect(403)).body.error.code).toBe(
     'PASSWORD_CHANGE_REQUIRED',
   );
-  const newPassword = password + '-nuevo';
+  const newPassword = 'Nvo!42';
+  await staff
+    .post(prefix + '/auth/password')
+    .set('Origin', origin)
+    .send({ currentPassword: password, newPassword: newPassword.slice(0, 5) })
+    .expect(400);
   await staff
     .post(prefix + '/auth/password')
     .set('Origin', origin)
