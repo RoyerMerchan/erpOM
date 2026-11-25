@@ -75,6 +75,16 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
   await page.goto('/inventario');
   await page.getByRole('textbox', { name: 'Buscar por SKU, marca o modelo' }).fill(user.key);
   await page.getByRole('button', { name: 'Buscar', exact: true }).click();
+  const stockTable = page.getByRole('region', { name: 'Existencias por talla' });
+  await expect(stockTable.getByRole('columnheader')).toHaveText([
+    'Producto',
+    'Talla',
+    'Disponibles',
+    'Precio',
+  ]);
+  await expect
+    .poll(() => stockTable.evaluate((region) => region.scrollWidth - region.clientWidth))
+    .toBeLessThanOrEqual(1);
   const received = page.getByRole('row').filter({ hasText: 'Legend móvil ' + user.key });
   await expect(received).toHaveCount(2);
   for (const [size, quantity] of [
@@ -84,6 +94,15 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
     const row = received.filter({ has: page.getByRole('cell', { name: size, exact: true }) });
     await expect(row.getByRole('cell').nth(2)).toHaveText(quantity);
   }
+  await page.screenshot({ path: testInfo.outputPath('existencias-360.png') });
+  await received.getByRole('button', { name: /Ver detalle de .*talla 38/ }).click();
+  const stockDetails = page.getByRole('dialog', { name: 'Detalle de existencias' });
+  await expect(stockDetails.getByText('Pares en tienda')).toBeVisible();
+  await expect(stockDetails.locator('dd').first()).toHaveText('2');
+  await expect(stockDetails.getByText('Costo FIFO por par')).toBeVisible();
+  await stockDetails.getByRole('button', { name: 'Ver movimientos' }).click();
+  const movements = page.getByRole('dialog', { name: 'Movimientos de stock' });
+  await expect(movements.getByText('Recepción · +2')).toBeVisible();
 
   for (const [route, title] of [
     ['/inventario', 'Existencias'],

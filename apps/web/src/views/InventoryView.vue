@@ -59,7 +59,7 @@ const movementsLabel = {
 const list = usePagedList(getInventory);
 const { items, page, limit, loading, total, error } = list;
 const selected = ref<InventoryRow>();
-const open = ref<'adjustment' | 'history'>();
+const open = ref<'details' | 'adjustment' | 'history'>();
 const history = usePagedList((query) => {
   if (!selected.value) return Promise.resolve({ items: [], total: 0 });
   return getStockMovements(selected.value.id, query);
@@ -96,6 +96,10 @@ function load(nextPage = page.value) {
 function submitSearch() {
   query.applied = query.search;
   void load(1);
+}
+function showDetails(row: InventoryRow) {
+  selected.value = row;
+  open.value = 'details';
 }
 function showHistory(row: InventoryRow) {
   selected.value = row;
@@ -149,7 +153,7 @@ onMounted(() => void load());
     <header class="module-heading">
       <div>
         <h1>Existencias</h1>
-        <p>Consulta los pares de cada marca, modelo y talla.</p>
+        <p>Selecciona un producto para ver su detalle.</p>
       </div>
       <RouterLink
         v-if="session.can('purchases.create') && session.can('costs.read')"
@@ -217,6 +221,7 @@ onMounted(() => void load());
         <button type="button" class="inline-action" @click="load()">Reintentar</button></Message
       >
       <DataTable
+        class="inventory-table"
         :value="items"
         :loading="loading"
         :aria-busy="loading"
@@ -224,7 +229,7 @@ onMounted(() => void load());
         :total-records="total"
         :first="(page - 1) * limit"
         :paginator="total > limit"
-        :table-style="{ minWidth: session.can('costs.read') ? '75rem' : '61rem' }"
+        :table-style="{ tableLayout: 'fixed', width: '100%' }"
         data-key="id"
         lazy
         scrollable
@@ -244,65 +249,93 @@ onMounted(() => void load());
             }}
           </p></template
         >
-        <Column header="Producto"
-          ><template #body="{ data }"
-            ><strong>{{ data.brandName }} · {{ data.modelName }}</strong
-            ><small class="inventory-sku"
-              >{{ data.sku }}<template v-if="data.color"> · {{ data.color }}</template></small
-            ></template
-          ></Column
-        >
-        <Column field="size" header="Talla" /><Column field="physical" header="Físico" /><Column
-          field="reserved"
-          header="Reservado"
-        />
-        <Column header="Disponible"
-          ><template #body="{ data }"
+        <Column header="Producto">
+          <template #body="{ data }">
+            <button
+              type="button"
+              class="inline-action inventory-product"
+              :aria-label="`Ver detalle de ${data.brandName} ${data.modelName}, talla ${data.size}${data.color ? ', ' + data.color : ''}`"
+              @click="showDetails(data)"
+            >
+              {{ data.brandName }} · {{ data.modelName }}
+            </button>
+            <small v-if="data.color" class="inventory-sku">{{ data.color }}</small>
+          </template>
+        </Column>
+        <Column field="size" header="Talla" style="width: 15%" />
+        <Column header="Disponibles" style="width: 26%">
+          <template #body="{ data }"
             ><strong>{{ data.available }}</strong></template
-          ></Column
-        >
-        <Column header="Alerta"
-          ><template #body="{ data }">
-            <Tag
-              v-if="!data.active || data.lowStock"
-              :severity="data.active ? 'warn' : 'secondary'"
-              :value="data.active ? (data.available === 0 ? 'Agotada' : 'Stock bajo') : 'Archivada'"
-            />
-            <small class="inventory-sku">Umbral {{ data.threshold }}</small>
-          </template></Column
-        >
-        <Column header="Precio USD"
-          ><template #body="{ data }">{{ formatMoney(data.salePriceUsd, 'USD') }}</template></Column
-        >
-        <Column v-if="session.can('costs.read')" header="Costo FIFO USD"
-          ><template #body="{ data }">{{ formatMoney(data.unitCostUsd, 'USD') }}</template></Column
-        >
-        <Column
-          v-if="session.can('costs.read') && session.can('profits.read')"
-          header="Margen estimado"
-          ><template #body="{ data }">{{ formatMoney(data.marginUsd, 'USD') }}</template></Column
-        >
-        <Column header="Última recepción"
-          ><template #body="{ data }">{{
-            data.lastPurchaseAt ? timeLabel(data.lastPurchaseAt) : '—'
-          }}</template></Column
-        >
-        <Column header="Acciones"
-          ><template #body="{ data }">
-            <div class="record-actions">
-              <Button label="Movimientos" text size="small" @click="showHistory(data)" />
-              <Button
-                v-if="session.can('inventory.adjust')"
-                label="Ajustar"
-                text
-                size="small"
-                severity="secondary"
-                @click="showAdjust(data)"
-              />
-            </div> </template
-        ></Column>
+          >
+        </Column>
+        <Column header="Precio" style="width: 24%">
+          <template #body="{ data }">{{ formatMoney(data.salePriceUsd, 'USD') }}</template>
+        </Column>
       </DataTable>
     </section>
+    <Dialog
+      :visible="open === 'details'"
+      header="Detalle de existencias"
+      modal
+      :draggable="false"
+      class="record-dialog"
+      @update:visible="if (!$event) open = undefined;"
+    >
+      <template v-if="selected">
+        <div class="inventory-detail-heading">
+          <div>
+            <strong>{{ selected.brandName }} · {{ selected.modelName }}</strong>
+            <small class="inventory-sku">
+              Talla {{ selected.size }} · {{ selected.sku
+              }}<template v-if="selected.color"> · {{ selected.color }}</template>
+            </small>
+          </div>
+          <Tag
+            v-if="!selected.active || selected.lowStock"
+            :severity="selected.active ? 'warn' : 'secondary'"
+            :value="
+              selected.active ? (selected.available === 0 ? 'Agotada' : 'Stock bajo') : 'Archivada'
+            "
+          />
+        </div>
+        <dl class="inventory-detail">
+          <div>
+            <dt>Pares en tienda</dt>
+            <dd>{{ selected.physical }}</dd>
+          </div>
+          <div>
+            <dt>Pares apartados</dt>
+            <dd>{{ selected.reserved }}</dd>
+          </div>
+          <div>
+            <dt>Umbral de alerta</dt>
+            <dd>{{ selected.threshold }}</dd>
+          </div>
+          <div>
+            <dt>Última recepción</dt>
+            <dd>{{ selected.lastPurchaseAt ? timeLabel(selected.lastPurchaseAt) : '—' }}</dd>
+          </div>
+          <div v-if="session.can('costs.read')">
+            <dt>Costo FIFO por par</dt>
+            <dd>{{ formatMoney(selected.unitCostUsd, 'USD') }}</dd>
+          </div>
+          <div v-if="session.can('costs.read') && session.can('profits.read')">
+            <dt>Margen estimado</dt>
+            <dd>{{ formatMoney(selected.marginUsd, 'USD') }}</dd>
+          </div>
+        </dl>
+        <div class="record-actions">
+          <Button label="Ver movimientos" outlined @click="showHistory(selected)" />
+          <Button
+            v-if="session.can('inventory.adjust')"
+            label="Ajustar existencias"
+            outlined
+            severity="secondary"
+            @click="showAdjust(selected)"
+          />
+        </div>
+      </template>
+    </Dialog>
     <Dialog
       :visible="open === 'history'"
       header="Movimientos de stock"

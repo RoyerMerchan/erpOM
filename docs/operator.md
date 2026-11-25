@@ -23,4 +23,4 @@ Si pierdes la conexión después de confirmar, vuelve al listado o al detalle y 
 
 El inventario lleva una fila por marca, modelo, talla y, cuando aplica, color. Por ejemplo, Nike Revolution talla 38 y Nike Revolution talla 39 se cuentan por separado. El sistema llama variante a cada combinación y la crea al recibir la mercancía.
 
-**Físico** es lo que hay en tienda. **Reservado** es lo comprometido en apartados. **Disponible** es lo que puedes vender. Si tienes 5 pares de la talla 38 y 2 están apartados, te quedan 3 disponibles.
+**Disponibles** son los pares que puedes vender. Selecciona el producto para ver cuántos pares hay en tienda, cuántos están apartados y consultar sus movimientos. Si tienes 5 pares de la talla 38 y 2 están apartados, te quedan 3 disponibles.
