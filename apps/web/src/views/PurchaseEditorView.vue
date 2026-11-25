@@ -33,7 +33,7 @@ import {
 import SizeMatrix from '../purchasing/SizeMatrix.vue';
 import { useSessionStore } from '../stores/session';
 
-const props = defineProps<{ id?: string }>();
+const props = defineProps<{ id?: string; fromInventory?: boolean }>();
 const router = useRouter();
 const session = useSessionStore();
 const toast = useToast();
@@ -216,13 +216,25 @@ onMounted(load);
 <template>
   <AppShell>
     <RouterLink
-      :to="id ? { name: 'purchase-detail', params: { id } } : { name: 'purchases' }"
+      :to="
+        id
+          ? { name: 'purchase-detail', params: { id } }
+          : { name: fromInventory ? 'inventory' : 'purchases' }
+      "
       class="inline-action procurement-back"
     >
-      {{ id ? 'Volver al detalle' : 'Volver a compras' }}
+      {{ id ? 'Volver al detalle' : fromInventory ? 'Volver a existencias' : 'Volver a compras' }}
     </RouterLink>
     <header class="module-heading">
-      <h1>{{ id ? 'Editar borrador' : 'Nueva compra' }}</h1>
+      <div>
+        <h1>
+          {{ id ? 'Editar borrador' : fromInventory ? 'Agregar existencia' : 'Nueva compra' }}
+        </h1>
+        <p v-if="fromInventory">
+          Elige el proveedor, la marca y el modelo. Marca las tallas e indica cuántos pares
+          llegaron.
+        </p>
+      </div>
     </header>
     <p v-if="loading" class="records-empty" role="status">Cargando compra…</p>
     <Message v-else-if="loadError" severity="error"
@@ -348,10 +360,13 @@ onMounted(load);
         </div>
         <PurchaseTotals v-if="preview" :totals="preview" :currency="currency" aria-live="polite" />
         <Message v-if="error" severity="error" class="procurement-feedback">{{ error }}</Message>
+        <p v-if="fromInventory" class="record-hint">
+          Los pares aparecen en Existencias al confirmar la recepción.
+        </p>
         <div class="procurement-actions">
           <Button
             type="submit"
-            label="Guardar borrador"
+            :label="fromInventory ? 'Continuar a recepción' : 'Guardar borrador'"
             icon="pi pi-save"
             :loading="active === 'save'"
             :disabled="Boolean(active)"

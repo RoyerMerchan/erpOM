@@ -40,8 +40,9 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
   await expect(page.getByRole('main')).toBeFocused();
   await withoutOverflow('/reportes');
 
-  await page.goto('/compras/nueva');
-  await expect(page.getByRole('heading', { name: 'Nueva compra' })).toBeVisible();
+  await page.goto('/inventario');
+  await page.getByRole('link', { name: 'Agregar existencia' }).click();
+  await expect(page.getByRole('heading', { name: 'Agregar existencia' })).toBeVisible();
   await choose(page, page.getByLabel('Proveedor', { exact: true }), supplier.name, supplier.name);
   await choose(page, page.getByLabel('Moneda de la compra'), /^COP/);
   await page.getByLabel('1 USD = X COP').fill('4000');
@@ -61,8 +62,28 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
   await page.getByRole('button', { name: 'Calcular importes' }).click();
   await expect(page.getByText('60,00 USD', { exact: true }).last()).toBeVisible();
   await page.getByLabel('Cantidad talla 38').scrollIntoViewIfNeeded();
-  await withoutOverflow('/compras/nueva');
+  await withoutOverflow('/inventario/agregar');
   await page.screenshot({ path: testInfo.outputPath('matriz-360.png') });
+
+  await page.getByRole('button', { name: 'Continuar a recepción' }).click();
+  await expect(page.getByRole('heading', { name: 'Detalle de compra' })).toBeVisible();
+  await page.getByRole('button', { name: 'Confirmar recepción' }).click();
+  const reception = page.getByRole('dialog', { name: 'Confirmar recepción' });
+  await reception.getByRole('button', { name: 'Confirmar recepción' }).click();
+  await expect(reception).not.toBeVisible();
+  await expect(page.getByText('Confirmada', { exact: true })).toBeVisible();
+  await page.goto('/inventario');
+  await page.getByRole('textbox', { name: 'Buscar por SKU, marca o modelo' }).fill(user.key);
+  await page.getByRole('button', { name: 'Buscar', exact: true }).click();
+  const received = page.getByRole('row').filter({ hasText: 'Legend móvil ' + user.key });
+  await expect(received).toHaveCount(2);
+  for (const [size, quantity] of [
+    ['38', '2'],
+    ['39', '1'],
+  ] as const) {
+    const row = received.filter({ has: page.getByRole('cell', { name: size, exact: true }) });
+    await expect(row.getByRole('cell').nth(2)).toHaveText(quantity);
+  }
 
   for (const [route, title] of [
     ['/inventario', 'Existencias'],

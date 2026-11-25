@@ -68,6 +68,18 @@ export function createAppRouter(pinia: Pinia) {
         meta: { requiresSession: true, permission: 'inventory.read', area: 'products' },
       },
       {
+        path: '/inventario/agregar',
+        name: 'inventory-add',
+        component: () => import('./views/PurchaseEditorView.vue'),
+        props: { fromInventory: true },
+        meta: {
+          requiresSession: true,
+          permission: 'purchases.create',
+          extraPermission: 'costs.read',
+          area: 'products',
+        },
+      },
+      {
         path: '/compras',
         name: 'purchases',
         component: () => import('./views/PurchasesView.vue'),

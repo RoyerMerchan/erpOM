@@ -94,6 +94,7 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - Inicio y Reportes usan una jerarquía común para los indicadores, filtros y gráficos. Los formularios y las tablas comparten estilos adaptables, y las regiones de tabla con desplazamiento se pueden enfocar con el teclado.
 - Pasaron `pnpm lint`, las 28 pruebas de `pnpm test` y `pnpm build`. En PostgreSQL 17.12 de QA pasaron las pruebas de Edge de operaciones y permisos del vendedor, y de navegación por teclado y pantallas a 360 px. Se revisaron el panel y el inventario a 1440 px y el panel y su menú a 360 px. La prueba móvil se volvió a ejecutar de forma aislada después de un tiempo de espera de la API local.
 - Los filtros de Apartados, Ventas y Devoluciones usan etiquetas separadas y controles de altura uniforme. Se revisó Apartados a 360 y 1440 px en Edge y se verificó el envío de búsqueda, estado y vencimiento. Pasaron lint, las 28 pruebas de `pnpm test`, la compilación y la prueba móvil.
+- Inventario abre la recepción de compras desde **Agregar existencia**. La pestaña **Tallas y SKU** identifica el catálogo por talla. En Edge a 360 px se probó crear una marca y un modelo, confirmar la recepción y verificar 2 pares en talla 38 y 1 en talla 39. Pasaron lint, las 28 pruebas de `pnpm test` y la compilación.
 
 ## Superusuario
 

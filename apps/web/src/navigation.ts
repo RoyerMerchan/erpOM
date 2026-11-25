@@ -2,7 +2,7 @@ import { resourcePermission } from '@max-sport/shared';
 import type { PermissionCode, ResourceKey } from '@max-sport/shared';
 
 export const resourcePages = [
-  { resource: 'variants', path: '/inventario/variantes', label: 'Variantes', area: 'products' },
+  { resource: 'variants', path: '/inventario/variantes', label: 'Tallas y SKU', area: 'products' },
   { resource: 'models', path: '/inventario/modelos', label: 'Modelos', area: 'products' },
   { resource: 'brands', path: '/inventario/marcas', label: 'Marcas', area: 'products' },
   { resource: 'customers', path: '/clientes', label: 'Clientes', area: 'customers' },

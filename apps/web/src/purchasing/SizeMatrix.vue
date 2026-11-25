@@ -75,7 +75,7 @@ function estimate(size: number) {
         />
       </div>
       <div v-if="group.modelMode === 'existing'" class="record-field">
-        <label :id="fieldId('model-label')" :for="fieldId('model')">Modelo</label>
+        <label :id="fieldId('model-label')" :for="fieldId('model')">Marca y modelo</label>
         <LookupSelect
           :id="fieldId('model')"
           v-model="group.modelId"

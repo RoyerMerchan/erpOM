@@ -146,8 +146,20 @@ onMounted(() => void load());
 <template>
   <AppShell>
     <SectionLinks />
-    <header class="module-heading"><h1>Existencias</h1></header>
-    <section class="records-panel" aria-label="Inventario por variante">
+    <header class="module-heading">
+      <div>
+        <h1>Existencias</h1>
+        <p>Consulta los pares de cada marca, modelo y talla.</p>
+      </div>
+      <RouterLink
+        v-if="session.can('purchases.create') && session.can('costs.read')"
+        :to="{ name: 'inventory-add' }"
+        class="p-button p-component"
+      >
+        <i class="pi pi-plus" aria-hidden="true" /> Agregar existencia
+      </RouterLink>
+    </header>
+    <section class="records-panel" aria-label="Inventario por talla">
       <form class="records-toolbar" @submit.prevent="submitSearch">
         <div class="records-search">
           <InputText
@@ -217,7 +229,7 @@ onMounted(() => void load());
         lazy
         scrollable
         :pt="{
-          tableContainer: { tabindex: 0, role: 'region', 'aria-label': 'Existencias por variante' },
+          tableContainer: { tabindex: 0, role: 'region', 'aria-label': 'Existencias por talla' },
         }"
         @page="load($event.page + 1)"
       >
@@ -228,7 +240,7 @@ onMounted(() => void load());
                 ? 'Cargando existencias…'
                 : error
                   ? 'Inventario no disponible.'
-                  : 'No hay variantes para estos filtros.'
+                  : 'No hay productos por talla para estos filtros.'
             }}
           </p></template
         >

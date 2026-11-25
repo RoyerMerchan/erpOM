@@ -84,8 +84,8 @@ export const catalogs: Record<ResourceKey, Catalog> = {
     ],
   },
   variants: {
-    title: 'Variantes',
-    createLabel: 'Nueva variante',
+    title: 'Tallas y SKU',
+    createLabel: 'Registrar talla en catálogo',
     searchLabel: 'Buscar por modelo, marca, talla o SKU',
     columns: [
       { label: 'Modelo', value: (row) => textField(nestedRow(row, 'model'), 'name') },
