@@ -103,6 +103,7 @@ export const permissionSchema = z.custom<PermissionCode>(
   (value) => typeof value === 'string' && isPermissionCode(value),
 );
 
+export const superuserRoleCode = 'SUPERUSER';
 export const roleCodeSchema = z.enum(['ADMIN', 'MANAGER', 'SELLER', 'INVENTORY', 'FINANCE']);
 export type RoleCode = z.infer<typeof roleCodeSchema>;
 export const roleLabels: Record<RoleCode, string> = {

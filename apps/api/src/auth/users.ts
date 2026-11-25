@@ -1,6 +1,7 @@
 import {
   listQuerySchema,
   resourcePermission,
+  superuserRoleCode,
   userCreateInput,
   userUpdateInput,
 } from '@max-sport/shared';
@@ -19,7 +20,7 @@ import {
   pageArgs,
 } from '../master-data/catalog.js';
 import { hashPassword } from './password.js';
-import { lockUser, sessionActor } from './session.js';
+import { lockUser, sessionActor, visibleUser } from './session.js';
 import type { SessionSecurity } from './session.js';
 
 const select = {
@@ -33,8 +34,8 @@ const select = {
 } satisfies Prisma.UserSelect;
 type User = Prisma.UserGetPayload<{ select: typeof select }>;
 
-async function getUser(db: Prisma.TransactionClient, id: string) {
-  const item = await db.user.findUnique({ where: { id }, select });
+async function getUser(db: Prisma.TransactionClient, id: string, actorId: string) {
+  const item = await db.user.findFirst({ where: { id, ...visibleUser(actorId) }, select });
   if (!item) throw masterNotFound();
   return item;
 }
@@ -46,7 +47,12 @@ function auditProfile({ active, role, mustChangePassword }: User) {
 async function lockAdministration(db: Prisma.TransactionClient, actorId: string) {
   await db.$queryRaw`SELECT id FROM "roles" WHERE code = 'ADMIN' FOR UPDATE`;
   const actor = await db.user.findFirst({
-    where: { id: actorId, active: true, mustChangePassword: false, role: { code: 'ADMIN' } },
+    where: {
+      id: actorId,
+      active: true,
+      mustChangePassword: false,
+      role: { code: { in: ['ADMIN', superuserRoleCode] } },
+    },
     select: { id: true },
   });
   if (!actor)
@@ -56,7 +62,11 @@ async function lockAdministration(db: Prisma.TransactionClient, actorId: string)
 async function protectLastAdmin(db: Prisma.TransactionClient, previous: User) {
   if (!previous.active || previous.role.code !== 'ADMIN') return;
   const otherAdmins = await db.user.count({
-    where: { id: { not: previous.id }, active: true, role: { code: 'ADMIN' } },
+    where: {
+      id: { not: previous.id },
+      active: true,
+      role: { code: { in: ['ADMIN', superuserRoleCode] } },
+    },
   });
   if (!otherAdmins)
     throw new HttpError(409, 'LAST_ADMIN', 'Debe quedar al menos un administrador activo.');
@@ -71,6 +81,7 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
   router.get('/', ...auth('read'), async (request, response) => {
     const query = validate(listQuerySchema, request.query);
     const where: Prisma.UserWhereInput = {
+      AND: [visibleUser(sessionActor(response).id)],
       ...filterActive(query.status),
       ...(query.q
         ? {
@@ -97,7 +108,9 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
   });
 
   router.get('/:id', ...auth('read'), async (request, response) => {
-    response.json(await getUser(database, validate(idSchema, request.params.id)));
+    response.json(
+      await getUser(database, validate(idSchema, request.params.id), sessionActor(response).id),
+    );
   });
 
   router.post('/', security.requireOrigin, ...auth('create'), body, async (request, response) => {
@@ -142,7 +155,7 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
     const user = await database.$transaction(async (tx) => {
       await lockAdministration(tx, actor.id);
       await lockUser(tx, id);
-      const previous = await getUser(tx, id);
+      const previous = await getUser(tx, id, actor.id);
       const roleChanged = previous.role.code !== roleCode;
       if (id === actor.id && (roleChanged || passwordHash)) {
         throw new HttpError(
@@ -150,6 +163,9 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
           'SELF_MANAGEMENT',
           'Usa Mi cuenta para cambiar tu contraseña. Tu propio rol está protegido.',
         );
+      }
+      if (roleChanged && roleCode === superuserRoleCode) {
+        throw new HttpError(403, 'PERMISSION_DENIED', 'El rol de superusuario está reservado.');
       }
       if (roleChanged) await protectLastAdmin(tx, previous);
 
@@ -196,7 +212,7 @@ export function createUsersRouter(database: Database, security: SessionSecurity)
       await database.$transaction(async (tx) => {
         await lockAdministration(tx, actor.id);
         await lockUser(tx, id);
-        const previous = await getUser(tx, id);
+        const previous = await getUser(tx, id, actor.id);
         if (previous.active === active) return;
         if (!active) await protectLastAdmin(tx, previous);
         const updated = await tx.user.update({ where: { id }, data: { active }, select });

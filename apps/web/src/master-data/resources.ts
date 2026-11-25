@@ -238,7 +238,15 @@ export function editorFields(
   return fields.flatMap((field) => {
     if (resource === 'rates' && field.key === 'currencyCode') return [];
     if (resource === 'users' && field.key === 'roleCode' && row.id === actorId) {
-      return [{ ...field, disabled: true }];
+      const role = nestedRow(row, 'role');
+      return [
+        {
+          ...field,
+          lookup: undefined,
+          options: [{ value: textField(role, 'code'), label: textField(role, 'label') }],
+          disabled: true,
+        },
+      ];
     }
     if (resource === 'users' && field.key === 'temporaryPassword') {
       return row.id === actorId ? [] : [{ ...field, required: false, omitEmpty: true }];

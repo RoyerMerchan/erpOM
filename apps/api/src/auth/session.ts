@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { isPermissionCode } from '@max-sport/shared';
+import { defaultRolePermissions, isPermissionCode, superuserRoleCode } from '@max-sport/shared';
 import type { PermissionCode, SessionUser } from '@max-sport/shared';
 import type { CookieOptions, Request, RequestHandler, Response } from 'express';
 import type { RuntimeConfig } from '../config.js';
@@ -33,10 +33,10 @@ export function toSessionUser(
     email: user.email,
     displayName: user.displayName,
     role: { code: user.role.code, label: user.role.label },
-    permissions: user.role.permissions
-      .map(({ permission }) => permission.code)
-      .filter(isPermissionCode)
-      .sort(),
+    permissions: (user.role.code === superuserRoleCode
+      ? [...defaultRolePermissions.ADMIN]
+      : user.role.permissions.map(({ permission }) => permission.code).filter(isPermissionCode)
+    ).sort(),
     mustChangePassword: user.mustChangePassword,
   };
 }
@@ -45,6 +45,10 @@ export function sessionActor(response: Response): SessionUser {
   const actor: SessionUser | undefined = response.locals.actor;
   if (!actor) throw new HttpError(401, 'SESSION_REQUIRED', 'Inicia sesión para continuar.');
   return actor;
+}
+
+export function visibleUser(actorId: string): Prisma.UserWhereInput {
+  return { OR: [{ id: actorId }, { role: { code: { not: superuserRoleCode } } }] };
 }
 
 export async function lockUser(transaction: Prisma.TransactionClient, userId: string) {

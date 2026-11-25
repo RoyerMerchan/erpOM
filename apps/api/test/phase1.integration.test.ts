@@ -7,6 +7,7 @@ import {
   resourcePermission,
   roleCodeSchema,
   sessionResponseSchema,
+  superuserRoleCode,
   userRecord,
   variantRecord,
 } from '@max-sport/shared';
@@ -51,6 +52,92 @@ function agent(role: RoleCode) {
   if (!value) throw new Error('No se abrió sesión para el rol de prueba.');
   return value;
 }
+
+it('mantiene la cuenta de superusuario visible y editable solo para su titular', async () => {
+  const username = marker('privileged');
+  const profile = { username, email: `${username}@example.test`, displayName: marker('Private') };
+  const owner = await db.user.create({
+    data: {
+      ...profile,
+      passwordHash: await hashPassword(password),
+      role: { connect: { code: superuserRoleCode } },
+    },
+  });
+  await db.auditLog.create({
+    data: { action: 'auth.bootstrap', entity: 'User', entityId: owner.id, userId: owner.id },
+  });
+  const admin = agent('ADMIN');
+  const ownerAgent = request.agent(app);
+  const login = await ownerAgent
+    .post(prefix + '/auth/login')
+    .set('Origin', origin)
+    .send({ username, password })
+    .expect(200);
+  expect(login.body.user.role.code).toBe(superuserRoleCode);
+  expect(login.body.user.permissions).toContain('users.update');
+  for (const path of ['/users', '/sales/operators', '/audit']) {
+    const q = path === '/audit' ? owner.id : profile.displayName;
+    expect(
+      (
+        await admin
+          .get(prefix + path)
+          .query({ q })
+          .expect(200)
+      ).body,
+    ).toEqual({ items: [], total: 0 });
+    expect(
+      (
+        await ownerAgent
+          .get(prefix + path)
+          .query({ q })
+          .expect(200)
+      ).body.total,
+    ).toBe(path === '/audit' ? 2 : 1);
+  }
+  const path = prefix + '/users/' + owner.id;
+  await admin.get(path).expect(404);
+  await admin
+    .put(path)
+    .set('Origin', origin)
+    .send({ ...profile, roleCode: 'ADMIN' })
+    .expect(404);
+  await admin.delete(path).set('Origin', origin).expect(404);
+  await admin
+    .post(path + '/restore')
+    .set('Origin', origin)
+    .expect(404);
+  await ownerAgent
+    .put(path)
+    .set('Origin', origin)
+    .send({ ...profile, roleCode: superuserRoleCode })
+    .expect(200);
+  await ownerAgent
+    .put(path)
+    .set('Origin', origin)
+    .send({ ...profile, roleCode: 'ADMIN' })
+    .expect(409);
+  await admin
+    .post(prefix + '/users')
+    .set('Origin', origin)
+    .send({
+      ...profile,
+      username: marker('new-root'),
+      roleCode: superuserRoleCode,
+      temporaryPassword: password,
+    })
+    .expect(400);
+  const normal = await db.user.findUniqueOrThrow({ where: { id: ids.get('SELLER') } });
+  await admin
+    .put(prefix + '/users/' + normal.id)
+    .set('Origin', origin)
+    .send({
+      username: normal.username,
+      email: normal.email,
+      displayName: normal.displayName,
+      roleCode: superuserRoleCode,
+    })
+    .expect(403);
+});
 
 beforeAll(async () => {
   const passwordHash = await hashPassword(password);

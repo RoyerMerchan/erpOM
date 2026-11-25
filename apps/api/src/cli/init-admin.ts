@@ -1,4 +1,4 @@
-import { emailSchema, usernameSchema } from '@max-sport/shared';
+import { emailSchema, superuserRoleCode, usernameSchema } from '@max-sport/shared';
 import { z } from 'zod';
 import { hashPassword } from '../auth/password.js';
 import { loadProjectEnv, parseRuntimeConfig } from '../config.js';
@@ -48,7 +48,9 @@ async function main() {
     const created = await database.$transaction(
       async (transaction) => {
         const existingUser = await transaction.user.findFirst({
-          where: { OR: [{ username }, { email }, { role: { code: 'ADMIN' } }] },
+          where: {
+            OR: [{ username }, { email }, { role: { code: { in: ['ADMIN', superuserRoleCode] } } }],
+          },
           select: { id: true },
         });
         if (existingUser) return false;

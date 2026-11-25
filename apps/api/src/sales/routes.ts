@@ -6,7 +6,7 @@ import {
   saleQuery,
 } from '@max-sport/shared';
 import { json, Router } from 'express';
-import { sessionActor } from '../auth/session.js';
+import { sessionActor, visibleUser } from '../auth/session.js';
 import type { SessionSecurity } from '../auth/session.js';
 import type { Database } from '../database.js';
 import { idSchema, validate } from '../http/validation.js';
@@ -32,6 +32,7 @@ export function createSalesRouter(database: Database, security: SessionSecurity)
       const query = validate(listQuerySchema, request.query);
       const where = {
         ...salesOperatorFilter,
+        ...visibleUser(sessionActor(response).id),
         ...(query.q ? { displayName: insensitive(query.q) } : {}),
       };
       response.json(

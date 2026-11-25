@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { roleCodeSchema } from './access.js';
+import { roleCodeSchema, superuserRoleCode } from './access.js';
 import { emailSchema, newPasswordSchema, passwordSchema, usernameSchema } from './identity.js';
 
 const requiredText = (max: number) => z.string().trim().min(1, 'Completa este campo.').max(max);
@@ -101,6 +101,7 @@ const temporaryPasswordSchema = passwordSchema.min(15, 'Usa al menos 15 caracter
 export const userCreateInput = staffProfile.extend({ temporaryPassword: temporaryPasswordSchema });
 export const userUpdateInput = staffProfile.extend({
   username: usernameSchema.optional(),
+  roleCode: roleCodeSchema.or(z.literal(superuserRoleCode)),
   temporaryPassword: temporaryPasswordSchema.optional(),
 });
 export const changePasswordInput = z

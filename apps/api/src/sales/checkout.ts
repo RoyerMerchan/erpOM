@@ -1,4 +1,5 @@
 import type { ConfirmSaleInput, SessionUser } from '@max-sport/shared';
+import { visibleUser } from '../auth/session.js';
 import type { Database } from '../database.js';
 import { HttpError } from '../http/errors.js';
 import { lockVariants } from '../inventory/stock.js';
@@ -25,7 +26,7 @@ async function participants(tx: Transaction, input: ConfirmSaleInput['sale'], ac
     throw new HttpError(403, 'PERMISSION_DENIED', 'Tu rol no permite seleccionar un cliente.');
   }
   const seller = await tx.user.findFirst({
-    where: { id: sellerId, ...salesOperatorFilter },
+    where: { id: sellerId, ...salesOperatorFilter, ...visibleUser(actor.id) },
     select: { displayName: true },
   });
   const customer = input.customerId
