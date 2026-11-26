@@ -14,6 +14,7 @@ import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import { timeLabel } from '../master-data/field-types';
 import type { FieldValue } from '../master-data/field-types';
@@ -24,6 +25,7 @@ import { getInventory, getStockMovements, postAdjustment } from '../purchasing/s
 import { useSessionStore } from '../stores/session';
 
 const session = useSessionStore();
+const canAddStock = computed(() => session.can('purchases.create') && session.can('costs.read'));
 const toast = useToast();
 const params = inventoryQuerySchema.safeParse(useRoute().query);
 const initial = params.success ? params.data : undefined;
@@ -152,14 +154,10 @@ onMounted(() => void load());
     <SectionLinks />
     <header class="module-heading">
       <div>
-        <h1>Existencias</h1>
+        <PageHeading title="Existencias" />
         <p>Selecciona un producto para ver su detalle.</p>
       </div>
-      <RouterLink
-        v-if="session.can('purchases.create') && session.can('costs.read')"
-        :to="{ name: 'inventory-add' }"
-        class="p-button p-component"
-      >
+      <RouterLink v-if="canAddStock" :to="{ name: 'inventory-add' }" class="p-button p-component">
         <i class="pi pi-plus" aria-hidden="true" /> Agregar existencia
       </RouterLink>
     </header>
@@ -326,9 +324,23 @@ onMounted(() => void load());
         </dl>
         <div class="record-actions">
           <Button label="Ver movimientos" outlined @click="showHistory(selected)" />
+          <RouterLink
+            v-if="canAddStock && selected.active && session.can('variants.read')"
+            :to="{ name: 'inventory-add', params: { variantId: selected.id } }"
+            class="p-button p-component"
+          >
+            <i class="pi pi-plus" aria-hidden="true" /> Agregar más pares
+          </RouterLink>
+          <RouterLink
+            v-if="session.can('variants.read')"
+            :to="{ path: '/inventario/variantes', query: { q: selected.sku } }"
+            class="inline-action"
+          >
+            Ver código y precio
+          </RouterLink>
           <Button
             v-if="session.can('inventory.adjust')"
-            label="Ajustar existencias"
+            label="Corregir conteo"
             outlined
             severity="secondary"
             @click="showAdjust(selected)"
@@ -396,7 +408,7 @@ onMounted(() => void load());
     </Dialog>
     <Dialog
       :visible="open === 'adjustment'"
-      header="Ajustar existencias"
+      header="Corregir conteo de existencias"
       modal
       :draggable="false"
       :closable="!processing"
@@ -409,6 +421,7 @@ onMounted(() => void load());
           {{ selected.modelName }} · Talla {{ selected.size }} ·
           {{ selected.available }} disponibles
         </p>
+        <p class="record-hint">Usa este ajuste si el conteo en tienda difiere del sistema.</p>
         <div class="record-fields">
           <div class="record-field">
             <label for="stock-adjustment-type">Movimiento</label>

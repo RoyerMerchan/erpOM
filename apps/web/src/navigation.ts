@@ -2,7 +2,12 @@ import { resourcePermission } from '@max-sport/shared';
 import type { PermissionCode, ResourceKey } from '@max-sport/shared';
 
 export const resourcePages = [
-  { resource: 'variants', path: '/inventario/variantes', label: 'Tallas y SKU', area: 'products' },
+  {
+    resource: 'variants',
+    path: '/inventario/variantes',
+    label: 'Códigos por talla',
+    area: 'products',
+  },
   { resource: 'models', path: '/inventario/modelos', label: 'Modelos', area: 'products' },
   { resource: 'brands', path: '/inventario/marcas', label: 'Marcas', area: 'products' },
   { resource: 'customers', path: '/clientes', label: 'Clientes', area: 'customers' },
@@ -18,6 +23,7 @@ export const sections: {
   area: string;
   permission: PermissionCode;
   requires?: PermissionCode;
+  showInSectionLinks?: boolean;
 }[] = [
   { path: '/inventario', label: 'Existencias', area: 'products', permission: 'inventory.read' },
   { path: '/ventas/pos', label: 'Punto de venta', area: 'sales', permission: 'sales.create' },
@@ -90,6 +96,7 @@ export const sections: {
     label: item.label,
     area: item.area,
     permission: resourcePermission(item.resource, 'read'),
+    showInSectionLinks: item.resource !== 'variants',
   })),
   { path: '/configuracion', label: 'Tienda', area: 'settings', permission: 'shop.read' },
   {

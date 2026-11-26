@@ -10,6 +10,7 @@ import Select from 'primevue/select';
 import Tag from 'primevue/tag';
 import { onMounted, ref } from 'vue';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import { timeLabel } from '../master-data/field-types';
 import { usePagedList } from '../master-data/usePagedList';
@@ -46,12 +47,15 @@ onMounted(() => void load());
   <AppShell>
     <SectionLinks />
     <header class="module-heading">
-      <h1>{{ payables ? 'Cuentas por pagar' : 'Compras' }}</h1>
+      <div>
+        <PageHeading :title="payables ? 'Cuentas por pagar' : 'Compras'" />
+        <p v-if="!payables">Entradas de mercancía y pagos a proveedores.</p>
+      </div>
       <RouterLink
         v-if="!payables && session.can('purchases.create') && session.can('costs.read')"
-        :to="{ name: 'purchase-new' }"
+        :to="{ name: 'inventory-add', query: { desde: 'compras' } }"
         class="p-button p-component"
-        ><i class="pi pi-plus" aria-hidden="true" /> Nueva compra</RouterLink
+        ><i class="pi pi-plus" aria-hidden="true" /> Agregar existencia</RouterLink
       >
     </header>
     <section

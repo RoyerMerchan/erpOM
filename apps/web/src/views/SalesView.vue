@@ -6,6 +6,7 @@ import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import { onMounted, ref } from 'vue';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import { timeLabel } from '../master-data/field-types';
 import type { FieldValue } from '../master-data/field-types';
@@ -56,7 +57,7 @@ onMounted(() => void load(filters.value));
   <AppShell>
     <SectionLinks />
     <header class="module-heading">
-      <h1>Historial de ventas</h1>
+      <PageHeading title="Historial de ventas" />
       <RouterLink
         v-if="session.can('sales.create')"
         :to="{ name: 'pos' }"

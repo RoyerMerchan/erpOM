@@ -14,6 +14,7 @@ import StockCart from '../after-sale/StockCart.vue';
 import TenderList from '../after-sale/TenderList.vue';
 import { ApiRequestError } from '../api';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import { browserTimeZone } from '../master-data/field-types';
 import type { FieldValue } from '../master-data/field-types';
 import LookupSelect from '../master-data/LookupSelect.vue';
@@ -77,7 +78,7 @@ async function reserve() {
     <header class="module-heading">
       <div>
         <RouterLink :to="{ name: 'layaways' }" class="inline-action">Volver a apartados</RouterLink>
-        <h1>Nuevo apartado</h1>
+        <PageHeading title="Nuevo apartado" />
         <p>Elige cliente y tallas. Los pares se reservan y la venta se registra al entregar.</p>
       </div>
     </header>

@@ -10,6 +10,7 @@ import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { getLayaways } from '../after-sale/service';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import { timeLabel } from '../master-data/field-types';
 import { usePagedList } from '../master-data/usePagedList';
 import { formatMoney } from '../purchasing/form';
@@ -35,7 +36,7 @@ onMounted(applyFilters);
 <template>
   <AppShell>
     <header class="module-heading">
-      <h1>Apartados</h1>
+      <PageHeading title="Apartados" />
       <RouterLink
         v-if="session.can('layaways.create')"
         :to="{ name: 'layaway-new' }"

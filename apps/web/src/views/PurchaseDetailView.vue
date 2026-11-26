@@ -17,6 +17,7 @@ import Textarea from 'primevue/textarea';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import { timeLabel } from '../master-data/field-types';
 import {
   failureMessage,
@@ -155,7 +156,14 @@ async function apply() {
           : await reverseSupplierPayment(current.id, selectedPayment.value, verified.data.reason);
     }
     open.value = false;
-    toast.add({ severity: 'success', summary: 'Compra actualizada', life: 3200 });
+    toast.add({
+      severity: 'success',
+      summary:
+        action.value === 'receive'
+          ? 'Compra recibida y existencias actualizadas'
+          : 'Compra actualizada',
+      life: 3200,
+    });
   } catch (failure) {
     formError.value = failureMessage(failure, 'No se pudo registrar la operación.');
   } finally {
@@ -179,7 +187,7 @@ onMounted(load);
     <template v-else-if="order">
       <header class="module-heading">
         <div>
-          <h1>{{ order.reference || 'Detalle de compra' }}</h1>
+          <PageHeading :title="order.reference || 'Detalle de compra'" />
           <p>{{ order.supplierName }} · {{ timeLabel(order.documentAt) }}</p>
         </div>
         <div class="procurement-actions">

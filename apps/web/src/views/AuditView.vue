@@ -9,6 +9,7 @@ import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import { onMounted, ref } from 'vue';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import { timeLabel } from '../master-data/field-types';
 import { getAudit } from '../master-data/service';
 import { usePagedList } from '../master-data/usePagedList';
@@ -60,7 +61,7 @@ onMounted(() => void load());
 
 <template>
   <AppShell>
-    <header class="module-heading"><h1>Auditoría</h1></header>
+    <header class="module-heading"><PageHeading title="Auditoría" /></header>
     <section class="records-panel" aria-label="Registro de auditoría">
       <form class="records-toolbar" @submit.prevent="submitSearch">
         <div class="records-search">

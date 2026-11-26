@@ -8,6 +8,7 @@ import { onMounted, ref } from 'vue';
 import { correctionLabel } from '../after-sale/form';
 import { getCorrections } from '../after-sale/service';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import { timeLabel } from '../master-data/field-types';
 import { usePagedList } from '../master-data/usePagedList';
@@ -28,7 +29,7 @@ onMounted(() => void load(filters.value));
   <AppShell>
     <SectionLinks />
     <header class="module-heading">
-      <h1>Cambios y devoluciones</h1>
+      <PageHeading title="Cambios y devoluciones" />
       <RouterLink :to="{ name: 'sales' }" class="p-button p-component p-button-outlined">
         <i class="pi pi-search" aria-hidden="true" /> Buscar venta original
       </RouterLink>

@@ -9,6 +9,7 @@ import { onMounted, ref } from 'vue';
 import type { z } from 'zod';
 import { ApiRequestError } from '../api';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import { getRoles, putFinancialPermissions } from '../master-data/service';
 import { useSessionStore } from '../stores/session';
@@ -83,7 +84,7 @@ onMounted(load);
     <SectionLinks />
     <header class="module-heading">
       <div>
-        <h1>Roles y acceso</h1>
+        <PageHeading title="Roles y acceso" />
         <p>Configura quién puede consultar costos y utilidad.</p>
       </div>
     </header>

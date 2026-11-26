@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { contactInput, purchaseInput } from '@max-sport/shared';
+import { contactInput, purchaseInput, variantRecord } from '@max-sport/shared';
 import type { PurchaseInput, PurchasePreview } from '@max-sport/shared';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
@@ -8,13 +8,14 @@ import Message from 'primevue/message';
 import Textarea from 'primevue/textarea';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import { browserTimeZone, localDateInput } from '../master-data/field-types';
 import type { Field, FieldValue, FormValues } from '../master-data/field-types';
 import LookupSelect from '../master-data/LookupSelect.vue';
 import RecordFields from '../master-data/RecordFields.vue';
-import { saveRecord } from '../master-data/service';
+import { findRecord, saveRecord } from '../master-data/service';
 import {
   asDate,
   createGroup,
@@ -33,8 +34,10 @@ import {
 import SizeMatrix from '../purchasing/SizeMatrix.vue';
 import { useSessionStore } from '../stores/session';
 
-const props = defineProps<{ id?: string; fromInventory?: boolean }>();
+const props = defineProps<{ id?: string; variantId?: string }>();
 const router = useRouter();
+const route = useRoute();
+const fromPurchases = computed(() => route.query.desde === 'compras');
 const session = useSessionStore();
 const toast = useToast();
 const draft = reactive({
@@ -51,7 +54,11 @@ const revision = ref(0);
 const preview = ref<PurchasePreview>();
 const error = ref('');
 const loadError = ref('');
-const loading = ref(Boolean(props.id));
+const loading = ref(Boolean(props.id || props.variantId));
+const restock = ref<ReturnType<typeof variantRecord.parse>>();
+const restockLine = computed(() =>
+  draft.groups[0]?.rows.find((line) => line.size === restock.value?.size),
+);
 const active = ref<'preview' | 'save' | 'quote'>();
 const currency = computed(() => (typeof draft.currencyCode === 'string' ? draft.currencyCode : ''));
 const supplierOpen = ref(false);
@@ -80,10 +87,15 @@ watch(payload, () => {
 });
 
 async function load() {
-  if (!props.id) return;
+  if (!props.id && !props.variantId) return;
   loading.value = true;
   loadError.value = '';
   try {
+    if (props.variantId) {
+      await loadRestock(props.variantId);
+      return;
+    }
+    if (!props.id) return;
     const current = await getPurchase(props.id);
     const data = current.draft;
     if (!data) {
@@ -102,10 +114,33 @@ async function load() {
     });
     revision.value = current.revision;
   } catch (failure) {
-    loadError.value = failureMessage(failure, 'No se pudo abrir el borrador.');
+    loadError.value = failureMessage(
+      failure,
+      props.variantId ? 'No se pudo abrir la talla para reponer.' : 'No se pudo abrir el borrador.',
+    );
   } finally {
     loading.value = false;
   }
+}
+
+async function loadRestock(variantId: string) {
+  const id = variantRecord.shape.id.safeParse(variantId);
+  if (!id.success) {
+    loadError.value = 'La talla indicada no es válida.';
+    return;
+  }
+  const item = variantRecord.parse(await findRecord('variants', id.data));
+  const group = createGroup();
+  const line = group.rows.find(({ size }) => size === item.size);
+  if (!item.active || !line) {
+    loadError.value = 'La talla seleccionada no está disponible para reponer.';
+    return;
+  }
+  group.modelId = item.modelId;
+  group.color = item.color ?? '';
+  Object.assign(line, { selected: true, quantity: '', price: item.salePriceUsd });
+  draft.groups = [group];
+  restock.value = item;
 }
 
 function validated(): PurchaseInput | undefined {
@@ -219,21 +254,23 @@ onMounted(load);
       :to="
         id
           ? { name: 'purchase-detail', params: { id } }
-          : { name: fromInventory ? 'inventory' : 'purchases' }
+          : { name: fromPurchases ? 'purchases' : 'inventory' }
       "
       class="inline-action procurement-back"
     >
-      {{ id ? 'Volver al detalle' : fromInventory ? 'Volver a existencias' : 'Volver a compras' }}
+      {{ id ? 'Volver al detalle' : fromPurchases ? 'Volver a compras' : 'Volver a existencias' }}
     </RouterLink>
     <header class="module-heading">
       <div>
-        <h1>
-          {{ id ? 'Editar borrador' : fromInventory ? 'Agregar existencia' : 'Nueva compra' }}
-        </h1>
-        <p v-if="fromInventory">
-          Elige el proveedor, la marca y el modelo. Marca las tallas e indica cuántos pares
-          llegaron.
-        </p>
+        <PageHeading
+          :title="id ? 'Editar borrador' : variantId ? 'Agregar más pares' : 'Agregar existencia'"
+          :help="
+            variantId
+              ? 'El producto y la talla ya están seleccionados. La entrada conserva su código y queda registrada en Compras.'
+              : undefined
+          "
+        />
+        <p v-if="!id">Al confirmar la recepción, sumas los pares y registras la compra.</p>
       </div>
     </header>
     <p v-if="loading" class="records-empty" role="status">Cargando compra…</p>
@@ -341,26 +378,72 @@ onMounted(load);
           </div>
         </details>
       </section>
-      <SizeMatrix
-        v-for="(group, index) in draft.groups"
-        :key="group.key"
-        :model-value="group"
-        :index="index"
-        :currency="currency"
-        @update:model-value="draft.groups[index] = $event"
-        :can-remove="draft.groups.length > 1"
-        :rates="preview?.lines"
-        @remove="draft.groups.splice(index, 1)"
-      />
-      <Button
-        v-if="draft.groups.length < 20"
-        type="button"
-        label="Agregar otro modelo"
-        icon="pi pi-plus"
-        outlined
-        class="procurement-inline"
-        @click="draft.groups.push(createGroup())"
-      />
+      <section
+        v-if="restock && restockLine"
+        class="records-panel procurement-card"
+        aria-labelledby="restock-product"
+      >
+        <h2 id="restock-product">{{ restock.model.brand.name }} · {{ restock.model.name }}</h2>
+        <p class="record-hint">
+          Talla {{ restock.size }}<template v-if="restock.color"> · {{ restock.color }}</template>
+        </p>
+        <div class="record-fields procurement-fields">
+          <div class="record-field">
+            <label for="restock-quantity">Pares recibidos</label>
+            <InputText
+              id="restock-quantity"
+              v-model="restockLine.quantity"
+              inputmode="numeric"
+              maxlength="6"
+              fluid
+            />
+          </div>
+          <div class="record-field">
+            <label for="restock-cost">Costo por par en {{ currency }}</label>
+            <InputText
+              id="restock-cost"
+              v-model="restockLine.cost"
+              inputmode="decimal"
+              maxlength="25"
+              fluid
+            />
+          </div>
+          <div class="record-field">
+            <label for="restock-price">Precio de venta en USD</label>
+            <InputText
+              id="restock-price"
+              v-model="restockLine.price"
+              :readonly="!session.can('variants.update')"
+              inputmode="decimal"
+              maxlength="19"
+              fluid
+            />
+            <small class="record-hint">Se cargó el precio que ya tiene esta talla.</small>
+          </div>
+        </div>
+      </section>
+      <template v-else>
+        <SizeMatrix
+          v-for="(group, index) in draft.groups"
+          :key="group.key"
+          :model-value="group"
+          :index="index"
+          :currency="currency"
+          @update:model-value="draft.groups[index] = $event"
+          :can-remove="draft.groups.length > 1"
+          :rates="preview?.lines"
+          @remove="draft.groups.splice(index, 1)"
+        />
+        <Button
+          v-if="draft.groups.length < 20"
+          type="button"
+          label="Agregar otro modelo"
+          icon="pi pi-plus"
+          outlined
+          class="procurement-inline"
+          @click="draft.groups.push(createGroup())"
+        />
+      </template>
       <section class="records-panel procurement-card" aria-labelledby="purchase-preview">
         <div class="procurement-title-line">
           <h2 id="purchase-preview">Vista previa</h2>
@@ -379,7 +462,7 @@ onMounted(load);
         <div class="procurement-actions">
           <Button
             type="submit"
-            :label="fromInventory ? 'Continuar a recepción' : 'Guardar borrador'"
+            :label="id ? 'Guardar borrador' : 'Continuar a recepción'"
             icon="pi pi-save"
             :loading="active === 'save'"
             :disabled="Boolean(active)"

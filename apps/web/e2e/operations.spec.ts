@@ -335,6 +335,13 @@ test('concilia una compra COP, una venta mixta, un apartado y una devolución', 
   await page.goto('/reportes?' + new URLSearchParams(scoped).toString());
   await expect(page.getByRole('heading', { name: 'Reportes', exact: true })).toBeVisible();
   await expect(page.getByText('95,00 USD', { exact: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Ayuda sobre el reporte de ventas' }).hover();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip).toContainText('Abre Ver desglose');
+  await tooltip.hover();
+  await expect(tooltip).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(tooltip).toBeHidden();
   const reportDownload = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Descargar CSV' }).click();
   const csv = await reportDownload;

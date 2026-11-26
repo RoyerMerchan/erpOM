@@ -13,6 +13,7 @@ import {
   getCatalogVersions,
 } from '../analytics/service';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import { financeMoment } from '../finance/form';
 import type { FieldValue } from '../master-data/field-types';
 import LookupSelect from '../master-data/LookupSelect.vue';
@@ -140,7 +141,7 @@ onMounted(() => {
   <AppShell>
     <header class="module-heading">
       <div>
-        <h1>Catálogo PDF</h1>
+        <PageHeading title="Catálogo PDF" />
         <p>Modelos, tallas disponibles y precios para compartir con clientes.</p>
       </div>
     </header>

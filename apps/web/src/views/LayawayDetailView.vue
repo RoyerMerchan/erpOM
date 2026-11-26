@@ -15,6 +15,7 @@ import { paymentInputs } from '../after-sale/form';
 import { closeLayaway, deliverLayaway, getLayaway, payLayaway } from '../after-sale/service';
 import TenderList from '../after-sale/TenderList.vue';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import { timeLabel } from '../master-data/field-types';
 import { failureMessage, formatMoney, operationKey } from '../purchasing/form';
 import { tenderDraft } from '../sales/form';
@@ -124,7 +125,7 @@ onMounted(() => void load());
     <header class="module-heading">
       <div>
         <RouterLink :to="{ name: 'layaways' }" class="inline-action">Volver a apartados</RouterLink>
-        <h1>{{ record ? 'Apartado ' + record.number : 'Detalle de apartado' }}</h1>
+        <PageHeading :title="record ? 'Apartado ' + record.number : 'Detalle de apartado'" />
       </div>
       <RouterLink
         v-if="record?.saleId"

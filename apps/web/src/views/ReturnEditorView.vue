@@ -15,6 +15,7 @@ import StockCart from '../after-sale/StockCart.vue';
 import TenderList from '../after-sale/TenderList.vue';
 import { ApiRequestError } from '../api';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import { failureMessage, formatMoney, operationKey } from '../purchasing/form';
 import type { TenderDraft } from '../sales/form';
 import { getSale } from '../sales/service';
@@ -186,7 +187,7 @@ onMounted(() => void load());
         <RouterLink :to="{ name: 'sale-detail', params: { id: saleId } }" class="inline-action"
           >Volver al comprobante</RouterLink
         >
-        <h1>Cambio o devolución</h1>
+        <PageHeading title="Cambio o devolución" />
         <p v-if="original">{{ original.receiptNumber }} · {{ original.customerName }}</p>
       </div>
     </header>

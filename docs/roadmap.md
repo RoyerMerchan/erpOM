@@ -109,3 +109,10 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - Las vistas previas de venta, cambios, devoluciones y movimientos manuales ocultan los importes cuando cambian sus datos. Un reintento de apartado después de perder la respuesta usa la misma solicitud y clave de operación.
 - En la inspección de producción, la base tenía cero variantes, compras, ventas, apartados y movimientos de caja. La consulta fue de solo lectura. Las pruebas de integración se ejecutaron en una base de QA con las nueve migraciones y pasaron los 31 casos.
 - Pasaron lint, compilación, 28 pruebas unitarias y de humo y las dos pruebas de Edge. La prueba móvil recuperó el mismo apartado después de perder la respuesta del servidor. La prueba de operaciones verificó que el POS ocultara importes previos al cambiar un cobro y concilió USD 95 de ventas netas, USD 41 de costo de ventas, USD 12 de gastos y USD 42 de ganancia estimada. La consulta de consistencia en QA no encontró diferencias de inventario, caja, pagos a proveedores o abonos de apartados.
+
+## Ayuda y recepción de mercancía
+
+- Los títulos de los apartados tienen ayuda por ratón, teclado y toque. En Reportes la explicación sigue la pestaña seleccionada.
+- Inventario y Compras abren el mismo formulario. En el detalle de existencias, **Agregar más pares** carga la talla y el precio de venta. Al confirmar se registra la recepción en Compras y se suman los pares en Inventario.
+- Pasaron `pnpm lint`, las 28 pruebas de `pnpm test` y `pnpm build`. En Edge y la base dedicada de QA se confirmó que una reposición de dos pares sobre un par existente conservó el SKU, dejó tres pares disponibles y registró una compra nueva.
+- A 360 px se verificaron la ayuda, la compra de dos tallas y los saldos resultantes. La prueba móvil completa quedó pendiente al agotar el tiempo de espera del selector de clientes en Apartados.

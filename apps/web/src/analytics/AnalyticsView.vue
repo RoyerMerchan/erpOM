@@ -6,6 +6,8 @@ import Message from 'primevue/message';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
+import { reportHelp } from '../page-help';
 import { failureMessage } from '../purchasing/form';
 import { useSessionStore } from '../stores/session';
 import {
@@ -114,7 +116,11 @@ onBeforeUnmount(() => {
   <AppShell>
     <header class="module-heading analytics-heading" :class="{ 'analytics-hero': dashboard }">
       <div>
-        <h1>{{ dashboard ? 'Panel de operaciones' : 'Reportes' }}</h1>
+        <PageHeading
+          :title="dashboard ? 'Panel de operaciones' : 'Reportes'"
+          :topic="section ? 'el reporte de ' + titles[section].toLowerCase() : undefined"
+          :help="section ? reportHelp[section] : undefined"
+        />
         <dl v-if="period" class="analytics-periods">
           <div>
             <dt>Período actual</dt>

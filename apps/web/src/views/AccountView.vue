@@ -7,6 +7,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiRequestError, noContent } from '../api';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import type { Field, FormValues } from '../master-data/field-types';
 import RecordFields from '../master-data/RecordFields.vue';
 import { useSessionStore } from '../stores/session';
@@ -83,7 +84,7 @@ async function submit() {
 <template>
   <AppShell>
     <header class="module-heading">
-      <h1>Mi cuenta</h1>
+      <PageHeading title="Mi cuenta" />
       <p v-if="session.user">
         Usuario <strong>{{ session.user.username }}</strong>
       </p>

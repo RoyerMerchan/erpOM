@@ -9,6 +9,7 @@ import Message from 'primevue/message';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import FinanceCategoryManager from '../finance/FinanceCategoryManager.vue';
 import FinanceCategorySelect from '../finance/FinanceCategorySelect.vue';
@@ -97,7 +98,7 @@ watch(managing, (visible) => {
     <SectionLinks />
     <header class="module-heading">
       <div>
-        <h1>{{ heading }}</h1>
+        <PageHeading :title="heading" />
         <p v-if="view === 'all'">Consulta el dinero que entró o salió de tus cuentas.</p>
         <p v-if="titleDate">{{ titleDate }}</p>
       </div>

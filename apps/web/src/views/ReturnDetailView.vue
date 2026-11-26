@@ -6,6 +6,7 @@ import { onMounted, ref } from 'vue';
 import { correctionLabel } from '../after-sale/form';
 import { getCorrection } from '../after-sale/service';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import { timeLabel } from '../master-data/field-types';
 import { failureMessage, formatMoney } from '../purchasing/form';
@@ -32,11 +33,11 @@ onMounted(() => void load());
         <RouterLink :to="{ name: 'returns' }" class="inline-action"
           >Volver al historial de cambios y devoluciones</RouterLink
         >
-        <h1>
-          {{
+        <PageHeading
+          :title="
             record ? correctionLabel(record.kind) + ' ' + record.number : 'Detalle del movimiento'
-          }}
-        </h1>
+          "
+        />
       </div>
     </header>
     <Message v-if="error" severity="error">

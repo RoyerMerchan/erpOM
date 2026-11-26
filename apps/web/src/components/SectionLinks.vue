@@ -10,6 +10,7 @@ const links = computed(() =>
   sections.filter(
     (section) =>
       section.area === route.meta.area &&
+      section.showInSectionLinks !== false &&
       session.can(section.permission) &&
       (!section.requires || session.can(section.requires)),
   ),

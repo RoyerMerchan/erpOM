@@ -10,6 +10,7 @@ import { computed, onMounted, ref } from 'vue';
 import type { z } from 'zod';
 import { ApiRequestError } from '../api';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import type { Field, FormValues } from '../master-data/field-types';
 import RecordFields from '../master-data/RecordFields.vue';
@@ -106,7 +107,7 @@ onMounted(load);
 <template>
   <AppShell>
     <SectionLinks />
-    <header class="module-heading"><h1>Monedas</h1></header>
+    <header class="module-heading"><PageHeading title="Monedas" /></header>
     <p v-if="loading" class="records-empty" role="status">Cargando monedas…</p>
     <Message v-else-if="error" severity="error"
       >{{ error }}

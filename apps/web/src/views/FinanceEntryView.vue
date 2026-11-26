@@ -9,6 +9,7 @@ import Textarea from 'primevue/textarea';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import { financeMoment } from '../finance/form';
 import { getFinanceEntry, reverseFinanceEntry } from '../finance/service';
 import { browserTimeZone } from '../master-data/field-types';
@@ -91,11 +92,11 @@ onMounted(() => void load());
         <RouterLink class="inline-action" :to="{ name: 'finance-movements' }"
           >Volver a movimientos</RouterLink
         >
-        <h1>
-          {{
+        <PageHeading
+          :title="
             record ? (record.reversesId ? 'Reverso ' : '') + record.number : 'Detalle financiero'
-          }}
-        </h1>
+          "
+        />
       </div>
       <Button
         v-if="mayReverse"

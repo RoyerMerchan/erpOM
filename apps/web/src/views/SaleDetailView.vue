@@ -5,6 +5,7 @@ import Message from 'primevue/message';
 import { onMounted, ref } from 'vue';
 import { correctionLabel } from '../after-sale/form';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import { timeLabel } from '../master-data/field-types';
 import { failureMessage, formatMoney } from '../purchasing/form';
@@ -100,7 +101,7 @@ onMounted(() => void load());
       <header class="module-heading">
         <div>
           <RouterLink class="inline-action" :to="{ name: 'sales' }">Volver al historial</RouterLink>
-          <h1>{{ sale ? 'Venta ' + sale.receiptNumber : 'Detalle de venta' }}</h1>
+          <PageHeading :title="sale ? 'Venta ' + sale.receiptNumber : 'Detalle de venta'" />
         </div>
         <div v-if="sale" class="sale-actions">
           <Button

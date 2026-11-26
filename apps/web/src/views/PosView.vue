@@ -12,6 +12,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiRequestError } from '../api';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import type { FieldValue } from '../master-data/field-types';
 import LookupSelect from '../master-data/LookupSelect.vue';
@@ -234,7 +235,7 @@ onMounted(() => void fetchProducts());
   <AppShell>
     <SectionLinks />
     <header class="module-heading">
-      <h1>Punto de venta</h1>
+      <PageHeading title="Punto de venta" />
     </header>
 
     <div class="pos-layout">

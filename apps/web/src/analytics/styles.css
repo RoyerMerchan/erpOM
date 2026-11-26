@@ -3,6 +3,8 @@
 }
 
 .analytics-hero {
+  --context-help-color: #e2edff;
+  --context-help-highlight: #ffffff26;
   min-width: 0;
   padding: clamp(1.15rem, 3vw, 2rem);
   border: 1px solid #254684;

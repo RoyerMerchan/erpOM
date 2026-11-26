@@ -68,10 +68,10 @@ export function createAppRouter(pinia: Pinia) {
         meta: { requiresSession: true, permission: 'inventory.read', area: 'products' },
       },
       {
-        path: '/inventario/agregar',
+        path: '/inventario/agregar/:variantId?',
         name: 'inventory-add',
         component: () => import('./views/PurchaseEditorView.vue'),
-        props: { fromInventory: true },
+        props: true,
         meta: {
           requiresSession: true,
           permission: 'purchases.create',
@@ -100,13 +100,10 @@ export function createAppRouter(pinia: Pinia) {
       {
         path: '/compras/nueva',
         name: 'purchase-new',
-        component: () => import('./views/PurchaseEditorView.vue'),
-        meta: {
-          requiresSession: true,
-          permission: 'purchases.create',
-          extraPermission: 'costs.read',
-          area: 'purchases',
-        },
+        redirect: (route) => ({
+          name: 'inventory-add',
+          query: { ...route.query, desde: 'compras' },
+        }),
       },
       {
         path: '/compras/:id/editar',

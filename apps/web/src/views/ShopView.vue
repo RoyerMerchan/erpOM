@@ -6,6 +6,7 @@ import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 import { ApiRequestError } from '../api';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import { formPayload } from '../master-data/field-types';
 import type { Field, FormValues } from '../master-data/field-types';
@@ -92,7 +93,7 @@ onMounted(load);
 <template>
   <AppShell>
     <SectionLinks />
-    <header class="module-heading"><h1>Configuración de tienda</h1></header>
+    <header class="module-heading"><PageHeading title="Configuración de tienda" /></header>
     <section class="records-panel settings-card" aria-label="Datos de la tienda">
       <p v-if="loading" class="records-empty" role="status">Cargando configuración…</p>
       <Message v-else-if="loadError" severity="error">

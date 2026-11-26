@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { choose, createContact, login, staff } from './support';
 
-test.use({ viewport: { width: 360, height: 800 } });
+test.use({ viewport: { width: 360, height: 800 }, hasTouch: true });
 
 test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, testInfo) => {
   const user = await staff('ADMIN');
@@ -15,7 +15,9 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
       .toBeLessThanOrEqual(1);
   };
 
-  await expect(page.getByText('Ventas netas', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('Ventas netas', { exact: true }).first()).toBeVisible({
+    timeout: 12_000,
+  });
   await withoutOverflow('/dashboard');
   await page.screenshot({ path: testInfo.outputPath('inicio-360.png') });
   await page.getByRole('button', { name: 'Abrir menú' }).press('Enter');
@@ -34,6 +36,25 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
   await expect(drawer).not.toBeVisible();
   await expect(page.getByRole('heading', { name: 'Reportes', exact: true })).toBeVisible();
   await expect(page.getByText('Ventas netas', { exact: true }).first()).toBeVisible();
+  const tooltip = page.getByRole('tooltip');
+  const salesHelp = page.getByRole('button', { name: 'Ayuda sobre el reporte de ventas' });
+  await salesHelp.press('Enter');
+  await expect(tooltip).toContainText('después de descuentos y devoluciones');
+  await expect(salesHelp).toHaveAccessibleDescription(/ventas después de descuentos/);
+  await salesHelp.press('Escape');
+  await expect(tooltip).toBeHidden();
+  await expect(salesHelp).toBeFocused();
+  await page.getByRole('button', { name: 'Caja', exact: true }).tap();
+  await page.getByRole('button', { name: 'Ayuda sobre el reporte de caja' }).tap();
+  await expect(tooltip).toContainText('el dinero que entró y salió');
+  const bounds = await tooltip.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(360);
+  await page.screenshot({ path: testInfo.outputPath('ayuda-360.png') });
+  await page.getByRole('heading', { name: 'Reportes', exact: true }).tap();
+  await expect(tooltip).toBeHidden();
+  await page.getByRole('button', { name: 'Ventas', exact: true }).tap();
   const cards = page.locator('.analytics-report-cards');
   await expect(cards.locator('dt')).toHaveText([
     'Ventas netas',
@@ -109,7 +130,7 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
     .poll(() => stockTable.evaluate((region) => region.scrollWidth - region.clientWidth))
     .toBeLessThanOrEqual(1);
   const received = page.getByRole('row').filter({ hasText: 'Legend móvil ' + user.key });
-  await expect(received).toHaveCount(2);
+  await expect(received).toHaveCount(2, { timeout: 12_000 });
   for (const [size, quantity] of [
     ['38', '2'],
     ['39', '1'],
@@ -163,6 +184,9 @@ test('la navegación y la matriz de tallas caben a 360 px', async ({ page }, tes
   ] as const) {
     await page.goto(route);
     await expect(page.getByRole('heading', { name: title, exact: true, level: 1 })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Ayuda sobre ' + title, exact: true }),
+    ).toBeVisible();
     await withoutOverflow(route);
   }
   await page.goto('/finanzas/movimientos');

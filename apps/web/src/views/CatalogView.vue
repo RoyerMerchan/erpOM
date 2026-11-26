@@ -12,8 +12,10 @@ import Tag from 'primevue/tag';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { ApiRequestError } from '../api';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import FinanceAccountBalances from '../finance/FinanceAccountBalances.vue';
 import { formPayload, textField, timeLabel } from '../master-data/field-types';
@@ -32,8 +34,11 @@ const confirm = useConfirm();
 const catalog = computed(() => catalogs[props.resource]);
 const list = usePagedList((filters) => listRecords(props.resource, filters));
 const { items, total, page, limit, loading, error } = list;
-const search = ref('');
-const searchApplied = ref('');
+const query = useRoute().query.q;
+const search = ref(
+  props.resource === 'variants' && typeof query === 'string' ? query.slice(0, 120) : '',
+);
+const searchApplied = ref(search.value.trim());
 const status = ref('all');
 const currency = ref('');
 const balancesRevision = ref(0);
@@ -185,7 +190,7 @@ onMounted(() => void load());
     <SectionLinks />
     <header class="module-heading">
       <div>
-        <h1>{{ catalog.title }}</h1>
+        <PageHeading :title="catalog.title" />
         <p v-if="resource === 'rates'">1 USD = X unidades de la moneda seleccionada.</p>
       </div>
       <Button

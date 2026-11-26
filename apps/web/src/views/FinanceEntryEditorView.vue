@@ -10,6 +10,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiRequestError } from '../api';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import FinanceCategoryManager from '../finance/FinanceCategoryManager.vue';
 import FinanceCategorySelect from '../finance/FinanceCategorySelect.vue';
 import { confirmFinanceEntry, previewFinanceEntry } from '../finance/service';
@@ -140,7 +141,7 @@ function requestConfirmation() {
         <RouterLink class="inline-action" :to="{ name: 'finance-income' }"
           >Volver a ingresos y egresos</RouterLink
         >
-        <h1>Registrar movimiento</h1>
+        <PageHeading title="Registrar movimiento" />
       </div>
     </header>
     <div class="finance-two-up">

@@ -4,6 +4,7 @@ import Button from 'primevue/button';
 import Message from 'primevue/message';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import FinanceBalances from '../finance/FinanceBalances.vue';
 import FinanceFilters from '../finance/FinanceFilters.vue';
@@ -111,7 +112,7 @@ onBeforeUnmount(() => {
       <div class="finance-screen-only"><SectionLinks /></div>
       <header class="module-heading">
         <div>
-          <h1>{{ heading }}</h1>
+          <PageHeading :title="heading" />
           <p v-if="dates">{{ dates }}</p>
         </div>
         <div class="sale-actions finance-screen-only">

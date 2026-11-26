@@ -6,6 +6,7 @@ import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import { onMounted, ref } from 'vue';
 import AppShell from '../components/AppShell.vue';
+import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import { financeMoment } from '../finance/form';
 import { getFinanceDebts } from '../finance/service';
@@ -40,7 +41,7 @@ onMounted(() => void request());
     <SectionLinks />
     <header class="module-heading">
       <div>
-        <h1>{{ payables ? 'Cuentas por pagar' : 'Cuentas por cobrar' }}</h1>
+        <PageHeading :title="payables ? 'Cuentas por pagar' : 'Cuentas por cobrar'" />
         <p>
           {{
             payables
