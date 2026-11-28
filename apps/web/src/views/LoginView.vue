@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { loginSchema } from '@max-sport/shared';
 import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import { nextTick, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiRequestError } from '../api';
+import AccessField from '../components/AccessField.vue';
 import { useSessionStore } from '../stores/session';
 import './login.css';
 
@@ -56,19 +56,29 @@ async function submit() {
 <template>
   <main class="login-shell">
     <div class="login-frame">
-      <aside class="login-brand">
+      <div class="login-brand">
+        <div class="login-waves" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
         <div class="login-logo">
           <img :src="loginLogoUrl" alt="OM Store" width="640" height="640" />
         </div>
-        <p class="login-statement">Inventario y <span>punto de venta</span></p>
-      </aside>
+        <div class="login-brand-copy">
+          <p class="login-statement">Controla tu negocio <span>con claridad</span></p>
+          <p class="login-description">
+            Gestiona inventario, ventas y operación desde un solo lugar.
+          </p>
+        </div>
+      </div>
 
       <section class="login-main" aria-labelledby="login-heading">
         <div class="login-form-wrap">
           <header class="login-form-header">
             <div class="login-product">
               <span class="login-product-icon" aria-hidden="true">
-                <i class="pi pi-sign-in"></i>
+                <span class="login-product-layers"></span>
               </span>
               <span>OM ERP</span>
             </div>
@@ -78,55 +88,35 @@ async function submit() {
           <Message
             v-if="requestError || session.restoreError"
             severity="error"
+            icon="pi pi-exclamation-circle"
             class="login-message"
           >
             {{ requestError || session.restoreError }}
           </Message>
 
           <form class="login-form" :aria-busy="submitting" novalidate @submit.prevent="submit">
-            <div class="access-field">
-              <label for="username">Usuario</label>
-              <div class="login-control">
-                <i class="pi pi-user login-field-icon" aria-hidden="true"></i>
-                <InputText
-                  id="username"
-                  v-model="form.username"
-                  name="username"
-                  autocomplete="username"
-                  autocapitalize="none"
-                  spellcheck="false"
-                  required
-                  fluid
-                  :invalid="Boolean(fieldErrors.username)"
-                  :aria-describedby="fieldErrors.username ? 'username-error' : undefined"
-                  :aria-invalid="Boolean(fieldErrors.username)"
-                  @update:model-value="clearError('username')"
-                />
-              </div>
-              <p v-if="fieldErrors.username" id="username-error" class="field-error">
-                {{ fieldErrors.username }}
-              </p>
-            </div>
-
-            <div class="access-field">
-              <label for="password">Contraseña</label>
-              <div class="login-control login-password">
-                <i class="pi pi-lock login-field-icon" aria-hidden="true"></i>
-                <InputText
-                  id="password"
-                  v-model="form.password"
-                  :type="passwordVisible ? 'text' : 'password'"
-                  name="password"
-                  autocomplete="current-password"
-                  autocapitalize="none"
-                  spellcheck="false"
-                  required
-                  fluid
-                  :invalid="Boolean(fieldErrors.password)"
-                  :aria-describedby="fieldErrors.password ? 'password-error' : undefined"
-                  :aria-invalid="Boolean(fieldErrors.password)"
-                  @update:model-value="clearError('password')"
-                />
+            <AccessField
+              id="username"
+              v-model="form.username"
+              label="Usuario"
+              icon="pi-id-card"
+              placeholder="Ingresa tu usuario"
+              autocomplete="username"
+              :error="fieldErrors.username"
+              @update:model-value="clearError('username')"
+            />
+            <AccessField
+              id="password"
+              v-model="form.password"
+              label="Clave de acceso"
+              icon="pi-key"
+              placeholder="Ingresa tu contraseña"
+              autocomplete="current-password"
+              :type="passwordVisible ? 'text' : 'password'"
+              :error="fieldErrors.password"
+              @update:model-value="clearError('password')"
+            >
+              <template #action>
                 <button
                   type="button"
                   class="login-mask-toggle"
@@ -140,17 +130,15 @@ async function submit() {
                     aria-hidden="true"
                   ></i>
                 </button>
-              </div>
-              <p v-if="fieldErrors.password" id="password-error" class="field-error">
-                {{ fieldErrors.password }}
-              </p>
-            </div>
+              </template>
+            </AccessField>
 
             <Button
               type="submit"
-              :label="submitting ? 'Ingresando…' : 'Entrar'"
+              :label="submitting ? 'Verificando credenciales...' : 'Acceder al sistema'"
               icon="pi pi-arrow-right"
               icon-pos="right"
+              loading-icon="pi pi-spinner pi-spin"
               class="access-submit"
               :loading="submitting"
               :disabled="submitting"
@@ -158,8 +146,11 @@ async function submit() {
           </form>
 
           <p class="login-help">
-            <i class="pi pi-info-circle" aria-hidden="true"></i>
-            <span>Si necesitas ayuda con tu cuenta, contacta a tu administrador.</span>
+            <i class="pi pi-headphones" aria-hidden="true"></i>
+            <span>
+              <strong>¿Necesitas ayuda?</strong>
+              Contacta al administrador del sistema.
+            </span>
           </p>
         </div>
       </section>

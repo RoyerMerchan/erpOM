@@ -42,9 +42,9 @@ export async function login(page: Page, user: Awaited<ReturnType<typeof staff>>)
     .poll(() => logo.evaluate((img) => (img as HTMLImageElement).naturalWidth))
     .toBeGreaterThan(0);
   await expect(page.locator('.login-brand img')).toHaveCount(1);
-  await expect(page.locator('.login-statement')).toHaveCSS('color', 'rgb(255, 255, 255)');
+  await expect(page.locator('.login-statement')).toHaveCSS('color', 'rgb(241, 245, 249)');
   await page.getByLabel('Usuario', { exact: true }).fill(user.username);
-  const password = page.getByLabel('Contraseña', { exact: true });
+  const password = page.getByLabel('Clave de acceso', { exact: true });
   await password.fill(user.password);
   await page.getByRole('button', { name: 'Mostrar contraseña' }).press('Space');
   await expect(password).toHaveAttribute('type', 'text');
@@ -52,7 +52,7 @@ export async function login(page: Page, user: Awaited<ReturnType<typeof staff>>)
   await expect(hidePassword).toBeFocused();
   await hidePassword.press('Enter');
   await expect(password).toHaveAttribute('type', 'password');
-  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await page.getByRole('button', { name: 'Acceder al sistema', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Panel de operaciones' })).toBeVisible({
     timeout: 15_000,
   });

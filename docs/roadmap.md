@@ -87,6 +87,7 @@ Trabajar en orden según [los prompts por fase](02_PROMPTS_POR_FASES.md). Cada p
 - El favicon usa el icono premium de OM ERP en PNG de 64 × 64 px con transparencia exterior. Edge solicitó y decodificó el icono y se comprobaron las esquinas transparentes. Pasaron `pnpm lint`, las 28 pruebas de `pnpm test` y `pnpm build`.
 - El acceso combina un fondo abstracto azul con el formulario adaptable de OM ERP. En Edge se revisaron las vistas a 1680 y 360 px, el foco en los campos inválidos y la preferencia de movimiento reducido. Pasaron `pnpm lint`, las 28 pruebas de `pnpm test`, `pnpm build` y la prueba móvil de Playwright, que incluye el control de contraseña por teclado.
 - Mi cuenta permite cambiar a una contraseña de al menos 6 caracteres. Las contraseñas temporales de administración requieren al menos 15. Pasaron lint, compilación, 28 pruebas unitarias y de humo y 30 de integración. La prueba de cambio de contraseña rechazó 5 caracteres y comprobó el inicio de sesión con 6 y la revocación de la sesión anterior.
+- El acceso usa una paleta oscura de grafito y azul acero, el logo de OM Store y campos reutilizables. En Edge se revisaron las vistas a 1672 y 360 px. La prueba de acceso con PostgreSQL de QA verificó el foco de los errores, la carga, el rechazo de una clave incorrecta, la visibilidad de la clave por teclado y el inicio y cierre de sesión. Pasaron TypeScript, `pnpm lint`, las 28 pruebas de `pnpm test` y `pnpm build`.
 
 ## Interfaz del panel de OM ERP
 
