@@ -249,7 +249,17 @@ export function editorFields(
       ];
     }
     if (resource === 'users' && field.key === 'temporaryPassword') {
-      return row.id === actorId ? [] : [{ ...field, required: false, omitEmpty: true }];
+      return row.id === actorId
+        ? []
+        : [
+            {
+              ...field,
+              label: 'Nueva contraseña temporal',
+              help: 'Completa este campo para restablecer el acceso. Al menos 15 caracteres. El usuario deberá cambiarla al entrar.',
+              required: false,
+              omitEmpty: true,
+            },
+          ];
     }
     return [field];
   });

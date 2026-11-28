@@ -6,6 +6,8 @@
 2. Registra proveedores, clientes cuando aplique, cuentas por moneda y tasas vigentes. Verifica la convención `1 USD = X unidades`. Revisa la tasa de cada importe distinto de USD en la vista previa antes de confirmar.
 3. En **Usuarios y roles**, asigna a cada persona un usuario y una contraseña temporal junto con su rol. Para entrar, cada operador completa **Usuario** y **Clave de acceso**. Puede consultar su usuario en **Mi cuenta** y contactar al administrador si tiene problemas de acceso.
 
+Para cambiar tu contraseña, abre **Mi cuenta** o edita tu propia ficha en **Usuarios y roles** y pulsa **Cambiar mi contraseña**. Escribe la contraseña actual y confirma la nueva. El cambio cierra tus sesiones. Para restablecer el acceso de otra persona, edita su ficha y completa **Nueva contraseña temporal**. Tendrá que cambiarla al entrar.
+
 ## Operación diaria
 
 El icono de información junto al título de cada apartado explica qué puedes hacer allí. Ábrelo con un toque, al pasar el ratón o al enfocar el botón con el teclado. Pulsa Escape o toca fuera para cerrarlo.

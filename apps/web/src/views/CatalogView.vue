@@ -11,10 +11,11 @@ import Select from 'primevue/select';
 import Tag from 'primevue/tag';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { ApiRequestError } from '../api';
 import AppShell from '../components/AppShell.vue';
+import ChangePasswordForm from '../components/ChangePasswordForm.vue';
 import PageHeading from '../components/PageHeading.vue';
 import SectionLinks from '../components/SectionLinks.vue';
 import FinanceAccountBalances from '../finance/FinanceAccountBalances.vue';
@@ -55,6 +56,7 @@ const statuses = [
 const editing = ref<ResourceRow | null>(null);
 const detail = ref<ResourceRow | null>(null);
 const editorVisible = ref(false);
+const editingPassword = ref(false);
 const detailVisible = ref(false);
 const draft = ref<FormValues>({});
 const fields = computed(() => editorFields(props.resource, editing.value, session.user?.id));
@@ -66,6 +68,10 @@ const moneyFilter = computed(() => ['rates', 'accounts'].includes(props.resource
 const mayCreate = computed(() => session.can(resourcePermission(props.resource, 'create')));
 const mayUpdate = computed(() => session.can(resourcePermission(props.resource, 'update')));
 const mayArchive = computed(() => session.can(resourcePermission(props.resource, 'archive')));
+const editingOwnAccount = computed(
+  () =>
+    props.resource === 'users' && editing.value !== null && editing.value.id === session.user?.id,
+);
 const title = computed(() =>
   editing.value
     ? props.resource === 'rates'
@@ -91,11 +97,20 @@ function submitSearch() {
 }
 
 function openEditor(row: ResourceRow | null) {
+  editingPassword.value = false;
   editing.value = row;
   draft.value = initialForm(fields.value, row);
   formErrors.value = {};
   saveError.value = '';
   editorVisible.value = true;
+}
+
+async function showPasswordEditor(visible: boolean) {
+  editingPassword.value = visible;
+  await nextTick();
+  document
+    .getElementById(visible ? 'editor-password-currentPassword' : 'record-change-password')
+    ?.focus();
 }
 
 function openDetail(row: ResourceRow) {
@@ -315,7 +330,7 @@ onMounted(() => void load());
 
     <Dialog
       v-model:visible="editorVisible"
-      :header="title"
+      :header="editingPassword ? 'Cambiar mi contraseña' : title"
       modal
       :draggable="false"
       :closable="!saving"
@@ -327,7 +342,17 @@ onMounted(() => void load());
         {{ textField(editing, 'currencyCode') }}. Al guardar, se creará una versión nueva y se
         archivará la anterior.
       </p>
-      <form novalidate class="record-form" @submit.prevent="submit">
+      <ChangePasswordForm v-if="editingPassword" v-model:busy="saving" prefix="editor-password">
+        <Button
+          label="Volver a editar"
+          type="button"
+          severity="secondary"
+          outlined
+          :disabled="saving"
+          @click="showPasswordEditor(false)"
+        />
+      </ChangePasswordForm>
+      <form v-else novalidate class="record-form" @submit.prevent="submit">
         <RecordFields
           v-model="draft"
           :fields="fields"
@@ -337,6 +362,17 @@ onMounted(() => void load());
         />
         <Message v-if="saveError" severity="error">{{ saveError }}</Message>
         <div class="record-form-actions">
+          <Button
+            v-if="editingOwnAccount"
+            id="record-change-password"
+            label="Cambiar mi contraseña"
+            type="button"
+            icon="pi pi-key"
+            class="me-auto"
+            text
+            :disabled="saving"
+            @click="showPasswordEditor(true)"
+          />
           <Button
             label="Cancelar"
             severity="secondary"

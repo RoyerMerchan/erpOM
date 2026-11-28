@@ -9,7 +9,7 @@ import { createDatabase } from '../../api/src/database.js';
 const root = '/api/v1';
 const origin = { Origin: 'http://localhost:4173' };
 
-export async function staff(role: 'ADMIN' | 'SELLER') {
+export async function staff(role: 'SUPERUSER' | 'ADMIN' | 'SELLER') {
   const databaseUrl = process.env.E2E_DATABASE_URL;
   if (!databaseUrl || !new URL(databaseUrl).pathname.endsWith('_e2e'))
     throw new Error('Falta una base dedicada para las pruebas E2E.');
